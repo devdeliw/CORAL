@@ -6,11 +6,14 @@ use core::arch::aarch64::{
 
 pub fn sasum(n: usize, x: &[f32], incx: isize) -> f32 {
     let mut res = 0.0;
+
+    // quick return 
     if n == 0 || incx == 0 {
         return res;
     }
 
     unsafe {
+        // fast path 
         if incx == 1 {
             debug_assert!(x.len() >= n);
             let mut acc0 = vdupq_n_f32(0.0);
@@ -43,6 +46,7 @@ pub fn sasum(n: usize, x: &[f32], incx: isize) -> f32 {
                 i += 1;
             }
         } else {
+            // non unit stride 
             let step = incx.unsigned_abs() as usize;
             debug_assert!(x.len() >= 1 + (n - 1) * step);
 
@@ -63,11 +67,14 @@ pub fn sasum(n: usize, x: &[f32], incx: isize) -> f32 {
 
 pub fn dasum(n: usize, x: &[f64], incx: isize) -> f64 {
     let mut res = 0.0;
+
+    // quick return 
     if n == 0 || incx == 0 {
         return res;
     }
 
     unsafe {
+        // fast path 
         if incx == 1 {
             debug_assert!(x.len() >= n);
             let mut acc0 = vdupq_n_f64(0.0);
@@ -100,6 +107,7 @@ pub fn dasum(n: usize, x: &[f64], incx: isize) -> f64 {
                 i += 1;
             }
         } else {
+            // non unit stride 
             let step = incx.unsigned_abs() as usize;
             debug_assert!(x.len() >= 1 + (n - 1) * step);
 
@@ -120,11 +128,14 @@ pub fn dasum(n: usize, x: &[f64], incx: isize) -> f64 {
 
 pub fn scasum(n: usize, x: &[f32], incx: isize) -> f32 {
     let mut res = 0.0;
+
+    // quick return 
     if n == 0 || incx == 0 {
         return res;
     }
 
     unsafe {
+        // fast path 
         if incx == 1 {
             debug_assert!(x.len() >= 2 * n);
             let mut acc0 = vdupq_n_f32(0.0);
@@ -148,6 +159,7 @@ pub fn scasum(n: usize, x: &[f32], incx: isize) -> f32 {
                 i += 1;
             }
         } else {
+            // non unit stride 
             let step = incx.unsigned_abs() as usize;
             debug_assert!(x.len() >= 2 * (1 + (n - 1) * step));
 
@@ -170,11 +182,14 @@ pub fn scasum(n: usize, x: &[f32], incx: isize) -> f32 {
 
 pub fn dzasum(n: usize, x: &[f64], incx: isize) -> f64 {
     let mut res = 0.0;
+
+    // quick return 
     if n == 0 || incx == 0 {
         return res;
     }
 
     unsafe {
+        // fast path 
         if incx == 1 {
             debug_assert!(x.len() >= 2 * n);
             let mut acc0 = vdupq_n_f64(0.0);
@@ -198,6 +213,7 @@ pub fn dzasum(n: usize, x: &[f64], incx: isize) -> f64 {
                 i += 1;
             }
         } else {
+            // non unit stride 
             let step = incx.unsigned_abs() as usize;
             debug_assert!(x.len() >= 2 * (1 + (n - 1) * step));
 
