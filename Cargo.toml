@@ -1,0 +1,26 @@
+[package]
+name    = "rusty-blas"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wide        = "0.7"
+cblas-sys   = "0.1"
+num-traits  = "0.2"
+num-complex = "0.4" 
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]] 
+name    = "level1_asum" 
+harness = false 
+
+[[bench]] 
+name    = "level1_nrm2" 
+harness = false
+
+[[bench]] 
+name    = "level1_iamax" 
+harness = false 
+
