@@ -1,3 +1,40 @@
-pub mod asum;
+pub mod assert_length_helpers;
+
+pub mod sasum;
+pub mod dasum; 
+pub mod scasum; 
+pub mod dzasum;
+
+pub mod isamax; 
+pub mod idamax; 
+pub mod icamax; 
+pub mod izamax; 
+
+pub mod nrm2_helpers;
+pub mod snrm2; 
+pub mod dnrm2; 
+pub mod scnrm2; 
+pub mod dznrm2;
+
+pub mod sscal; 
+pub mod dscal; 
+pub mod cscal; 
+pub mod zscal; 
+pub mod csscal; 
+pub mod zdscal;
+
+pub mod scopy; 
+pub mod dcopy; 
+pub mod ccopy; 
+pub mod zcopy; 
+
+pub mod sswap; 
+pub mod dswap; 
+pub mod cswap; 
+pub mod zswap; 
+
 pub mod nrm2;
 pub mod iamax;
+pub mod scal;
+pub mod copy; 
+pub mod swap; 
