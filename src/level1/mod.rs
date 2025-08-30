@@ -32,9 +32,3 @@ pub mod sswap;
 pub mod dswap; 
 pub mod cswap; 
 pub mod zswap; 
-
-pub mod nrm2;
-pub mod iamax;
-pub mod scal;
-pub mod copy; 
-pub mod swap; 
