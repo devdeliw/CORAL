@@ -14,7 +14,7 @@ pub fn zswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {
     unsafe {
         // fast path 
         if incx == 1 && incy == 1 {
-            let len = 2 * n; // scalar length
+            let len = 2 * n; 
             let px = x.as_mut_ptr();
             let py = y.as_mut_ptr();
             let mut i = 0usize;
@@ -31,9 +31,9 @@ pub fn zswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {
                 let ay3 = vld1q_f64(py.add(i + 6));
 
                 vst1q_f64(py.add(i + 0),  ax0);
-                vst1q_f64(py.add(i + 4),  ax1);
-                vst1q_f64(py.add(i + 8),  ax2);
-                vst1q_f64(py.add(i + 12), ax3);
+                vst1q_f64(py.add(i + 2),  ax1);
+                vst1q_f64(py.add(i + 4),  ax2);
+                vst1q_f64(py.add(i + 6), ax3);
 
                 vst1q_f64(px.add(i + 0),  ay0);
                 vst1q_f64(px.add(i + 2),  ay1);
@@ -48,7 +48,7 @@ pub fn zswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {
                 let ay = vld1q_f64(py.add(i));
                 vst1q_f64(py.add(i), ax);
                 vst1q_f64(px.add(i), ay);
-                i += 4;
+                i += 2;
             }
 
             // tail

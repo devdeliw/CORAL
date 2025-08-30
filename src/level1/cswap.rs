@@ -14,7 +14,7 @@ pub fn cswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
     unsafe {
         // fast path 
         if incx == 1 && incy == 1 {
-            let len = 2 * n; // scalar length
+            let len = 2 * n; 
             let px = x.as_mut_ptr();
             let py = y.as_mut_ptr();
             let mut i = 0usize;
