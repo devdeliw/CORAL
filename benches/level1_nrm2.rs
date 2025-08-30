@@ -1,18 +1,20 @@
-use rusty_blas::level1::nrm2::{snrm2, dnrm2, scnrm2, dznrm2};
+use rusty_blas::level1::{
+    snrm2::snrm2, 
+    dnrm2::dnrm2, 
+    scnrm2::scnrm2, 
+    dznrm2::dznrm2, 
+}; 
 use cblas_sys::{cblas_snrm2, cblas_dnrm2, cblas_scnrm2, cblas_dznrm2};
 use criterion::{criterion_group, criterion_main, Criterion, black_box};
-
 
 fn bench_nrm2(c: &mut Criterion) {
     let n: usize           = 10_000;
     let data_f32: Vec<f32> = vec![1.0; n];
     let data_f64: Vec<f64> = vec![1.0; n];
-
     let data_cf32: Vec<f32> = vec![1.0; 2 * n];
     let data_cf64: Vec<f64> = vec![1.0; 2 * n];
 
-    // single precision
-    c.bench_function("my_snrm2_f32", |b| {
+    c.bench_function("rusty_snrm2", |b| {
         b.iter(|| {
             let s = snrm2(
                 black_box(n as usize),
@@ -35,8 +37,7 @@ fn bench_nrm2(c: &mut Criterion) {
         })
     });
 
-    // double precision 
-    c.bench_function("my_dnrm2_f64", |b| {
+    c.bench_function("rusty_dnrm2", |b| {
         b.iter(|| {
             let s = dnrm2(
                 black_box(n as usize),
@@ -59,8 +60,7 @@ fn bench_nrm2(c: &mut Criterion) {
         })
     });
 
-    // complex single precision 
-    c.bench_function("my_scnrm2_cf32", |b| {
+    c.bench_function("rusty_scnrm2", |b| {
         b.iter(|| {
             let s = scnrm2(
                 black_box(n as usize),
@@ -83,8 +83,7 @@ fn bench_nrm2(c: &mut Criterion) {
         })
     });
 
-    // complex double precision 
-    c.bench_function("my_dznrm2_c64", |b| {
+    c.bench_function("rusty_dznrm2", |b| {
         b.iter(|| {
             let s = dznrm2(
                 black_box(n as usize),
