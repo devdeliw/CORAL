@@ -3,6 +3,7 @@ use core::arch::aarch64::{
 };
 use crate::level1::assert_length_helpers::required_len_ok;
 
+#[inline]
 pub fn dasum(n: usize, x: &[f64], incx: isize) -> f64 {
     let mut res = 0.0;
 

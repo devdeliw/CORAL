@@ -3,6 +3,7 @@ use core::arch::aarch64::{
 }; 
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 
 
+#[inline]
 pub fn scasum(n: usize, x: &[f32], incx: isize) -> f32 {
     let mut res = 0.0;
 
