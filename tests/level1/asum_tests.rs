@@ -141,3 +141,20 @@ fn asum_edge_n0() {
     assert_eq!(mine, 0.0);
 }
 
+
+#[test]
+fn sasum_f32_neg_stride() {
+    let x: Vec<f32> = vec![1.0, -2.0, 3.0, 1234.0];
+
+    let n: usize   = 2;
+    let incx: isize = -2;
+
+    let got = sasum(n, &x, incx);
+
+    let expected = (3.0 + 1.0) as f32;
+    assert!(
+        (got - expected).abs() < 1e-6,
+        "sasum with negative stride: got {got}, expected {expected}"
+    );
+}
+
