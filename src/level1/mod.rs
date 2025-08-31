@@ -37,3 +37,10 @@ pub mod saxpy;
 pub mod daxpy; 
 pub mod caxpy; 
 pub mod zaxpy;
+
+pub mod sdot; 
+pub mod ddot; 
+pub mod cdotu; 
+pub mod zdotu;
+pub mod cdotc; 
+pub mod zdotc;
