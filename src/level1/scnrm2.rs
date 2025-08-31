@@ -3,6 +3,7 @@ use core::arch::aarch64::{
 };
 use crate::level1::nrm2_helpers::upd_f32; 
 
+#[inline]
 pub fn scnrm2(n: usize, x: &[f32], incx: isize) -> f32 {
     // quick return 
     if n == 0 || incx == 0 { 

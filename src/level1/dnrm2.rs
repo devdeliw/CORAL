@@ -3,6 +3,7 @@ use core::arch::aarch64::{
 };
 use crate::level1::nrm2_helpers::upd_f64; 
 
+#[inline]
 pub fn dnrm2(n: usize, x: &[f64], incx: isize) -> f64 { 
     // quick return 
     if n == 0 || incx == 0 { 
