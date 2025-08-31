@@ -4,6 +4,7 @@ use core::arch::aarch64::{
 };
 use crate::level1::assert_length_helpers::required_len_ok; 
 
+#[inline]
 pub fn idamax(n: usize, x: &[f64], incx: isize) -> usize {
     // quick return 
     if n == 0 || incx <= 0 { return 0; }
