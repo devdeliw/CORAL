@@ -1,5 +1,6 @@
 use crate::level1::assert_length_helpers::required_len_ok; 
 
+#[inline(always)]
 pub fn dcopy(n: usize, x: &[f64], incx: isize, y: &mut [f64], incy: isize) {
     if n == 0 { return; }
 

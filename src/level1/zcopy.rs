@@ -1,5 +1,6 @@
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 
 
+#[inline(always)] 
 pub fn zcopy(n: usize, x: &[f64], incx: isize, y: &mut [f64], incy: isize) {
     // quick return 
     if n == 0 { return; }

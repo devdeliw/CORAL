@@ -1,5 +1,6 @@
 use crate::level1::assert_length_helpers::required_len_ok; 
 
+#[inline(always)]
 pub fn scopy(n: usize, x: &[f32], incx: isize, y: &mut [f32], incy: isize) {
     // quick return 
     if n == 0 { return; }

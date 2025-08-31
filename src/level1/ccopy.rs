@@ -1,5 +1,6 @@
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 
 
+#[inline(always)]
 pub fn ccopy(n: usize, x: &[f32], incx: isize, y: &mut [f32], incy: isize) {
     // quick return 
     if n == 0 { return; }
@@ -10,7 +11,7 @@ pub fn ccopy(n: usize, x: &[f32], incx: isize, y: &mut [f32], incy: isize) {
 
     unsafe {
         if incx == 1 && incy == 1 {
-            core::ptr::copy(x.as_ptr(), y.as_mut_ptr(), 2 * n);
+            core::ptr::copy_nonoverlapping(x.as_ptr(), y.as_mut_ptr(), 2 * n);
             return;
         }
 
