@@ -1,3 +1,4 @@
+#[inline(always)]
 pub fn sscal(n: usize, alpha: f32, x: &mut [f32], incx: isize) {
     // quick return
     if n == 0 || incx <= 0 { return; }

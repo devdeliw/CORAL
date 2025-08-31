@@ -1,3 +1,4 @@
+#[inline(always)]
 pub fn dscal(n: usize, alpha: f64, x: &mut [f64], incx: isize) {
     // quick return
     if n == 0 || incx <= 0 { return; }

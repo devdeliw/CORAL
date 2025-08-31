@@ -4,6 +4,7 @@ use core::arch::aarch64::{
     vzip2q_f32, vcombine_f32, vget_low_f32,
 };
 
+#[inline(always)]
 pub fn cscal(n: usize, alpha: [f32; 2], x: &mut [f32], incx: isize) {
     // quick return
     if n == 0 || incx <= 0 { return; }

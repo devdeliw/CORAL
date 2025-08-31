@@ -3,6 +3,7 @@ use core::arch::aarch64::{
     vextq_f64, vfmsq_f64, vfmaq_f64, vzip1q_f64
 };
 
+#[inline(always)]
 pub fn zscal(n: usize, alpha: [f64; 2], x: &mut [f64], incx: isize) {
     if n == 0 || incx <= 0 { return; }
 
