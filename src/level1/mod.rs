@@ -32,3 +32,8 @@ pub mod sswap;
 pub mod dswap; 
 pub mod cswap; 
 pub mod zswap; 
+
+pub mod saxpy; 
+pub mod daxpy; 
+pub mod caxpy; 
+pub mod zaxpy;
