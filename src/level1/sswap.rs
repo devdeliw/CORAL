@@ -3,7 +3,7 @@ use core::arch::aarch64::{
 };
 use crate::level1::assert_length_helpers::required_len_ok; 
 
-
+#[inline(always)]
 pub fn sswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
     // quick return 
     if n == 0 { return; }
@@ -44,7 +44,7 @@ pub fn sswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
                 i += 16; 
             }
 
-            while i + 4 < n { 
+            while i + 4 <= n { 
                 let ax = vld1q_f32(px.add(i)); 
                 let ay = vld1q_f32(py.add(i)); 
                 vst1q_f32(px.add(i), ay);

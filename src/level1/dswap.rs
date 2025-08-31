@@ -3,6 +3,7 @@ use core::arch::aarch64::{
 };
 use crate::level1::assert_length_helpers::required_len_ok;
 
+#[inline(always)]
 pub fn dswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {
     // quick return 
     if n == 0 { return; }
@@ -43,7 +44,7 @@ pub fn dswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {
                 i += 8; 
             }
 
-            while i + 2 < n { 
+            while i + 2 <= n { 
                 let ax = vld1q_f64(px.add(i)); 
                 let ay = vld1q_f64(py.add(i)); 
                 vst1q_f64(px.add(i), ay);

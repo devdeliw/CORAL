@@ -3,6 +3,7 @@ use core::arch::aarch64::{
 };
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
 
+#[inline(always)]
 pub fn cswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
     // quick return 
     if n == 0 { return; }
