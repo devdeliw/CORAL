@@ -16,3 +16,6 @@ mod copy_tests;
 #[path = "level1/swap_tests.rs"] 
 mod swap_tests;
 
+#[path = "level1/axpy_tests.rs"] 
+mod axpy_tests; 
+
