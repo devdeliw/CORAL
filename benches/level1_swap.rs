@@ -4,7 +4,12 @@ use rusty_blas::level1::{
     cswap::cswap, 
     zswap::zswap, 
 }; 
-use cblas_sys::{cblas_sswap, cblas_dswap, cblas_cswap, cblas_zswap};
+use cblas_sys::{
+    cblas_sswap, 
+    cblas_dswap, 
+    cblas_cswap, 
+    cblas_zswap
+};
 use criterion::{criterion_group, criterion_main, Criterion, black_box, BatchSize};
 
 fn bench_swap(c: &mut Criterion) {
@@ -30,6 +35,7 @@ fn bench_swap(c: &mut Criterion) {
             BatchSize::LargeInput,
         )
     });
+
     c.bench_function("cblas_sswap", |b| {
         b.iter_batched(
             || {
@@ -73,6 +79,7 @@ fn bench_swap(c: &mut Criterion) {
             BatchSize::LargeInput,
         )
     });
+
     c.bench_function("cblas_dswap", |b| {
         b.iter_batched(
             || {
@@ -110,12 +117,19 @@ fn bench_swap(c: &mut Criterion) {
                 let y_flat: &mut [f32] = unsafe {
                     core::slice::from_raw_parts_mut(y.as_mut_ptr() as *mut f32, 2 * n)
                 };
-                cswap(black_box(n), black_box(x_flat), 1, black_box(y_flat), 1);
+                cswap(
+                    black_box(n),
+                    black_box(x_flat),
+                    black_box(1isize),
+                    black_box(y_flat),
+                    black_box(1isize),
+                );
                 black_box((x, y));
             },
             BatchSize::LargeInput,
         )
     });
+
     c.bench_function("cblas_cswap", |b| {
         b.iter_batched(
             || {
@@ -128,9 +142,9 @@ fn bench_swap(c: &mut Criterion) {
                     cblas_cswap(
                         black_box(n as i32), 
                         black_box(x.as_mut_ptr()), 
-                        1, 
+                        black_box(1), 
                         black_box(y.as_mut_ptr()), 
-                        1
+                        black_box(1),
                     );
                 }
                 black_box((x, y));
@@ -153,7 +167,13 @@ fn bench_swap(c: &mut Criterion) {
                 let y_flat: &mut [f64] = unsafe {
                     core::slice::from_raw_parts_mut(y.as_mut_ptr() as *mut f64, 2 * n)
                 };
-                zswap(black_box(n), black_box(x_flat), 1, black_box(y_flat), 1);
+                zswap(
+                    black_box(n),
+                    black_box(x_flat),
+                    black_box(1isize),
+                    black_box(y_flat),
+                    black_box(1isize),
+                );
                 black_box((x, y));
             },
             BatchSize::LargeInput,
@@ -172,9 +192,9 @@ fn bench_swap(c: &mut Criterion) {
                     cblas_zswap(
                         black_box(n as i32), 
                         black_box(x.as_mut_ptr()), 
-                        1, 
+                        black_box(1), 
                         black_box(y.as_mut_ptr()), 
-                        1
+                        black_box(1),
                     );
                 }
                 black_box((x, y));
