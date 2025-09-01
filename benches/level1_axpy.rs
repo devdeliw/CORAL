@@ -5,7 +5,12 @@ use rusty_blas::level1::{
     caxpy::caxpy,
     zaxpy::zaxpy,
 };
-use cblas_sys::{cblas_saxpy, cblas_daxpy, cblas_caxpy, cblas_zaxpy};
+use cblas_sys::{
+    cblas_saxpy, 
+    cblas_daxpy, 
+    cblas_caxpy, 
+    cblas_zaxpy
+};
 
 fn bench_axpy(c: &mut Criterion) {
     let n: usize = 1_000_000;
@@ -14,7 +19,6 @@ fn bench_axpy(c: &mut Criterion) {
     let alpha_d: f64 = 1.000123_f64;
     let alpha_c: [f32; 2] = [1.000123_f32, 0.000321_f32]; 
     let alpha_z: [f64; 2] = [1.000123_f64, 0.000321_f64];
-
 
     c.bench_function("rusty_saxpy", |b| {
         b.iter_batched(
@@ -37,6 +41,7 @@ fn bench_axpy(c: &mut Criterion) {
             BatchSize::LargeInput,
         )
     });
+
     c.bench_function("cblas_saxpy", |b| {
         b.iter_batched(
             || {
@@ -82,6 +87,7 @@ fn bench_axpy(c: &mut Criterion) {
             BatchSize::LargeInput,
         )
     });
+
     c.bench_function("cblas_daxpy", |b| {
         b.iter_batched(
             || {
@@ -127,6 +133,7 @@ fn bench_axpy(c: &mut Criterion) {
             BatchSize::LargeInput,
         )
     });
+
     c.bench_function("cblas_caxpy", |b| {
         b.iter_batched(
             || {
@@ -173,6 +180,7 @@ fn bench_axpy(c: &mut Criterion) {
             BatchSize::LargeInput,
         )
     });
+
     c.bench_function("cblas_zaxpy", |b| {
         b.iter_batched(
             || {
