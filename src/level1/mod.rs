@@ -44,3 +44,15 @@ pub mod cdotu;
 pub mod zdotu;
 pub mod cdotc; 
 pub mod zdotc;
+
+pub mod srot; 
+pub mod srotg; 
+pub mod srotm; 
+pub mod srotmg;
+pub mod drot; 
+pub mod drotg; 
+pub mod drotm; 
+pub mod drotmg; 
+pub mod csrot; 
+pub mod zdrot;  
+
