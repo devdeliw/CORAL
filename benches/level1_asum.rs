@@ -4,7 +4,12 @@ use rusty_blas::level1::{
     scasum::scasum,
     dzasum::dzasum, 
 };
-use cblas_sys::{cblas_sasum, cblas_dasum, cblas_scasum, cblas_dzasum};
+use cblas_sys::{
+    cblas_sasum, 
+    cblas_dasum, 
+    cblas_scasum, 
+    cblas_dzasum
+};
 use criterion::{criterion_group, black_box, criterion_main, Criterion};
 
 fn bench_asum(c: &mut Criterion) {
@@ -18,17 +23,22 @@ fn bench_asum(c: &mut Criterion) {
 
     c.bench_function("rusty_sasum", |b| {
         b.iter(|| {
-            let s = sasum(n, &data_f32, 1);
+            let s = sasum(
+                black_box(n),
+                black_box(&data_f32),
+                black_box(1),
+            );
             black_box(s);
         })
     });
+
     c.bench_function("cblas_sasum", |b| {
         b.iter(|| {
             let s = unsafe {
                 cblas_sasum(
-                    n as i32,
-                    data_f32.as_ptr(),
-                    1,
+                    black_box(n as i32),
+                    black_box(data_f32.as_ptr()),
+                    black_box(1),
                 )
             };
             black_box(s);
@@ -37,17 +47,22 @@ fn bench_asum(c: &mut Criterion) {
 
     c.bench_function("rusty_dasum", |b| {
         b.iter(|| {
-            let s = dasum(n, &data_f64, 1);
+            let s = dasum(
+                black_box(n),
+                black_box(&data_f64),
+                black_box(1),
+            );
             black_box(s);
         })
     });
+
     c.bench_function("cblas_dasum", |b| {
         b.iter(|| {
             let s = unsafe {
                 cblas_dasum(
-                    n as i32,
-                    data_f64.as_ptr(),
-                    1,
+                    black_box(n as i32),
+                    black_box(data_f64.as_ptr()),
+                    black_box(1),
                 )
             };
             black_box(s);
@@ -56,17 +71,22 @@ fn bench_asum(c: &mut Criterion) {
 
     c.bench_function("rusty_scasum", |b| {
         b.iter(|| {
-            let s = scasum(n, &data_c32, 1);
+            let s = scasum(
+                black_box(n),
+                black_box(&data_c32),
+                black_box(1),
+            );
             black_box(s);
         })
     });
+
     c.bench_function("cblas_scasum", |b| {
         b.iter(|| {
             let s = unsafe {
                 cblas_scasum(
-                    n as i32,
-                    data_c32.as_ptr() as *const _,
-                    1,
+                    black_box(n as i32),
+                    black_box(data_c32.as_ptr() as *const _),
+                    black_box(1),
                 )
             };
             black_box(s);
@@ -75,17 +95,22 @@ fn bench_asum(c: &mut Criterion) {
 
     c.bench_function("rusty_dzasum", |b| {
         b.iter(|| {
-            let s = dzasum(n, &data_c64, 1);
+            let s = dzasum(
+                black_box(n),
+                black_box(&data_c64),
+                black_box(1),
+            );
             black_box(s);
         })
     });
+
     c.bench_function("cblas_dzasum", |b| {
         b.iter(|| {
             let s = unsafe {
                 cblas_dzasum(
-                    n as i32,
-                    data_c64.as_ptr() as *const _,
-                    1,
+                    black_box(n as i32),
+                    black_box(data_c64.as_ptr() as *const _),
+                    black_box(1),
                 )
             };
             black_box(s);
