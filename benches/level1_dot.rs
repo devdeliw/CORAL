@@ -1,9 +1,19 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use cblas_sys::{
-    cblas_ddot, cblas_sdot, cblas_cdotu_sub, cblas_cdotc_sub, cblas_zdotu_sub, cblas_zdotc_sub,
+    cblas_ddot,
+    cblas_sdot, 
+    cblas_cdotu_sub,
+    cblas_cdotc_sub, 
+    cblas_zdotu_sub,
+    cblas_zdotc_sub,
 };
 use rusty_blas::level1::{
-    sdot::sdot, ddot::ddot, cdotu::cdotu, cdotc::cdotc, zdotu::zdotu, zdotc::zdotc,
+    sdot::sdot,
+    ddot::ddot,
+    cdotu::cdotu,
+    cdotc::cdotc,
+    zdotu::zdotu, 
+    zdotc::zdotc,
 };
 
 fn bench_dot(c: &mut Criterion) {
@@ -58,84 +68,157 @@ fn bench_dot(c: &mut Criterion) {
         v
     };
 
-    c.bench_function("cblas_sdot", |b| {
-        b.iter(|| unsafe {
-            black_box(cblas_sdot(n_real as i32, x_f32.as_ptr(), 1, y_f32.as_ptr(), 1))
+    c.bench_function("rusty_sdot", |b| {
+        b.iter(|| {
+            black_box(sdot(
+                black_box(n_real),
+                black_box(&x_f32),
+                black_box(1isize),
+                black_box(&y_f32),
+                black_box(1isize),
+            ))
         })
     });
-    c.bench_function("rusty_sdot", |b| {
-        b.iter(|| black_box(sdot(n_real, &x_f32, 1, &y_f32, 1)))
-    });
 
+    c.bench_function("cblas_sdot", |b| {
+        b.iter(|| unsafe {
+            black_box(cblas_sdot(
+                black_box(n_real as i32),
+                black_box(x_f32.as_ptr()),
+                black_box(1i32),
+                black_box(y_f32.as_ptr()),
+                black_box(1i32),
+            ))
+        })
+    });
 
     c.bench_function("rusty_ddot", |b| {
-        b.iter(|| black_box(ddot(n_real, &x_f64, 1, &y_f64, 1)))
+        b.iter(|| {
+            black_box(ddot(
+                black_box(n_real),
+                black_box(&x_f64),
+                black_box(1isize),
+                black_box(&y_f64),
+                black_box(1isize),
+            ))
+        })
     });
+
     c.bench_function("cblas_ddot", |b| {
         b.iter(|| unsafe {
-            black_box(cblas_ddot(n_real as i32, x_f64.as_ptr(), 1, y_f64.as_ptr(), 1))
+            black_box(cblas_ddot(
+                black_box(n_real as i32),
+                black_box(x_f64.as_ptr()),
+                black_box(1i32),
+                black_box(y_f64.as_ptr()),
+                black_box(1i32),
+            ))
         })
     });
 
     c.bench_function("rusty_cdotu", |b| {
-        b.iter(|| black_box(cdotu(n_cplx, &x_c32, 1, &y_c32, 1)))
+        b.iter(|| {
+            black_box(cdotu(
+                black_box(n_cplx),
+                black_box(&x_c32),
+                black_box(1isize),
+                black_box(&y_c32),
+                black_box(1isize),
+            ))
+        })
     });
+
     c.bench_function("cblas_cdotu", |b| {
         b.iter(|| unsafe {
             let mut out: [f32; 2] = [0.0, 0.0];
             cblas_cdotu_sub(
-                n_cplx as i32,
-                x_c32.as_ptr() as *const [f32; 2], 1,
-                y_c32.as_ptr() as *const [f32; 2], 1,
-                &mut out as *mut [f32; 2],
+                black_box(n_cplx as i32),
+                black_box(x_c32.as_ptr() as *const [f32; 2]),
+                black_box(1i32),
+                black_box(y_c32.as_ptr() as *const [f32; 2]),
+                black_box(1i32),
+                black_box(&mut out as *mut [f32; 2]),
             );
             black_box(out)
         })
     });
 
     c.bench_function("rusty_cdotc", |b| {
-        b.iter(|| black_box(cdotc(n_cplx, &x_c32, 1, &y_c32, 1)))
+        b.iter(|| {
+            black_box(cdotc(
+                black_box(n_cplx),
+                black_box(&x_c32),
+                black_box(1isize),
+                black_box(&y_c32),
+                black_box(1isize),
+            ))
+        })
     });
+
     c.bench_function("cblas_cdotc", |b| {
         b.iter(|| unsafe {
             let mut out: [f32; 2] = [0.0, 0.0];
             cblas_cdotc_sub(
-                n_cplx as i32,
-                x_c32.as_ptr() as *const [f32; 2], 1,
-                y_c32.as_ptr() as *const [f32; 2], 1,
-                &mut out as *mut [f32; 2],
+                black_box(n_cplx as i32),
+                black_box(x_c32.as_ptr() as *const [f32; 2]),
+                black_box(1i32),
+                black_box(y_c32.as_ptr() as *const [f32; 2]),
+                black_box(1i32),
+                black_box(&mut out as *mut [f32; 2]),
             );
             black_box(out)
         })
     });
 
     c.bench_function("rusty_zdotu", |b| {
-        b.iter(|| black_box(zdotu(n_cplx, &x_c64, 1, &y_c64, 1)))
+        b.iter(|| {
+            black_box(zdotu(
+                black_box(n_cplx),
+                black_box(&x_c64),
+                black_box(1isize),
+                black_box(&y_c64),
+                black_box(1isize),
+            ))
+        })
     });
+
     c.bench_function("cblas_zdotu", |b| {
         b.iter(|| unsafe {
             let mut out: [f64; 2] = [0.0, 0.0];
             cblas_zdotu_sub(
-                n_cplx as i32,
-                x_c64.as_ptr() as *const [f64; 2], 1,
-                y_c64.as_ptr() as *const [f64; 2], 1,
-                &mut out as *mut [f64; 2],
+                black_box(n_cplx as i32),
+                black_box(x_c64.as_ptr() as *const [f64; 2]),
+                black_box(1i32),
+                black_box(y_c64.as_ptr() as *const [f64; 2]),
+                black_box(1i32),
+                black_box(&mut out as *mut [f64; 2]),
             );
             black_box(out)
         })
     });
 
     c.bench_function("rusty_zdotc", |b| {
-        b.iter(|| black_box(zdotc(n_cplx, &x_c64, 1, &y_c64, 1)))
+        b.iter(|| {
+            black_box(zdotc(
+                black_box(n_cplx),
+                black_box(&x_c64),
+                black_box(1isize),
+                black_box(&y_c64),
+                black_box(1isize),
+            ))
+        })
     });
+
     c.bench_function("cblas_zdotc", |b| {
         b.iter(|| unsafe {
             let mut out: [f64; 2] = [0.0, 0.0];
             cblas_zdotc_sub(
-                n_cplx as i32,
-                x_c64.as_ptr() as *const [f64; 2], 1,
-                y_c64.as_ptr() as *const [f64; 2], 1,
-                &mut out as *mut [f64; 2],
+                black_box(n_cplx as i32),
+                black_box(x_c64.as_ptr() as *const [f64; 2]),
+                black_box(1i32),
+                black_box(y_c64.as_ptr() as *const [f64; 2]),
+                black_box(1i32),
+                black_box(&mut out as *mut [f64; 2]),
             );
             black_box(out)
         })
