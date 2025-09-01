@@ -4,7 +4,12 @@ use rusty_blas::level1::{
     ccopy::ccopy, 
     zcopy::zcopy, 
 };
-use cblas_sys::{cblas_scopy, cblas_dcopy, cblas_ccopy, cblas_zcopy};
+use cblas_sys::{
+    cblas_scopy, 
+    cblas_dcopy, 
+    cblas_ccopy, 
+    cblas_zcopy
+};
 use criterion::{criterion_group, criterion_main, Criterion, black_box};
 
 fn bench_copy(c: &mut Criterion) {
@@ -22,19 +27,26 @@ fn bench_copy(c: &mut Criterion) {
 
     c.bench_function("rusty_scopy", |b| {
         b.iter(|| {
-            scopy(n, &data_f32, 1, &mut out_f32, 1);
+            scopy(
+                black_box(n),
+                black_box(&data_f32),
+                black_box(1),
+                black_box(&mut out_f32),
+                black_box(1),
+            );
             black_box(&out_f32);
         })
     });
+
     c.bench_function("cblas_scopy", |b| {
         b.iter(|| {
             unsafe {
                 cblas_scopy(
-                    n as i32,
-                    data_f32.as_ptr(),
-                    1,
-                    out_f32.as_mut_ptr(),
-                    1,
+                    black_box(n as i32),
+                    black_box(data_f32.as_ptr()),
+                    black_box(1),
+                    black_box(out_f32.as_mut_ptr()),
+                    black_box(1),
                 );
             }
             black_box(&out_f32);
@@ -43,19 +55,26 @@ fn bench_copy(c: &mut Criterion) {
 
     c.bench_function("rusty_dcopy", |b| {
         b.iter(|| {
-            dcopy(n, &data_f64, 1, &mut out_f64, 1);
+            dcopy(
+                black_box(n),
+                black_box(&data_f64),
+                black_box(1),
+                black_box(&mut out_f64),
+                black_box(1),
+            );
             black_box(&out_f64);
         })
     });
+
     c.bench_function("cblas_dcopy", |b| {
         b.iter(|| {
             unsafe {
                 cblas_dcopy(
-                    n as i32,
-                    data_f64.as_ptr(),
-                    1,
-                    out_f64.as_mut_ptr(),
-                    1,
+                    black_box(n as i32),
+                    black_box(data_f64.as_ptr()),
+                    black_box(1),
+                    black_box(out_f64.as_mut_ptr()),
+                    black_box(1),
                 );
             }
             black_box(&out_f64);
@@ -64,19 +83,26 @@ fn bench_copy(c: &mut Criterion) {
 
     c.bench_function("rusty_ccopy", |b| {
         b.iter(|| {
-            ccopy(n, &data_c32, 1, &mut out_c32, 1);
+            ccopy(
+                black_box(n),
+                black_box(&data_c32),
+                black_box(1),
+                black_box(&mut out_c32),
+                black_box(1),
+            );
             black_box(&out_c32);
         })
     });
+
     c.bench_function("cblas_ccopy", |b| {
         b.iter(|| {
             unsafe {
                 cblas_ccopy(
-                    n as i32,
-                    data_c32.as_ptr() as *const _,
-                    1,
-                    out_c32.as_mut_ptr() as *mut _,
-                    1,
+                    black_box(n as i32),
+                    black_box(data_c32.as_ptr() as *const _),
+                    black_box(1),
+                    black_box(out_c32.as_mut_ptr() as *mut _),
+                    black_box(1),
                 );
             }
             black_box(&out_c32);
@@ -85,19 +111,26 @@ fn bench_copy(c: &mut Criterion) {
 
     c.bench_function("rusty_zcopy", |b| {
         b.iter(|| {
-            zcopy(n, &data_c64, 1, &mut out_c64, 1);
+            zcopy(
+                black_box(n),
+                black_box(&data_c64),
+                black_box(1),
+                black_box(&mut out_c64),
+                black_box(1),
+            );
             black_box(&out_c64);
         })
     });
+
     c.bench_function("cblas_zcopy", |b| {
         b.iter(|| {
             unsafe {
                 cblas_zcopy(
-                    n as i32,
-                    data_c64.as_ptr() as *const _,
-                    1,
-                    out_c64.as_mut_ptr() as *mut _,
-                    1,
+                    black_box(n as i32),
+                    black_box(data_c64.as_ptr() as *const _),
+                    black_box(1),
+                    black_box(out_c64.as_mut_ptr() as *mut _),
+                    black_box(1),
                 );
             }
             black_box(&out_c64);
