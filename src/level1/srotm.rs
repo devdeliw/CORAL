@@ -1,7 +1,41 @@
+//! Applies a modified Givens rotation to two single precision vectors.
+//!
+//! This function implements the BLAS [`srotm`] routine, updating the elements of 
+//! vectors `x` and `y` using the modified Givens transformation defined by the 
+//! parameter array `param`. The transformation form depends on `param[0]` (`flag`):
+//! 
+//! - `-2.0` : Identity (no operation).
+//! - `-1.0` : General 2×2 matrix with parameters `h11, h12, h21, h22`.
+//! - `0.0`  : Simplified form with implicit ones on the diagonal.
+//! - `+1.0` : Alternate simplified form with fixed off-diagonal structure.
+//!
+//! # Arguments
+//! - `n`     : Number of elements to process.
+//! - `x`     : First input/output slice containing vector elements.
+//! - `incx`  : Stride between consecutive elements of `x`.
+//! - `y`     : Second input/output slice containing vector elements.
+//! - `incy`  : Stride between consecutive elements of `y`.
+//! - `param` : Array of 5 parameters defining the modified Givens rotation
+//!             (`flag, h11, h21, h12, h22`).
+//!
+//! # Returns
+//! - Nothing. The contents of `x` and `y` are updated in place.
+//!
+//! # Notes
+//! - For `flag = -2.0`, the routine exits immediately without modifying inputs.
+//! - For unit strides, [`srotm`] uses unrolled NEON SIMD instructions for optimized 
+//!   performance on AArch64. 
+//! - For non-unit strides, it falls back to scalar loops.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f32, vst1q_f32, vdupq_n_f32, vfmaq_f32, vmulq_f32, vsubq_f32,
 };
 use crate::level1::assert_length_helpers::required_len_ok;
+
 
 #[inline]
 pub fn srotm(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize, param: &[f32; 5]) {

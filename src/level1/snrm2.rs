@@ -1,7 +1,33 @@
+//! Computes the Euclidean norm of a single precision vector.
+//!
+//! This function implements the BLAS [`snrm2`] routine, returning
+//! sqrt(x[0]^2 + x[1]^2 + ... + x[n-1]^2) over `n` elements of the
+//! input vector `x` with a specified stride.
+//!
+//! # Arguments
+//! - `n`    : Number of elements in the vector.
+//! - `x`    : Input slice containing vector elements.
+//! - `incx` : Stride between consecutive elements of `x`.
+//!
+//! # Returns
+//! - `f32` Euclidean norm of the selected vector elements.
+//!
+//! # Notes
+//! - Uses the scaled sum-of-squares algorithm to avoid overflow and underflow.
+//! - For `incx == 1`, [`snrm2`] uses unrolled NEON SIMD instructions for optimized 
+//!   performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0` or `incx == 0`, the function returns `0.0f32`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{ 
     vld1q_f32, vdupq_n_f32, vaddvq_f32, vabsq_f32, vmulq_f32, vmaxq_f32, vmaxvq_f32, vfmaq_f32, 
 };
 use crate::level1::nrm2_helpers::upd_f32;
+
 
 #[inline]
 pub fn snrm2(n: usize, x: &[f32], incx: isize) -> f32 { 
@@ -64,11 +90,11 @@ pub fn snrm2(n: usize, x: &[f32], incx: isize) -> f32 {
                     let absxi = xi.abs(); 
                     if scale < absxi { 
                         let r = scale / absxi; 
-                        ssq = 1.0 + ssq * (r * r); 
+                        ssq   = 1.0 + ssq * (r * r); 
                         scale = absxi; 
                     } else if scale > 0.0 { 
                         let r = absxi / scale;
-                        ssq += r * r; 
+                        ssq  += r * r; 
                     } else { 
                         scale = absxi; 
                     }

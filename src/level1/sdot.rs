@@ -1,7 +1,34 @@
+//! Computes the dot product of two single precision vectors.
+//!
+//! This function implements the BLAS [`sdot`] routine, returning
+//! sum(x[i] * y[i]) over `n` elements of the input vectors `x` and `y`
+//! with specified strides.
+//!
+//! # Arguments
+//! - `n`    : Number of elements in the vectors.
+//! - `x`    : Input slice containing the first vector.
+//! - `incx` : Stride between consecutive elements of `x`.
+//! - `y`    : Input slice containing the second vector.
+//! - `incy` : Stride between consecutive elements of `y`.
+//!
+//! # Returns
+//! - `f32` dot product of the selected vector elements.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`sdot`] uses unrolled NEON SIMD instructions
+//!   for optimized performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0`, the function returns `0.0f32`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{ 
     vld1q_f32, vdupq_n_f32, vfmaq_f32, vaddvq_f32, vaddq_f32 
 };
 use crate::level1::assert_length_helpers::required_len_ok; 
+
 
 #[inline] 
 pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 { 

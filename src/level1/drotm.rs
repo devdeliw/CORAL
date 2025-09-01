@@ -1,7 +1,41 @@
+//! Applies a modified Givens rotation to two double precision vectors.
+//!
+//! This function implements the BLAS [`drotm`] routine, updating the elements of 
+//! vectors `x` and `y` using the modified Givens transformation defined by the 
+//! parameter array `param`. The transformation form depends on `param[0]` (`flag`):
+//! 
+//! - `-2.0` : Identity (no operation).
+//! - `-1.0` : General 2×2 matrix with parameters `h11, h12, h21, h22`.
+//! - `0.0`  : Simplified form with implicit ones on the diagonal.
+//! - `+1.0` : Alternate simplified form with fixed off-diagonal structure.
+//!
+//! # Arguments
+//! - `n`     : Number of elements to process.
+//! - `x`     : First input/output slice containing vector elements.
+//! - `incx`  : Stride between consecutive elements of `x`.
+//! - `y`     : Second input/output slice containing vector elements.
+//! - `incy`  : Stride between consecutive elements of `y`.
+//! - `param` : Array of 5 parameters defining the modified Givens rotation
+//!             (`flag, h11, h21, h12, h22`).
+//!
+//! # Returns
+//! - Nothing. The contents of `x` and `y` are updated in place.
+//!
+//! # Notes
+//! - For `flag = -2.0`, the routine exits immediately without modifying inputs.
+//! - For unit strides, [`drotm`] uses unrolled NEON SIMD instructions for optimized 
+//!   performance on AArch64. 
+//! - For non-unit strides, it falls back to scalar loops.
+//!
+//! # Author
+//! Deval Deliwala 
+
+
 use core::arch::aarch64::{
     vld1q_f64, vst1q_f64, vdupq_n_f64, vfmaq_f64, vmulq_f64, vsubq_f64,
 };
 use crate::level1::assert_length_helpers::required_len_ok;
+
 
 #[inline]
 pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, param: &[f64; 5]) {

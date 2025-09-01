@@ -1,7 +1,40 @@
+//! Applies a plane rotation to two double precision vectors.
+//!
+//! This function implements the BLAS [`drot`] routine, replacing elements of
+//! vectors `x` and `y` with
+//!
+//! x[i] := c * x[i] + s * y[i]
+//! y[i] := c * y[i] - s * x[i]
+//!
+//! over `n` entries with specified strides.
+//!
+//! # Arguments
+//! - `n`    : Number of elements to process.
+//! - `x`    : Input/output slice containing the first vector, updated in place.
+//! - `incx` : Stride between consecutive elements of `x`.
+//! - `y`    : Input/output slice containing the second vector, updated in place.
+//! - `incy` : Stride between consecutive elements of `y`.
+//! - `c`    : Cosine component of the rotation.
+//! - `s`    : Sine component of the rotation.
+//!
+//! # Returns
+//! - Nothing. The contents of `x` and `y` are updated in place.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`drot`] uses unrolled NEON SIMD instructions
+//!   for optimized performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0`, the function returns immediately; no slice modification.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f64, vst1q_f64, vdupq_n_f64, vfmaq_f64, vmulq_f64, vsubq_f64,
 };
 use crate::level1::assert_length_helpers::required_len_ok;
+
 
 #[inline]
 pub fn drot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c: f64, s: f64) {
@@ -95,10 +128,10 @@ pub fn drot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c:
 
             // tail
             while i < n {
-                let xi = *px.add(i);
-                let yi = *py.add(i);
-
+                let xi  = *px.add(i);
+                let yi  = *py.add(i);
                 let tmp = c * xi + s * yi;
+
                 *py.add(i) = c * yi - s * xi;
                 *px.add(i) = tmp;
 
@@ -114,10 +147,10 @@ pub fn drot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c:
         let mut iy: isize = if incy >= 0 { 0 } else { ((n - 1) as isize) * (-incy) };
 
         for _ in 0..n {
-            let xi = *px.offset(ix);
-            let yi = *py.offset(iy);
-
+            let xi  = *px.offset(ix);
+            let yi  = *py.offset(iy);
             let tmp = c * xi + s * yi;
+
             *py.offset(iy) = c * yi - s * xi;
             *px.offset(ix) = tmp;
 

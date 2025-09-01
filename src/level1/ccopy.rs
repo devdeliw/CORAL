@@ -1,3 +1,32 @@
+//! Copies a complex single precision vector into another.
+//!
+//! This function implements the BLAS [`ccopy`] routine, copying `n` complex elements from
+//! the input vector `x` into the output vector `y` with specified strides.
+//!
+//! # Arguments
+//! - `n`    : Number of complex elements to copy.
+//! - `x`    : Input slice containing interleaved complex vector elements
+//!            `[re0, im0, re1, im1, ...]`.
+//! - `incx` : Stride between consecutive complex elements of `x`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//! - `y`    : Output slice to receive copied complex elements
+//!            `[re0, im0, re1, im1, ...]`.
+//! - `incy` : Stride between consecutive complex elements of `y`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//!
+//! # Returns
+//! - Nothing. The contents of `y` are overwritten with elements from `x`.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`ccopy`] uses `core::ptr::copy_nonoverlapping` for fast
+//!   contiguous memory copying of real and imag parts.
+//! - For non unit or negative strides, the function falls back to a scalar loop.
+//! - If `n == 0`, the function returns immediately without modifying `y`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 
 
 #[inline(always)]

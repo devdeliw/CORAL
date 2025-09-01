@@ -1,3 +1,36 @@
+//! Constructs the modified Givens rotation parameters for double precision scalars.
+//!
+//! This function implements the BLAS [`drotmg`] routine, which generates the 
+//! parameter array `param` that defines a modified Givens transformation matrix `H`.  
+//! The transformation zeros the second component of the 2-vector 
+//! `(sqrt(sd1)*sx1, sqrt(sd2)*sy1)^T`.  
+//!
+//! The resulting 2×2 matrix `H` is encoded compactly in `param` with a flag:
+//! - `param[0] = -2.0` : Identity (no operation).
+//! - `param[0] = -1.0` : General form with `h11, h12, h21, h22` stored in `param[1..4]`.
+//! - `param[0] = 0.0`  : Simplified form with implicit ones on the diagonal.
+//! - `param[0] = +1.0` : Alternate simplified form with fixed structure.
+//!
+//! # Arguments
+//! - `sd1`   : Input/output scalar, updated scaling factor for the first component.
+//! - `sd2`   : Input/output scalar, updated scaling factor for the second component.
+//! - `sx1`   : Input/output scalar, updated first vector component.
+//! - `sy1`   : Input scalar, second vector component (not modified).
+//! - `param` : Output array of 5 elements defining the modified Givens rotation.
+//!
+//! # Returns
+//! - Nothing. Updates `sd1`, `sd2`, `sx1`, and fills `param` in place.
+//!
+//! # Notes
+//! - Applies rescaling with thresholds `GAM`, `GAMSQ`, and `RGAMSQ` to prevent overflow 
+//!   or underflow in the computed parameters.
+//! - If `sd1 < 0.0` or the computation is undefined, [`drotmg`] sets `param[0] = -1.0` 
+//!   and zeroes the inputs
+//!
+//! # Author
+//! Deval Deliwala
+
+
 #[inline]
 pub fn drotmg(sd1: &mut f64, sd2: &mut f64, sx1: &mut f64, sy1: f64, param: &mut [f64; 5]) {
     const GAM: f64 = 4096.0;

@@ -1,3 +1,31 @@
+//! Finds the index of the element with maximum absolute value in a complex double precision vector.
+//!
+//! This function implements the BLAS [`izamax`] routine, returning the 1-based index
+//! of the first complex element of maximum absolute value over `n` elements of the input
+//! vector `x` with a specified stride.
+//!
+//! The absolute value of a complex number is defined here as |Re(x)| + |Im(x)|.
+//!
+//! # Arguments
+//! - `n`    : Number of complex elements in the vector.
+//! - `x`    : Input slice containing interleaved complex vector elements
+//!            `[re0, im0, re1, im1, ...]`.
+//! - `incx` : Stride between consecutive complex elements of `x`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//!
+//! # Returns
+//! - `usize` 1-based index of the first complex element with maximum absolute value.
+//!
+//! # Notes
+//! - For `incx == 1`, [`izamax`] uses unrolled NEON SIMD instructions for optimized
+//!   performance on AArch64, with NaN values treated as negative infinity.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0` or `incx <= 0`, the function returns `0`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{ 
     vdupq_n_u64, vbslq_u64, vgetq_lane_u64, 
     vld1q_f64, vaddq_f64, vextq_f64, vdupq_n_f64, vabsq_f64, vceqq_f64, vmaxvq_f64, vbslq_f64, 
@@ -99,7 +127,10 @@ pub fn izamax(n: usize, x: &[f64], incx: isize) -> usize {
                 let re = *p;
                 let im = *p.add(1);
                 let v = re.abs() + im.abs();
-                if v > best_val { best_val = v; best_idx = k; }
+                if v > best_val { 
+                    best_val = v; 
+                    best_idx = k; 
+                }
                 p = p.add(2); k += 1;
             }
         } else {
@@ -111,7 +142,10 @@ pub fn izamax(n: usize, x: &[f64], incx: isize) -> usize {
                 let re = *p;
                 let im = *p.add(1);
                 let v = re.abs() + im.abs();
-                if v > best_val { best_val = v; best_idx = i; }
+                if v > best_val { 
+                    best_val = v; 
+                    best_idx = i;
+                }
                 p = p.add(step); i += 1;
             }
         }

@@ -1,7 +1,41 @@
+//! Applies a plane rotation to two single precision vectors.
+//!
+//! This function implements the BLAS [`srot`] routine, replacing elements of
+//! vectors `x` and `y` with
+//!
+//! x[i] := c * x[i] + s * y[i]
+//! y[i] := c * y[i] - s * x[i]
+//!
+//! over `n` entries with specified strides.
+//!
+//! # Arguments
+//! - `n`    : Number of elements to process.
+//! - `x`    : Input/output slice containing the first vector, updated in place.
+//! - `incx` : Stride between consecutive elements of `x`.
+//! - `y`    : Input/output slice containing the second vector, updated in place.
+//! - `incy` : Stride between consecutive elements of `y`.
+//! - `c`    : Cosine component of the rotation.
+//! - `s`    : Sine component of the rotation.
+//!
+//! # Returns
+//! - Nothing. The contents of `x` and `y` are updated in place.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`srot`] uses unrolled NEON SIMD instructions
+//!   for optimized performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0`, the function returns immediately; no slice modification.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f32, vst1q_f32, vdupq_n_f32, vfmaq_f32, vmulq_f32, vsubq_f32,
 };
 use crate::level1::assert_length_helpers::required_len_ok;
+
+
 
 #[inline]
 pub fn srot(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize, c: f32, s: f32) {
@@ -84,16 +118,19 @@ pub fn srot(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize, c:
                 let yv = vld1q_f32(py.add(i));
                 let xn = vfmaq_f32(vmulq_f32(c2, xv), yv, s2);
                 let yn = vsubq_f32(vmulq_f32(c2, yv), vmulq_f32(s2, xv));
+
                 vst1q_f32(py.add(i), yn);
                 vst1q_f32(px.add(i), xn);
+
                 i += 4;
             }
 
             // tail 
             while i < n {
-                let xi = *px.add(i);
-                let yi = *py.add(i);
+                let xi  = *px.add(i);
+                let yi  = *py.add(i);
                 let tmp = c * xi + s * yi;
+
                 *py.add(i) = c * yi - s * xi;
                 *px.add(i) = tmp;
                 i += 1;
@@ -107,11 +144,13 @@ pub fn srot(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize, c:
         let mut ix: isize = if incx >= 0 { 0 } else { ((n - 1) as isize) * (-incx) };
         let mut iy: isize = if incy >= 0 { 0 } else { ((n - 1) as isize) * (-incy) };
         for _ in 0..n {
-            let xi = *px.offset(ix);
-            let yi = *py.offset(iy);
+            let xi  = *px.offset(ix);
+            let yi  = *py.offset(iy);
             let tmp = c * xi + s * yi;
+
             *py.offset(iy) = c * yi - s * xi;
             *px.offset(ix) = tmp;
+
             ix += incx;
             iy += incy;
         }

@@ -1,4 +1,30 @@
+//! Copies a single precision vector into another.
+//!
+//! This function implements the BLAS [`scopy`] routine, copying `n` elements from
+//! the input vector `x` into the output vector `y` with specified strides.
+//!
+//! # Arguments
+//! - `n`    : Number of elements to copy.
+//! - `x`    : Input slice containing vector elements.
+//! - `incx` : Stride between consecutive elements of `x`.
+//! - `y`    : Output slice to receive copied elements.
+//! - `incy` : Stride between consecutive elements of `y`.
+//!
+//! # Returns
+//! - Nothing. The contents of `y` are overwritten with elements from `x`.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`scopy`] uses `core::ptr::copy` for fast
+//!   contiguous memory copying.
+//! - For non-unit strides the function falls back to a scalar loop.
+//! - If `n == 0`, the function returns immediately without modifying `y`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use crate::level1::assert_length_helpers::required_len_ok; 
+
 
 #[inline(always)]
 pub fn scopy(n: usize, x: &[f32], incx: isize, y: &mut [f32], incy: isize) {

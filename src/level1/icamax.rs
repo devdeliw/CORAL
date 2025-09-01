@@ -1,8 +1,37 @@
+//! Finds the index of the element with maximum absolute value in a complex single precision vector.
+//!
+//! This function implements the BLAS [`icamax`] routine, returning the 1-based index
+//! of the first complex element of maximum absolute value over `n` elements of the input
+//! vector `x` with a specified stride.
+//!
+//! The absolute value of a complex number is defined here as |Re(x)| + |Im(x)|.
+//!
+//! # Arguments
+//! - `n`    : Number of complex elements in the vector.
+//! - `x`    : Input slice containing interleaved complex vector elements
+//!            `[re0, im0, re1, im1, ...]`.
+//! - `incx` : Stride between consecutive complex elements of `x`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//!
+//! # Returns
+//! - `usize` 1-based index of the first complex element with maximum absolute value.
+//!
+//! # Notes
+//! - For `incx == 1`, [`icamax`] uses unrolled NEON SIMD instructions for optimized
+//!   performance on AArch64, with NaN values treated as negative infinity.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0` or `incx <= 0`, the function returns `0`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{ 
     vld1q_u32, vdupq_n_u32, vaddq_u32, vbslq_u32, vminvq_u32, 
     vld1q_f32, vdupq_n_f32, vaddq_f32, vabsq_f32, vbslq_f32, vceqq_f32, vmaxvq_f32, vrev64q_f32
 }; 
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 
+
 
 #[inline] 
 pub fn icamax(n: usize, x: &[f32], incx: isize) -> usize {
@@ -17,7 +46,7 @@ pub fn icamax(n: usize, x: &[f32], incx: isize) -> usize {
 
         // fast path 
         if incx == 1 {
-            let mut i = 0usize;            
+            let mut i  = 0usize;            
             let iota_c = vld1q_u32([0u32, 0, 1, 1].as_ptr());
             let allmax = vdupq_n_u32(u32::MAX);
             let ninf   = vdupq_n_f32(f32::NEG_INFINITY);
@@ -102,7 +131,10 @@ pub fn icamax(n: usize, x: &[f32], incx: isize) -> usize {
                 let re = *p;
                 let im = *p.add(1);
                 let v = re.abs() + im.abs();
-                if v > best_val { best_val = v; best_idx = i; }
+                if v > best_val { 
+                    best_val = v; 
+                    best_idx = i; 
+                }
                 p = p.add(step); i += 1;
             }
         }

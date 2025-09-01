@@ -1,7 +1,38 @@
+//! Computes the unconjugated dot product of two complex single precision vectors.
+//!
+//! This function implements the BLAS [`cdotu`] routine, returning
+//! sum(x[i] * y[i]) over `n` complex elements of the input vectors `x` and `y`
+//! with specified strides. No conjugation is applied to either vector.
+//!
+//! # Arguments
+//! - `n`    : Number of complex elements in the vectors.
+//! - `x`    : Input slice containing interleaved complex vector elements
+//!            `[re0, im0, re1, im1, ...]`.
+//! - `incx` : Stride between consecutive complex elements of `x`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//! - `y`    : Input slice containing interleaved complex vector elements
+//!            `[re0, im0, re1, im1, ...]`.
+//! - `incy` : Stride between consecutive complex elements of `y`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//!
+//! # Returns
+//! - `[f32; 2]` complex result of the dot product, `[real, imag]`.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`cdotu`] uses unrolled NEON SIMD instructions
+//!   for optimized performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0`, the function returns `[0.0, 0.0]`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f32, vdupq_n_f32, vfmaq_f32, vaddvq_f32, vaddq_f32, vuzp1q_f32, vuzp2q_f32, vfmsq_f32
 };
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
+
 
 #[inline]
 pub fn cdotu(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> [f32; 2] {

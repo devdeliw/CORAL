@@ -1,7 +1,45 @@
+//! Applies a plane rotation to two complex double precision vectors.
+//!
+//! This function implements the BLAS [`zdrot`] routine, replacing elements of
+//! vectors `x` and `y` with
+//!
+//! x[i] := c * x[i] + s * y[i]
+//! y[i] := c * y[i] - s * x[i]
+//!
+//! where the rotation is applied elementwise to both the real and imaginary parts
+//! of each complex number, over `n` complex entries with specified strides.
+//!
+//! # Arguments
+//! - `n`    : Number of complex elements to process.
+//! - `x`    : Input/output slice containing interleaved complex vector elements
+//!            `[re0, im0, re1, im1, ...]`, updated in place.
+//! - `incx` : Stride between consecutive complex elements of `x`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//! - `y`    : Input/output slice containing interleaved complex vector elements,
+//!            updated in place.
+//! - `incy` : Stride between consecutive complex elements of `y`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//! - `c`    : Cosine component of the rotation.
+//! - `s`    : Sine component of the rotation.
+//!
+//! # Returns
+//! - Nothing. The contents of `x` and `y` are updated in place.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`zdrot`] uses unrolled NEON SIMD instructions
+//!   for optimized performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0`, the function returns immediately; no slice modification.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f64, vst1q_f64, vdupq_n_f64, vfmaq_f64, vmulq_f64, vsubq_f64,
 };
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
+
 
 #[inline]
 pub fn zdrot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c: f64, s: f64) {
@@ -71,10 +109,10 @@ pub fn zdrot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c
             }
 
             while i < len {
-                let xi = *px.add(i);
-                let yi = *py.add(i);
-
+                let xi  = *px.add(i);
+                let yi  = *py.add(i);
                 let tmp = c * xi + s * yi;  
+
                 *py.add(i) = c * yi - s * xi;   
                 *px.add(i) = tmp;
 

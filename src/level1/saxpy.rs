@@ -1,7 +1,34 @@
+//! Performs a single precision AXPY operation: y := alpha * x + y.
+//!
+//! This function implements the BLAS [`saxpy`] routine, updating the vector `y`
+//! by adding `alpha * x` elementwise over `n` entries with specified strides.
+//!
+//! # Arguments
+//! - `n`     : Number of elements to process.
+//! - `alpha` : Scalar multiplier for `x`.
+//! - `x`     : Input slice containing vector elements.
+//! - `incx`  : Stride between consecutive elements of `x`.
+//! - `y`     : Input/output slice containing vector elements, updated in place.
+//! - `incy`  : Stride between consecutive elements of `y`.
+//!
+//! # Returns
+//! - Nothing. The contents of `y` are updated in place as `y[i] = alpha * x[i] + y[i]`.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`saxpy`] uses unrolled NEON SIMD instructions
+//!   for optimized performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0` or `alpha == 0.0`, the function returns immediately; no slice modification.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{ 
     vld1q_f32, vdupq_n_f32, vfmaq_f32, vst1q_f32 
 }; 
 use crate::level1::assert_length_helpers::required_len_ok;
+
 
 #[inline(always)]
 pub fn saxpy(n: usize, alpha: f32, x: &[f32], incx: isize, y: &mut [f32], incy: isize) { 

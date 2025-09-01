@@ -1,8 +1,39 @@
+//! Performs a complex double precision AXPY operation: y := alpha * x + y.
+//!
+//! This function implements the BLAS [`zaxpy`] routine, updating the vector `y`
+//! by adding `alpha * x` elementwise over `n` complex entries with specified strides.
+//!
+//! # Arguments
+//! - `n`     : Number of complex elements to process.
+//! - `alpha` : Complex scalar multiplier given as `[real, imag]`.
+//! - `x`     : Input slice containing interleaved complex vector elements
+//!             `[re0, im0, re1, im1, ...]`.
+//! - `incx`  : Stride between consecutive complex elements of `x`
+//!             (measured in complex numbers; every step advances two scalar idxs).
+//! - `y`     : Input/output slice containing interleaved complex vector elements,
+//!             updated in place.
+//! - `incy`  : Stride between consecutive complex elements of `y`
+//!             (measured in complex numbers; every step advances two scalar idxs).
+//!
+//! # Returns
+//! - Nothing. The contents of `y` are updated in place as `y[i] = alpha * x[i] + y[i]`.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`zaxpy`] uses unrolled NEON SIMD instructions
+//!   for optimized performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0` or `alpha == [0.0, 0.0]`, the function returns immediately; no slice modification.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vdupq_n_f64, vfmaq_f64, vfmsq_f64, vld2q_f64, vst2q_f64,
     float64x2x2_t
 };
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
+
 
 #[inline(always)]
 pub fn zaxpy(n: usize, alpha: [f64; 2], x: &[f64], incx: isize, y: &mut [f64], incy: isize) {

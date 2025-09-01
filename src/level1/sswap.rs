@@ -1,7 +1,33 @@
+//! Swaps elements of two single precision vectors.
+//!
+//! This function implements the BLAS [`sswap`] routine, exchanging elements of 
+//! two input vectors `x` and `y` over `n` entries with specified strides.
+//!
+//! # Arguments 
+//! - `n`    : Number of elements to swap. 
+//! - `x`    : First input/output slice containing vector elements. 
+//! - `incx` : Stride between consecutive elements of `x`. 
+//! - `y`    : Second input/output slice containing vector elements. 
+//! - `incy` : Stride between consecutive elements of `y`. 
+//!
+//! # Returns 
+//! - Nothing. The contents of `x` and `y` are swapped in place.
+//!
+//! # Notes 
+//! - For `incx == 1 && incy == 1`, [`sswap`] uses unrolled NEON SIMD instructions 
+//!   for optimized performance on AArch64. 
+//! - For non-unit or negative strides, the function falls back to scalar iteration. 
+//! - If `n == 0`, the function returns immediately without modifying input slices.
+//!
+//! # Author 
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f32, vst1q_f32
 };
 use crate::level1::assert_length_helpers::required_len_ok; 
+
 
 #[inline(always)]
 pub fn sswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {

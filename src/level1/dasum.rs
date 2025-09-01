@@ -1,7 +1,31 @@
+//! Computes the sum of absolute values of elements in a double precision vector. 
+//!
+//! This function implements the BLAS [`dasum`] routine, returning sum(|x[i]|) over 
+//! `n` elements of the input vector `x` with a specified stride. 
+//!
+//! # Arguments 
+//! - `n`    : Number of elements to sum. 
+//! - `x`    : Input slice containing vector elements 
+//! - `incx` : Stride between consecutive elements of `x` 
+//!
+//! # Returns 
+//! - `f64` sum of absolute values of selected vector elements. 
+//!
+//! # Notes 
+//! - For `incx == 1`, [`dasum`] uses unrolled NEON SIMD instructions for optimized 
+//!   performance on AArch64. 
+//! - For non-unit strides the function falls back to a scalar loop. 
+//! - If `n == 0 || incx == 0`, returns `0.0f64`
+//! 
+//! # Author 
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{ 
     vld1q_f64, vdupq_n_f64, vaddq_f64, vaddvq_f64, vabsq_f64,
 };
 use crate::level1::assert_length_helpers::required_len_ok;
+
 
 #[inline]
 pub fn dasum(n: usize, x: &[f64], incx: isize) -> f64 {

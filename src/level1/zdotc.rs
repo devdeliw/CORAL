@@ -1,7 +1,38 @@
+//! Computes the conjugated dot product of two complex double precision vectors.
+//!
+//! This function implements the BLAS [`zdotc`] routine, returning
+//! sum(conj(x[i]) * y[i]) over `n` complex elements of the input vectors `x` and `y`
+//! with specified strides. The vector `x` is conjugated, while `y` is used as-is.
+//!
+//! # Arguments
+//! - `n`    : Number of complex elements in the vectors.
+//! - `x`    : Input slice containing interleaved complex vector elements
+//!            `[re0, im0, re1, im1, ...]`. Conjugated before multiplication.
+//! - `incx` : Stride between consecutive complex elements of `x`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//! - `y`    : Input slice containing interleaved complex vector elements
+//!            `[re0, im0, re1, im1, ...]`.
+//! - `incy` : Stride between consecutive complex elements of `y`
+//!            (measured in complex numbers; every step advances two scalar idxs).
+//!
+//! # Returns
+//! - `[f64; 2]` complex result of the dot product, `[real, imag]`.
+//!
+//! # Notes
+//! - For `incx == 1 && incy == 1`, [`zdotc`] uses unrolled NEON SIMD instructions
+//!   for optimized performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0`, the function returns `[0.0, 0.0]`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f64, vdupq_n_f64, vfmaq_f64, vfmsq_f64, vaddvq_f64, vaddq_f64, vuzp1q_f64, vuzp2q_f64,
 };
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
+
 
 #[inline]
 pub fn zdotc(n: usize, x: &[f64], incx: isize, y: &[f64], incy: isize) -> [f64; 2] {
@@ -22,7 +53,7 @@ pub fn zdotc(n: usize, x: &[f64], incx: isize, y: &[f64], incy: isize) -> [f64; 
             let mut acc_im1 = vdupq_n_f64(0.0);
 
             let mut i = 0usize;
-            let len = 2 * n; // scalars
+            let len = 2 * n; 
 
             while i + 8 <= len {
                 let x0 = vld1q_f64(px.add(i + 0));

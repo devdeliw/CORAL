@@ -1,7 +1,33 @@
+//! Computes the Euclidean norm of a double precision vector.
+//!
+//! This function implements the BLAS [`dnrm2`] routine, returning
+//! sqrt(x[0]^2 + x[1]^2 + ... + x[n-1]^2) over `n` elements of the
+//! input vector `x` with a specified stride.
+//!
+//! # Arguments
+//! - `n`    : Number of elements in the vector.
+//! - `x`    : Input slice containing vector elements.
+//! - `incx` : Stride between consecutive elements of `x`.
+//!
+//! # Returns
+//! - `f64` Euclidean norm of the selected vector elements.
+//!
+//! # Notes
+//! - Uses the scaled sum-of-squares algorithm to avoid overflow and underflow.
+//! - For `incx == 1`, [`dnrm2`] uses unrolled NEON SIMD instructions for optimized 
+//!   performance on AArch64.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0` or `incx == 0`, the function returns `0.0f64`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f64, vdupq_n_f64, vaddvq_f64, vabsq_f64, vmulq_f64, vmaxq_f64, vmaxvq_f64, vfmaq_f64,  
 };
 use crate::level1::nrm2_helpers::upd_f64; 
+
 
 #[inline]
 pub fn dnrm2(n: usize, x: &[f64], incx: isize) -> f64 { 

@@ -1,7 +1,37 @@
+//! Swaps elements of two complex double precision vectors.
+//!
+//! This function implements the BLAS [`zswap`] routine, exchanging elements of 
+//! two input complex vectors `x` and `y` over `n` entries with specified strides.
+//!
+//! # Arguments 
+//! - `n`    : Number of complex elements to swap. 
+//! - `x`    : First input/output slice containing interleaved complex vector elements 
+//!            `[re0, im0, re1, im1, ...]`. 
+//! - `incx` : Stride between consecutive complex elements of `x` 
+//!            (measured in complex numbers; every step advances two scalar idxs). 
+//! - `y`    : Second input/output slice containing interleaved complex vector elements 
+//!            `[re0, im0, re1, im1, ...]`. 
+//! - `incy` : Stride between consecutive complex elements of `y` 
+//!            (measured in complex numbers; every step advances two scalar idxs). 
+//!
+//! # Returns 
+//! - Nothing. The contents of `x` and `y` are swapped in place.
+//!
+//! # Notes 
+//! - For `incx == 1 && incy == 1`, [`zswap`] uses unrolled NEON SIMD instructions 
+//!   for optimized performance on AArch64. 
+//! - For non-unit or negative strides, the function falls back to scalar iteration. 
+//! - If `n == 0`, the function returns immediately without modifying input slices.
+//!
+//! # Author 
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vld1q_f64, vst1q_f64, 
 };
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
+
 
 #[inline(always)]
 pub fn zswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {

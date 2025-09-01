@@ -1,8 +1,34 @@
+//! Scales a complex single precision vector by a complex scalar.
+//!
+//! This function implements the BLAS [`cscal`] routine, multiplying each complex element 
+//! of the input vector `x` by the complex scalar `alpha` over `n` entries with a specified stride.
+//!
+//! # Arguments 
+//! - `n`     : Number of complex elements to scale. 
+//! - `alpha` : Complex scalar multiplier given as `[real, imag]`. 
+//! - `x`     : Input/output slice containing interleaved complex vector elements 
+//!             `[re0, im0, re1, im1, ...]`. 
+//! - `incx`  : Stride between consecutive complex elements of `x` 
+//!             (measured in complex numbers; every step advances two scalar idxs). 
+//!
+//! # Returns 
+//! - Nothing. The contents of `x` are updated in place as `x[i] = alpha * x[i]`. 
+//!
+//! # Notes 
+//! - For `incx == 1`, [`cscal`] uses NEON SIMD instructions for optimized performance on AArch64. 
+//! - For non unit strides, the function falls back to a scalar loop. 
+//! - If `n == 0` or `incx <= 0`, the function returns immediately; no slice modification. 
+//!
+//! # Author 
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{
     vdupq_n_f32, vld1q_f32, vst1q_f32, vmulq_f32,
     vrev64q_f32, vfmsq_f32, vfmaq_f32, vzip1q_f32, 
     vzip2q_f32, vcombine_f32, vget_low_f32,
 };
+
 
 #[inline(always)]
 pub fn cscal(n: usize, alpha: [f32; 2], x: &mut [f32], incx: isize) {

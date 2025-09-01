@@ -1,3 +1,27 @@
+//! Finds the index of the element with maximum absolute value in a single precision vector.
+//!
+//! This function implements the BLAS [`isamax`] routine, returning the 1-based index
+//! of the first element of maximum absolute value over `n` elements of the input
+//! vector `x` with a specified stride.
+//!
+//! # Arguments
+//! - `n`    : Number of elements in the vector.
+//! - `x`    : Input slice containing vector elements.
+//! - `incx` : Stride between consecutive elements of `x`.
+//!
+//! # Returns
+//! - `usize` 1-based index of the first element with maximum absolute value.
+//!
+//! # Notes
+//! - For `incx == 1`, [`isamax`] uses unrolled NEON SIMD instructions for optimized
+//!   performance on AArch64, with NaN values treated as negative infinity.
+//! - For non unit strides, the function falls back to a scalar loop.
+//! - If `n == 0` or `incx <= 0`, the function returns `0`.
+//!
+//! # Author
+//! Deval Deliwala
+
+
 use core::arch::aarch64::{ 
     vld1q_u32, vdupq_n_u32, vaddq_u32, vbslq_u32, vminvq_u32, 
     vld1q_f32, vdupq_n_f32, vabsq_f32, vbslq_f32, vceqq_f32, vmaxvq_f32, 
@@ -82,7 +106,10 @@ pub fn isamax(n: usize, x: &[f32], incx: isize) -> usize {
             let mut p = x.as_ptr().add(i);
             while i < n {
                 let v = (*p).abs();
-                if v > best_val { best_val = v; best_idx = i; }
+                if v > best_val { 
+                    best_val = v; 
+                    best_idx = i;
+                }
                 p = p.add(1); i += 1;
             }
         } else {
@@ -92,7 +119,10 @@ pub fn isamax(n: usize, x: &[f32], incx: isize) -> usize {
             let mut p = x.as_ptr();
             while i < n {
                 let v = (*p).abs();
-                if v > best_val { best_val = v; best_idx = i; }
+                if v > best_val { 
+                    best_val = v; 
+                    best_idx = i; 
+                }
                 p = p.add(step); i += 1;
             }
         }

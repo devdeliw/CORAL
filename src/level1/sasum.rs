@@ -1,7 +1,31 @@
+//! Computes the sum of absolute values of elements in a single precision vector. 
+//!
+//! This function implements the BLAS [`sasum`] routine, returning sum(|x[i]|) over 
+//! `n` elements of the input vector `x` with a specified stride. 
+//!
+//! # Arguments 
+//! - `n`    : Number of elements to sum. 
+//! - `x`    : Input slice containing vector elements 
+//! - `incx` : Stride between consecutive elements of `x` 
+//!
+//! # Returns 
+//! - `f32` sum of absolute values of selected vector elements. 
+//!
+//! # Notes 
+//! - For `incx == 1`, [`sasum`] uses unrolled NEON SIMD instructions for optimized 
+//!   performance on AArch64. 
+//! - For non-unit strides the function falls back to a scalar loop
+//! - If `n == 0 || incx == 0`, returns `0.0f32`
+//! 
+//! # Author 
+//! Deval Deliwala 
+
+
 use core::arch::aarch64::{ 
     vld1q_f32, vdupq_n_f32, vaddq_f32, vaddvq_f32, vabsq_f32,
 }; 
 use crate::level1::assert_length_helpers::required_len_ok; 
+
 
 #[inline]
 pub fn sasum(n: usize, x: &[f32], incx: isize) -> f32 {
