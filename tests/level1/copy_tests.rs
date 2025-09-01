@@ -4,7 +4,13 @@ use rusty_blas::level1::{
     ccopy::ccopy, 
     zcopy::zcopy, 
 };
-use cblas_sys::{cblas_scopy, cblas_dcopy, cblas_ccopy, cblas_zcopy};
+use cblas_sys::{
+    cblas_scopy, 
+    cblas_dcopy, 
+    cblas_ccopy, 
+    cblas_zcopy
+};
+
 
 #[inline]
 fn assert_bits_eq_f32(a: &[f32], b: &[f32]) {
@@ -22,8 +28,10 @@ fn assert_bits_eq_f64(a: &[f64], b: &[f64]) {
     }
 }
 
+// unit stride tests 
+
 #[test]
-fn scopy_matches_cblas_unit_stride() {
+fn scopy_matches_cblas() {
     let sizes = [0usize, 1, 2, 7, 64, 123];
 
     for &n in &sizes {
@@ -37,7 +45,13 @@ fn scopy_matches_cblas_unit_stride() {
 
         scopy(n, &x, 1, &mut y_mine, 1);
         unsafe {
-            cblas_scopy(n as i32, x.as_ptr(), 1, y_blas.as_mut_ptr(), 1);
+            cblas_scopy(
+                n as i32, 
+                x.as_ptr(), 
+                1, 
+                y_blas.as_mut_ptr(),
+                1
+            );
         }
 
         assert_bits_eq_f32(&y_mine[..n], &y_blas[..n]);
@@ -46,7 +60,7 @@ fn scopy_matches_cblas_unit_stride() {
 
 
 #[test]
-fn ccopy_matches_cblas_unit_stride() {
+fn ccopy_matches_cblas() {
     let sizes = [0usize, 1, 2, 5, 32, 77];
 
     for &n in &sizes {
@@ -75,7 +89,7 @@ fn ccopy_matches_cblas_unit_stride() {
 }
 
 #[test]
-fn zcopy_matches_cblas_unit_stride() {
+fn zcopy_matches_cblas() {
     let sizes = [0usize, 1, 2, 5, 32, 77];
 
     for &n in &sizes {
@@ -103,9 +117,10 @@ fn zcopy_matches_cblas_unit_stride() {
     }
 }
 
+// non unit stride tests below 
 
 #[test]
-fn scopy_matches_cblas_nonunit_stride() {
+fn scopy_matches_cblas_stride() {
     let n = 50usize;
     let incx = 2isize;
     let incy = 3isize;
@@ -121,14 +136,20 @@ fn scopy_matches_cblas_nonunit_stride() {
 
     scopy(n, &x, incx, &mut y_mine, incy);
     unsafe {
-        cblas_scopy(n as i32, x.as_ptr(), incx as i32, y_blas.as_mut_ptr(), incy as i32);
+        cblas_scopy(
+            n as i32, 
+            x.as_ptr(), 
+            incx as i32, 
+            y_blas.as_mut_ptr(), 
+            incy as i32
+        );
     }
 
     assert_bits_eq_f32(&y_mine[..len_y], &y_blas[..len_y]);
 }
 
 #[test]
-fn dcopy_matches_cblas_nonunit_stride() {
+fn dcopy_matches_cblas_stride() {
     let n = 61usize;
     let incx = 3isize;
     let incy = 2isize;
@@ -144,14 +165,20 @@ fn dcopy_matches_cblas_nonunit_stride() {
 
     dcopy(n, &x, incx, &mut y_mine, incy);
     unsafe {
-        cblas_dcopy(n as i32, x.as_ptr(), incx as i32, y_blas.as_mut_ptr(), incy as i32);
+        cblas_dcopy(
+            n as i32, 
+            x.as_ptr(), 
+            incx as i32, 
+            y_blas.as_mut_ptr(), 
+            incy as i32
+        );
     }
 
     assert_bits_eq_f64(&y_mine[..len_y], &y_blas[..len_y]);
 }
 
 #[test]
-fn ccopy_matches_cblas_nonunit_stride() {
+fn ccopy_matches_cblas_stride() {
     let n = 40usize;
     let inc = 2isize; 
 
@@ -168,14 +195,20 @@ fn ccopy_matches_cblas_nonunit_stride() {
 
     ccopy(n, &x, inc, &mut y_mine, inc);
     unsafe {
-        cblas_ccopy(n as i32, x.as_ptr() as *const _, inc as i32, y_blas.as_mut_ptr() as *mut _, inc as i32);
+        cblas_ccopy(
+            n as i32, 
+            x.as_ptr() as *const _, 
+            inc as i32,
+            y_blas.as_mut_ptr() as *mut _,
+            inc as i32
+        );
     }
 
     assert_bits_eq_f32(&y_mine[..2 * len], &y_blas[..2 * len]);
 }
 
 #[test]
-fn zcopy_matches_cblas_nonunit_stride() {
+fn zcopy_matches_cblas_stride() {
     let n = 33usize;
     let inc = 3isize;
 
@@ -192,7 +225,12 @@ fn zcopy_matches_cblas_nonunit_stride() {
 
     zcopy(n, &x, inc, &mut y_mine, inc);
     unsafe {
-        cblas_zcopy(n as i32, x.as_ptr() as *const _, inc as i32, y_blas.as_mut_ptr() as *mut _, inc as i32);
+        cblas_zcopy(
+            n as i32, 
+            x.as_ptr() as *const _, 
+            inc as i32,
+            y_blas.as_mut_ptr() as *mut _, 
+            inc as i32);
     }
 
     assert_bits_eq_f64(&y_mine[..2 * len], &y_blas[..2 * len]);
