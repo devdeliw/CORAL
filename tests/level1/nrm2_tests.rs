@@ -42,7 +42,7 @@ fn snrm2_n0_is_zero() {
 
 
 #[test]
-fn snrm2_matches_blas() {
+fn snrm2_matches_cblas() {
     let n = 2048usize;
 
     let x32: Vec<f32> = (0..n)
@@ -62,7 +62,7 @@ fn snrm2_matches_blas() {
 }
 
 #[test]
-fn dnrm2_matches_blas() {
+fn dnrm2_matches_cblas() {
     let n = 2048usize;
 
     let x64: Vec<f64> = (0..n)
@@ -82,7 +82,7 @@ fn dnrm2_matches_blas() {
 }
 
 #[test]
-fn snrm2_matches_blas_stride() {
+fn snrm2_matches_cblas_stride() {
     let n      = 333usize;
     let stride = 3isize;
 
@@ -106,7 +106,7 @@ fn snrm2_matches_blas_stride() {
 }
 
 #[test]
-fn dnrm2_matches_blas_stride() {
+fn dnrm2_matches_cblas_stride() {
     let n      = 333usize;
     let stride = 3isize;
 
@@ -130,7 +130,7 @@ fn dnrm2_matches_blas_stride() {
 }
 
 #[test]
-fn scnrm2_matches_blas() {
+fn scnrm2_matches_cblas() {
     let n = 1024usize;
 
     let mut z32 = vec![0.0f32; 2 * n];
@@ -152,7 +152,7 @@ fn scnrm2_matches_blas() {
 }
 
 #[test]
-fn dznrm2_matches_blas() {
+fn dznrm2_matches_cblas() {
     let n = 1024usize;
 
     let mut z64 = vec![0.0f64; 2 * n];
@@ -174,7 +174,7 @@ fn dznrm2_matches_blas() {
 }
 
 #[test]
-fn scnrm2_matches_blas_stride() {
+fn scnrm2_matches_cblas_stride() {
     let n        = 600usize;
     let inc_c32  = 2isize;
     let len_c32  = 1 + (n - 1) * (inc_c32 as usize);
@@ -199,7 +199,7 @@ fn scnrm2_matches_blas_stride() {
 }
 
 #[test]
-fn dznrm2_matches_blas_stride() {
+fn dznrm2_matches_cblas_stride() {
     let n        = 600usize;
     let inc_c64  = 3isize;
     let len_c64  = 1 + (n - 1) * (inc_c64 as usize);

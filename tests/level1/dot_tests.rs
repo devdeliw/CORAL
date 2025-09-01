@@ -140,7 +140,7 @@ fn sdot_n0_is_zero() {
 }
 
 #[test]
-fn sdot_matches_blas() {
+fn sdot_matches_cblas() {
     let n  = 100_003usize;
     let x: Vec<f32> = (0..n)
         .map(|i| (i as f32) * 0.001 + if i & 1 == 0 { 0.25 } else { -0.25 })
@@ -164,7 +164,7 @@ fn sdot_matches_blas() {
 }
 
 #[test]
-fn sdot_matches_blas_stride() {
+fn sdot_matches_cblas_stride() {
     let n   = 50_000usize;
     let inc = 2usize;
 
@@ -194,7 +194,7 @@ fn sdot_matches_blas_stride() {
 }
 
 #[test]
-fn ddot_matches_blas() {
+fn ddot_matches_cblas() {
     let n  = 120_007usize;
     let x: Vec<f64> = (0..n)
         .map(|i| (i as f64) * 0.001 + if i & 1 == 0 { 0.25 } else { -0.25 })
@@ -218,7 +218,7 @@ fn ddot_matches_blas() {
 }
 
 #[test]
-fn ddot_matches_blas_stride() {
+fn ddot_matches_cblas_stride() {
     let n   = 60_000usize;
     let inc = 2usize;
 
@@ -271,7 +271,7 @@ fn cdotu_n0_is_zero() {
 }
 
 #[test]
-fn cdotu_matches_blas() {
+fn cdotu_matches_cblas() {
     let n = 80_003usize;
 
     let x = make_vec_stride_c32(
@@ -303,7 +303,7 @@ fn cdotu_matches_blas() {
 }
 
 #[test]
-fn cdotu_matches_blas_stride() {
+fn cdotu_matches_cblas_stride() {
     let n   = 50_000usize;
     let inc = 2usize;
 
@@ -336,7 +336,7 @@ fn cdotu_matches_blas_stride() {
 }
 
 #[test]
-fn cdotc_matches_blas() {
+fn cdotc_matches_cblas() {
     let n = 77_777usize;
 
     let x = make_vec_stride_c32(
@@ -368,7 +368,7 @@ fn cdotc_matches_blas() {
 }
 
 #[test]
-fn cdotc_matches_blas_stride() {
+fn cdotc_matches_cblas_stride() {
     let n   = 40_000usize;
     let inc = 2usize;
 
@@ -424,7 +424,7 @@ fn zdotu_n0_is_zero() {
 }
 
 #[test]
-fn zdotu_matches_blas() {
+fn zdotu_matches_cblas() {
     let n = 64_123usize;
 
     let x = make_vec_stride_c64(
@@ -456,7 +456,7 @@ fn zdotu_matches_blas() {
 }
 
 #[test]
-fn zdotu_matches_blas_stride() {
+fn zdotu_matches_cblas_stride() {
     let n   = 35_000usize;
     let inc = 2usize;
 
@@ -489,7 +489,7 @@ fn zdotu_matches_blas_stride() {
 }
 
 #[test]
-fn zdotc_matches_blas() {
+fn zdotc_matches_cblas() {
     let n = 59_999usize;
 
     let x = make_vec_stride_c64(
@@ -521,7 +521,7 @@ fn zdotc_matches_blas() {
 }
 
 #[test]
-fn zdotc_matches_blas_stride() {
+fn zdotc_matches_cblas_stride() {
     let n   = 33_333usize;
     let inc = 2usize;
 

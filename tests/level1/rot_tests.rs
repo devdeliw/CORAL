@@ -102,7 +102,7 @@ fn classify_flag_f64(p: f64) -> i32 {
 }
 
 #[test]
-fn srot_matches_blas() {
+fn srot_matches_cblas() {
     let n = 100_013usize;
     let c = 0.8f32;
     let s = 0.6f32;
@@ -137,7 +137,7 @@ fn srot_matches_blas() {
 }
 
 #[test]
-fn srot_matches_blas_stride() {
+fn srot_matches_cblas_stride() {
     let n   = 60_000usize;
     let inc = 2usize;
     let c   = 0.8f32;
@@ -205,7 +205,7 @@ fn drot_n0_noop() {
 }
 
 #[test]
-fn drot_matches_blas() {
+fn drot_matches_cblas() {
     let n = 100_007usize;
     let c = 0.8f64;
     let s = 0.6f64;
@@ -240,7 +240,7 @@ fn drot_matches_blas() {
 }
 
 #[test]
-fn drot_matches_blas_stride() {
+fn drot_matches_cblas_stride() {
     let n   = 60_000usize;
     let inc = 2usize;
     let c   = 0.8f64;
@@ -280,7 +280,7 @@ fn drot_matches_blas_stride() {
 }
 
 #[test]
-fn srotg_matches_blas() {
+fn srotg_matches_cblas() {
     let mut a_rusty: f32 = 3.25;
     let mut b_rusty: f32 = -4.75;
     let mut c_rusty: f32 = 0.0;
@@ -308,7 +308,7 @@ fn srotg_matches_blas() {
 }
 
 #[test]
-fn drotg_matches_blas() {
+fn drotg_matches_cblas() {
     let mut a_rusty: f64 = 6.0;
     let mut b_rusty: f64 = -2.0;
     let mut c_rusty: f64 = 0.0;
@@ -336,7 +336,7 @@ fn drotg_matches_blas() {
 }
 
 #[test]
-fn srotm_matches_blas_flagm1() {
+fn srotm_matches_cblas_flagm1() {
     let n = 100_123usize;
     let param: [f32; 5] = [-1.0, 0.9, -0.4, 0.3, 1.2];
 
@@ -369,7 +369,7 @@ fn srotm_matches_blas_flagm1() {
 }
 
 #[test]
-fn srotm_matches_blas_stride_flagm2() {
+fn srotm_matches_cblas_stride_flagm2() {
     let n = 60_000usize;
     let inc = 2usize;
     let param: [f32; 5] = [-2.0, 0.0, 0.0, 0.0, 0.0];
@@ -407,7 +407,7 @@ fn srotm_matches_blas_stride_flagm2() {
 }
 
 #[test]
-fn srotm_matches_blas_flag0() {
+fn srotm_matches_cblas_flag0() {
     let n = 100_019usize;
     let param: [f32; 5] = [0.0, 0.0, 0.5, -0.25, 0.0];
 
@@ -440,7 +440,7 @@ fn srotm_matches_blas_flag0() {
 }
 
 #[test]
-fn srotm_matches_blas_stride_flagp1() {
+fn srotm_matches_cblas_stride_flagp1() {
     let n = 60_000usize;
     let inc = 2usize;
     let param: [f32; 5] = [1.0, 0.8, 0.0, 0.0, 1.1];
@@ -478,7 +478,7 @@ fn srotm_matches_blas_stride_flagp1() {
 }
 
 #[test]
-fn drotm_full_matches_blas_flagm1() {
+fn drotm_full_matches_cblas_flagm1() {
     let n = 100_101usize;
     let param: [f64; 5] = [-1.0, 0.9, -0.4, 0.3, 1.2];
 
@@ -511,7 +511,7 @@ fn drotm_full_matches_blas_flagm1() {
 }
 
 #[test]
-fn drotm_matches_blas_stride_flagm2() {
+fn drotm_matches_cblas_stride_flagm2() {
     let n = 60_000usize;
     let inc = 2usize;
     let param: [f64; 5] = [-2.0, 0.0, 0.0, 0.0, 0.0];
@@ -549,7 +549,7 @@ fn drotm_matches_blas_stride_flagm2() {
 }
 
 #[test]
-fn drotm_matches_blas_flag0() {
+fn drotm_matches_cblas_flag0() {
     let n = 100_057usize;
     let param: [f64; 5] = [0.0, 0.0, 0.5, -0.25, 0.0];
 
@@ -582,7 +582,7 @@ fn drotm_matches_blas_flag0() {
 }
 
 #[test]
-fn drotm_matches_blas_stride_flagp1() {
+fn drotm_matches_cblas_stride_flagp1() {
     let n = 60_000usize;
     let inc = 2usize;
     let param: [f64; 5] = [1.0, 0.8, 0.0, 0.0, 1.1];
@@ -714,7 +714,7 @@ fn srotmg_offdiag_yields_flag0() {
 }
 
 #[test]
-fn srotmg_diag_matches_blas_flagp1() { 
+fn srotmg_diag_matches_cblas_flagp1() { 
     let (sd1_init, sd2_init, sx1_init, sy1) = (0.5f32, 2.0f32, 0.5f32, 3.0f32);
 
     let (mut sd1_rusty, mut sd2_rusty, mut sx1_rusty) = (sd1_init, sd2_init, sx1_init);

@@ -39,7 +39,7 @@ fn slice_approx_eq_f64(a: &[f64], b: &[f64], rel: f64, abs: f64) {
 }
 
 #[test]
-fn sscal_matches_blas() {
+fn sscal_matches_cblas() {
     let n = 4096usize;
 
     let alpha: f32 = 1.000123;
@@ -60,7 +60,7 @@ fn sscal_matches_blas() {
 }
 
 #[test]
-fn dscal_matches_blas() {
+fn dscal_matches_cblas() {
     let n = 4096usize;
 
     let alpha: f64 = 0.99991;
@@ -81,7 +81,7 @@ fn dscal_matches_blas() {
 }
 
 #[test]
-fn sscal_matches_blas_stride() {
+fn sscal_matches_cblas_stride() {
     let n    = 1024usize;
     let alpha: f32 = -1.2345;
 
@@ -108,7 +108,7 @@ fn sscal_matches_blas_stride() {
 }
 
 #[test]
-fn cscal_matches_blas() {
+fn cscal_matches_cblas() {
     let n = 1500usize;
 
     let alpha: [f32; 2] = [0.7, 0.3];
@@ -133,7 +133,7 @@ fn cscal_matches_blas() {
 }
 
 #[test]
-fn csscal_matches_blas() {
+fn csscal_matches_cblas() {
     let n = 1500usize;
 
     let alpha: f32 = -1.1;
@@ -158,7 +158,7 @@ fn csscal_matches_blas() {
 }
 
 #[test]
-fn zscal_matches_blas() {
+fn zscal_matches_cblas() {
     let n = 900usize;
 
     let alpha: [f64; 2] = [0.6, -0.2];
@@ -183,7 +183,7 @@ fn zscal_matches_blas() {
 }
 
 #[test]
-fn zdscal_matches_blas() {
+fn zdscal_matches_cblas() {
     let n = 900usize;
 
     let alpha: f64 = 0.987654321;
@@ -208,7 +208,7 @@ fn zdscal_matches_blas() {
 }
 
 #[test]
-fn dscal_matches_blas_stride() {
+fn dscal_matches_cblas_stride() {
     let n   = 777usize;
     let inc = 3isize;
 
@@ -234,7 +234,7 @@ fn dscal_matches_blas_stride() {
 }
 
 #[test]
-fn cscal_matches_blas_stride() {
+fn cscal_matches_cblas_stride() {
     let n   = 512usize;
     let inc = 2isize;
     let len = 1 + (n - 1) * (inc as usize);
@@ -262,7 +262,7 @@ fn cscal_matches_blas_stride() {
 }
 
 #[test]
-fn zscal_matches_blas_stride() {
+fn zscal_matches_cblas_stride() {
     let n   = 333usize;
     let inc = 3isize;
     let len = 1 + (n - 1) * (inc as usize);
@@ -290,7 +290,7 @@ fn zscal_matches_blas_stride() {
 }
 
 #[test]
-fn csscal_matches_blas_stride() {
+fn csscal_matches_cblas_stride() {
     let n   = 271usize;
     let inc = 3isize;
     let len = 1 + (n - 1) * (inc as usize);
@@ -318,7 +318,7 @@ fn csscal_matches_blas_stride() {
 }
 
 #[test]
-fn zdscal_matches_blas_stride() {
+fn zdscal_matches_cblas_stride() {
     let n   = 289usize;
     let inc = 2isize;
     let len = 1 + (n - 1) * (inc as usize);
