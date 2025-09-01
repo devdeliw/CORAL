@@ -21,27 +21,43 @@ pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 {
             let mut acc0 = vdupq_n_f32(0.0); 
             let mut acc1 = vdupq_n_f32(0.0); 
             let mut acc2 = vdupq_n_f32(0.0); 
-            let mut acc3 = vdupq_n_f32(0.0); 
+            let mut acc3 = vdupq_n_f32(0.0);  
+            let mut acc4 = vdupq_n_f32(0.0); 
+            let mut acc5 = vdupq_n_f32(0.0); 
+            let mut acc6 = vdupq_n_f32(0.0); 
+            let mut acc7 = vdupq_n_f32(0.0); 
 
             let mut i = 0usize; 
 
-            while i + 16 <= n { 
+            while i + 32 <= n { 
                 let ax0 = vld1q_f32(px.add(i)); 
                 let ax1 = vld1q_f32(px.add(i + 4)); 
                 let ax2 = vld1q_f32(px.add(i + 8)); 
                 let ax3 = vld1q_f32(px.add(i + 12)); 
+                let ax4 = vld1q_f32(px.add(i + 16)); 
+                let ax5 = vld1q_f32(px.add(i + 20)); 
+                let ax6 = vld1q_f32(px.add(i + 24)); 
+                let ax7 = vld1q_f32(px.add(i + 28)); 
 
                 let ay0 = vld1q_f32(py.add(i)); 
                 let ay1 = vld1q_f32(py.add(i + 4)); 
                 let ay2 = vld1q_f32(py.add(i + 8)); 
-                let ay3 = vld1q_f32(py.add(i + 12)); 
+                let ay3 = vld1q_f32(py.add(i + 12));
+                let ay4 = vld1q_f32(py.add(i + 16)); 
+                let ay5 = vld1q_f32(py.add(i + 20)); 
+                let ay6 = vld1q_f32(py.add(i + 24)); 
+                let ay7 = vld1q_f32(py.add(i + 28)); 
 
                 acc0 = vfmaq_f32(acc0, ax0, ay0);
                 acc1 = vfmaq_f32(acc1, ax1, ay1); 
                 acc2 = vfmaq_f32(acc2, ax2, ay2); 
                 acc3 = vfmaq_f32(acc3, ax3, ay3); 
+                acc4 = vfmaq_f32(acc4, ax4, ay4);
+                acc5 = vfmaq_f32(acc5, ax5, ay5); 
+                acc6 = vfmaq_f32(acc6, ax6, ay6); 
+                acc7 = vfmaq_f32(acc7, ax7, ay7); 
 
-                i += 16; 
+                i += 32; 
             }
 
             while i + 4 <= n { 
@@ -52,7 +68,9 @@ pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 {
                 i += 4; 
             }
 
-            let accv    = vaddq_f32(vaddq_f32(acc0, acc1), vaddq_f32(acc2, acc3)); 
+            let accv1   = vaddq_f32(vaddq_f32(acc0, acc1), vaddq_f32(acc2, acc3)); 
+            let accv2   = vaddq_f32(vaddq_f32(acc4, acc5), vaddq_f32(acc6, acc7)); 
+            let accv    = vaddq_f32(accv1, accv2); 
             let mut acc = vaddvq_f32(accv); 
 
             // tail 
