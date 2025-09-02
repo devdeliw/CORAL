@@ -56,3 +56,5 @@ pub mod drotmg;
 pub mod csrot; 
 pub mod zdrot;  
 
+pub mod extensions;
+
