@@ -6,7 +6,6 @@ use crate::level1::daxpy::daxpy;
 pub fn daxpyf(
     m     : usize,
     n     : usize,
-    alpha : f64,
     x     : &[f64],
     incx  : isize,
     a     : &[f64],
@@ -14,7 +13,7 @@ pub fn daxpyf(
     y     : &mut [f64],
     incy  : isize,
 ) {
-    if m == 0 || n == 0 || alpha == 0.0 { return; }
+    if m == 0 || n == 0 { return; }
 
     debug_assert!(incx != 0 && incy != 0, "BLAS increments must be non-zero");
     debug_assert!(required_len_ok(x.len(), n, incx), "x too short for n/incx");
@@ -34,10 +33,10 @@ pub fn daxpyf(
 
             // f = 4 cols at a time 
             while j + 4 <= n {
-                let x0 = alpha * *x.get_unchecked(j + 0);
-                let x1 = alpha * *x.get_unchecked(j + 1);
-                let x2 = alpha * *x.get_unchecked(j + 2);
-                let x3 = alpha * *x.get_unchecked(j + 3);
+                let x0 = *x.get_unchecked(j + 0);
+                let x1 = *x.get_unchecked(j + 1);
+                let x2 = *x.get_unchecked(j + 2);
+                let x3 = *x.get_unchecked(j + 3);
 
                 if x0 == 0.0 && x1 == 0.0 && x2 == 0.0 && x3 == 0.0 {
                     j += 4;
@@ -173,9 +172,9 @@ pub fn daxpyf(
             let rem = n - j;
             match rem {
                 3 => {
-                    let x0 = alpha * *x.get_unchecked(j + 0);
-                    let x1 = alpha * *x.get_unchecked(j + 1);
-                    let x2 = alpha * *x.get_unchecked(j + 2);
+                    let x0 = *x.get_unchecked(j + 0);
+                    let x1 = *x.get_unchecked(j + 1);
+                    let x2 = *x.get_unchecked(j + 2);
                     if x0 == 0.0 && x1 == 0.0 && x2 == 0.0 { return; }
 
                     let s0 = vdupq_n_f64(x0);
@@ -271,8 +270,8 @@ pub fn daxpyf(
                     }
                 }
                 2 => {
-                    let x0 = alpha * *x.get_unchecked(j + 0);
-                    let x1 = alpha * *x.get_unchecked(j + 1);
+                    let x0 = *x.get_unchecked(j + 0);
+                    let x1 = *x.get_unchecked(j + 1);
                     if x0 == 0.0 && x1 == 0.0 { return; }
 
                     let s0 = vdupq_n_f64(x0);
@@ -349,7 +348,7 @@ pub fn daxpyf(
                     }
                 }
                 1 => {
-                    let x0 = alpha * *x.get_unchecked(j + 0);
+                    let x0 = *x.get_unchecked(j + 0);
                     if x0 == 0.0 { return; }
 
                     let s0 = vdupq_n_f64(x0);
@@ -413,7 +412,7 @@ pub fn daxpyf(
         let mut px = x.as_ptr().wrapping_add(if incx >= 0 { 0 } else { (n - 1) * stepx });
 
         for j in 0..n {
-            let scaled = alpha * *px;
+            let scaled = *px;
             if scaled != 0.0 {
                 // a is column major; contiguous 
                 let col_ptr = a.as_ptr().add(j * lda);      

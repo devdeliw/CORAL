@@ -6,7 +6,6 @@ use crate::level1::saxpy::saxpy;
 pub fn saxpyf(
     m     : usize,
     n     : usize,
-    alpha : f32,
     x     : &[f32],
     incx  : isize,
     a     : &[f32],
@@ -15,7 +14,7 @@ pub fn saxpyf(
     incy  : isize,
 ) {
     // quick return
-    if m == 0 || n == 0 || alpha == 0.0 { return; }
+    if m == 0 || n == 0 { return; }
 
     debug_assert!(incx != 0 && incy != 0, "BLAS increments must be non-zero");
     debug_assert!(required_len_ok(x.len(), n, incx), "x too short for n/incx");
@@ -35,10 +34,10 @@ pub fn saxpyf(
 
             // f = 4 cols at a time 
             while j + 4 <= n {
-                let x0 = alpha * *x.get_unchecked(j + 0);
-                let x1 = alpha * *x.get_unchecked(j + 1);
-                let x2 = alpha * *x.get_unchecked(j + 2);
-                let x3 = alpha * *x.get_unchecked(j + 3);
+                let x0 = *x.get_unchecked(j + 0);
+                let x1 = *x.get_unchecked(j + 1);
+                let x2 = *x.get_unchecked(j + 2);
+                let x3 = *x.get_unchecked(j + 3);
 
                 if x0 == 0.0 && x1 == 0.0 && x2 == 0.0 && x3 == 0.0 {
                     j += 4;
@@ -146,7 +145,9 @@ pub fn saxpyf(
                     y0 = vfmaq_f32(y0, s1, b00);
                     y0 = vfmaq_f32(y0, s2, c00);
                     y0 = vfmaq_f32(y0, s3, d00);
+
                     vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
+
                     i += 4;
                 }
 
@@ -156,7 +157,9 @@ pub fn saxpyf(
                     acc += x1 * *pa1.add(i);
                     acc += x2 * *pa2.add(i);
                     acc += x3 * *pa3.add(i);
+
                     *y.as_mut_ptr().add(i) = acc;
+
                     i += 1;
                 }
 
@@ -167,9 +170,9 @@ pub fn saxpyf(
             let rem = n - j;
             match rem {
                 3 => {
-                    let x0 = alpha * *x.get_unchecked(j + 0);
-                    let x1 = alpha * *x.get_unchecked(j + 1);
-                    let x2 = alpha * *x.get_unchecked(j + 2);
+                    let x0 = *x.get_unchecked(j + 0);
+                    let x1 = *x.get_unchecked(j + 1);
+                    let x2 = *x.get_unchecked(j + 2);
                     if x0 == 0.0 && x1 == 0.0 && x2 == 0.0 { return; }
 
                     let s0 = vdupq_n_f32(x0);
@@ -218,6 +221,7 @@ pub fn saxpyf(
                         vst1q_f32(y.as_mut_ptr().add(i + 4),  y1);
                         vst1q_f32(y.as_mut_ptr().add(i + 8),  y2);
                         vst1q_f32(y.as_mut_ptr().add(i + 12), y3);
+
                         i += 16;
                     }
                     while i + 8 <= m {
@@ -241,6 +245,7 @@ pub fn saxpyf(
 
                         vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
                         vst1q_f32(y.as_mut_ptr().add(i + 4), y1);
+
                         i += 8;
                     }
                     while i + 4 <= m {
@@ -252,6 +257,7 @@ pub fn saxpyf(
                         y0 = vfmaq_f32(y0, s1, b00);
                         y0 = vfmaq_f32(y0, s2, c00);
                         vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
+
                         i += 4;
                     }
                     while i < m {
@@ -260,12 +266,13 @@ pub fn saxpyf(
                         acc += x1 * *pa1.add(i);
                         acc += x2 * *pa2.add(i);
                         *y.as_mut_ptr().add(i) = acc;
+
                         i += 1;
                     }
                 }
                 2 => {
-                    let x0 = alpha * *x.get_unchecked(j + 0);
-                    let x1 = alpha * *x.get_unchecked(j + 1);
+                    let x0 = *x.get_unchecked(j + 0);
+                    let x1 = *x.get_unchecked(j + 1);
                     if x0 == 0.0 && x1 == 0.0 { return; }
 
                     let s0 = vdupq_n_f32(x0);
@@ -303,6 +310,7 @@ pub fn saxpyf(
                         vst1q_f32(y.as_mut_ptr().add(i + 4),  y1);
                         vst1q_f32(y.as_mut_ptr().add(i + 8),  y2);
                         vst1q_f32(y.as_mut_ptr().add(i + 12), y3);
+
                         i += 16;
                     }
                     while i + 8 <= m {
@@ -321,6 +329,7 @@ pub fn saxpyf(
 
                         vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
                         vst1q_f32(y.as_mut_ptr().add(i + 4), y1);
+
                         i += 8;
                     }
                     while i + 4 <= m {
@@ -330,6 +339,7 @@ pub fn saxpyf(
                         y0 = vfmaq_f32(y0, s0, a00);
                         y0 = vfmaq_f32(y0, s1, b00);
                         vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
+
                         i += 4;
                     }
                     while i < m {
@@ -337,11 +347,12 @@ pub fn saxpyf(
                         acc += x0 * *pa0.add(i);
                         acc += x1 * *pa1.add(i);
                         *y.as_mut_ptr().add(i) = acc;
+
                         i += 1;
                     }
                 }
                 1 => {
-                    let x0 = alpha * *x.get_unchecked(j + 0);
+                    let x0 = *x.get_unchecked(j + 0);
                     if x0 == 0.0 { return; }
 
                     let s0 = vdupq_n_f32(x0);
@@ -367,6 +378,7 @@ pub fn saxpyf(
                         vst1q_f32(y.as_mut_ptr().add(i + 4),  y1);
                         vst1q_f32(y.as_mut_ptr().add(i + 8),  y2);
                         vst1q_f32(y.as_mut_ptr().add(i + 12), y3);
+
                         i += 16;
                     }
                     while i + 8 <= m {
@@ -374,22 +386,29 @@ pub fn saxpyf(
                         let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
                         let a00 = vld1q_f32(pa0.add(i + 0));
                         let a01 = vld1q_f32(pa0.add(i + 4));
+
                         y0 = vfmaq_f32(y0, s0, a00);
                         y1 = vfmaq_f32(y1, s0, a01);
+
                         vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
                         vst1q_f32(y.as_mut_ptr().add(i + 4), y1);
+
                         i += 8;
                     }
                     while i + 4 <= m {
                         let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
                         let a00 = vld1q_f32(pa0.add(i + 0));
                         y0 = vfmaq_f32(y0, s0, a00);
+
                         vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
+
                         i += 4;
                     }
                     while i < m {
                         let acc = *y.as_ptr().add(i) + x0 * *pa0.add(i);
+
                         *y.as_mut_ptr().add(i) = acc;
+
                         i += 1;
                     }
                 }
@@ -404,7 +423,7 @@ pub fn saxpyf(
         let mut px = x.as_ptr().wrapping_add(if incx >= 0 { 0 } else { (n - 1) * stepx });
 
         for j in 0..n {
-            let scaled = alpha * *px;
+            let scaled = *px;
             if scaled != 0.0 {
                 // a is column-major; contiguous 
                 let col_ptr = a.as_ptr().add(j * lda);
