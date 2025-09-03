@@ -2,6 +2,7 @@ use core::slice;
 use crate::level1::sscal::sscal;
 use crate::level1::extensions::saxpyf::saxpyf; 
 
+
 #[inline(always)]
 fn required_len_ok_vec(len: usize, n: usize, inc: isize) -> bool {
     if n == 0 { return true; }
