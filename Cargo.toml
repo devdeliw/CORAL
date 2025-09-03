@@ -39,3 +39,7 @@ harness = false
 [[bench]] 
 name    = "level1_axpy"
 harness = false 
+
+[[bench]] 
+name    = "level2_gemv" 
+harness = false 
