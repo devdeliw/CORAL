@@ -13,14 +13,20 @@ use rusty_blas::level2::{
     dgemv::dgemv, 
 };
 
-
+// pseudo random float [-0.5, 0.5] 
 fn f32_from_u32(u: u32) -> f32 {
     let v = (u.wrapping_mul(2654435761)) >> 8;
     ((v & 0xFFFF) as f32 / 65536.0) - 0.5
 }
+#[inline]
+fn f64_from_u32(u: u32) -> f64 {
+    let v = (u.wrapping_mul(2654435761)) >> 8;
+    ((v & 0xFFFF) as f64 / 65536.0) - 0.5
+}
 
 
-fn fill_a_colmajor(a: &mut [f32], m: usize, n: usize, lda: usize) {
+// generate col major mat
+fn fill_a_colmajor_f32(a: &mut [f32], m: usize, n: usize, lda: usize) {
     for j in 0..n {
         for i in 0..m {
             let idx = j * lda + i;
@@ -29,15 +35,33 @@ fn fill_a_colmajor(a: &mut [f32], m: usize, n: usize, lda: usize) {
     }
 }
 
-fn fill_vec_strided(buf: &mut [f32], n: usize, inc: usize) {
+fn fill_a_colmajor_f64(a: &mut [f64], m: usize, n: usize, lda: usize) {
+    for j in 0..n {
+        for i in 0..m {
+            let idx = j * lda + i;
+            a[idx] = f64_from_u32(((i as u32) << 16) ^ (j as u32));
+        }
+    }
+}
+
+// generate strided vec 
+fn fill_vec_strided_f32(buf: &mut [f32], n: usize, inc: usize) {
     let mut pos = 0usize;
     for k in 0..n {
         buf[pos] = f32_from_u32(0x9E3779B9u32.wrapping_mul(k as u32).wrapping_add(12345));
         pos += inc;
     }
 }
+fn fill_vec_strided_f64(buf: &mut [f64], n: usize, inc: usize) {
+    let mut pos = 0usize;
+    for k in 0..n {
+        buf[pos] = f64_from_u32(0x9E3779B9u32.wrapping_mul(k as u32).wrapping_add(12345));
+        pos += inc;
+    }
+}
 
-fn assert_close_strided(y_test: &[f32], y_ref: &[f32], m: usize, incy: usize, tol: f32) {
+
+fn assert_close_strided_f32(y_test: &[f32], y_ref: &[f32], m: usize, incy: usize, tol: f32) {
     let mut max_abs = 0.0f32;
     let mut max_rel = 0.0f32;
     let mut p = 0usize;
@@ -57,30 +81,6 @@ fn assert_close_strided(y_test: &[f32], y_ref: &[f32], m: usize, incy: usize, to
         p += incy;
     }
     eprintln!("max_abs_diff = {}, max_rel_diff = {}", max_abs, max_rel);
-}
-
-
-#[inline]
-fn f64_from_u32(u: u32) -> f64 {
-    let v = (u.wrapping_mul(2654435761)) >> 8;
-    ((v & 0xFFFF) as f64 / 65536.0) - 0.5
-}
-
-fn fill_a_colmajor_f64(a: &mut [f64], m: usize, n: usize, lda: usize) {
-    for j in 0..n {
-        for i in 0..m {
-            let idx = j * lda + i;
-            a[idx] = f64_from_u32(((i as u32) << 16) ^ (j as u32));
-        }
-    }
-}
-
-fn fill_vec_strided_f64(buf: &mut [f64], n: usize, inc: usize) {
-    let mut pos = 0usize;
-    for k in 0..n {
-        buf[pos] = f64_from_u32(0x9E3779B9u32.wrapping_mul(k as u32).wrapping_add(12345));
-        pos += inc;
-    }
 }
 
 fn assert_close_strided_f64(y_test: &[f64], y_ref: &[f64], m: usize, incy: usize, tol: f64) {
@@ -196,7 +196,7 @@ fn sgemv_matches_cblas() {
     let lda = max(m, m + 5);
 
     let mut a = vec![0.0f32; lda * n];
-    fill_a_colmajor(&mut a, m, n, lda);
+    fill_a_colmajor_f32(&mut a, m, n, lda);
 
     let incx = 1usize;
     let incy = 1usize;
@@ -204,8 +204,8 @@ fn sgemv_matches_cblas() {
     let mut y = vec![0.0f32; 1 + (m - 1) * incy];
     let mut y_ref = vec![0.0f32; y.len()];
 
-    fill_vec_strided(&mut x, n, incx);
-    fill_vec_strided(&mut y, m, incy);
+    fill_vec_strided_f32(&mut x, n, incx);
+    fill_vec_strided_f32(&mut y, m, incy);
     y_ref.copy_from_slice(&y);
 
     let alpha = 1.25f32;
@@ -236,7 +236,7 @@ fn sgemv_matches_cblas() {
         );
     }
 
-    assert_close_strided(&y, &y_ref, m, incy, 1e-5);
+    assert_close_strided_f32(&y, &y_ref, m, incy, 1e-5);
 }
 
 #[test]
@@ -247,7 +247,7 @@ fn sgemv_matches_cblas_stride() {
     let lda = max(m, m + 7);
 
     let mut a = vec![0.0f32; lda * n];
-    fill_a_colmajor(&mut a, m, n, lda);
+    fill_a_colmajor_f32(&mut a, m, n, lda);
 
     let incx = 2usize;
     let incy = 2usize;
@@ -255,8 +255,8 @@ fn sgemv_matches_cblas_stride() {
     let mut y = vec![0.0f32; 1 + (m - 1) * incy];
     let mut y_ref = vec![0.0f32; y.len()];
 
-    fill_vec_strided(&mut x, n, incx);
-    fill_vec_strided(&mut y, m, incy);
+    fill_vec_strided_f32(&mut x, n, incx);
+    fill_vec_strided_f32(&mut y, m, incy);
     y_ref.copy_from_slice(&y);
 
     let alpha = -0.6f32;
@@ -287,7 +287,7 @@ fn sgemv_matches_cblas_stride() {
         );
     }
 
-    assert_close_strided(&y, &y_ref, m, incy, 1e-5);
+    assert_close_strided_f32(&y, &y_ref, m, incy, 1e-5);
 }
 
 #[test]
@@ -298,7 +298,7 @@ fn sgemv_trans_matches_cblas() {
     let lda = max(m, m + 5);
 
     let mut a = vec![0.0f32; lda * n];
-    fill_a_colmajor(&mut a, m, n, lda);
+    fill_a_colmajor_f32(&mut a, m, n, lda);
 
     let incx = 1usize;
     let incy = 1usize;
@@ -306,8 +306,8 @@ fn sgemv_trans_matches_cblas() {
     let mut y = vec![0.0f32; 1 + (n - 1) * incy];
     let mut y_ref = vec![0.0f32; y.len()];
 
-    fill_vec_strided(&mut x, m, incx);
-    fill_vec_strided(&mut y, n, incy);
+    fill_vec_strided_f32(&mut x, m, incx);
+    fill_vec_strided_f32(&mut y, n, incy);
     y_ref.copy_from_slice(&y);
 
     let alpha = 1.25f32;
@@ -338,7 +338,7 @@ fn sgemv_trans_matches_cblas() {
         );
     }
 
-    assert_close_strided(&y, &y_ref, n, incy, 1e-5);
+    assert_close_strided_f32(&y, &y_ref, n, incy, 1e-5);
 }
 
 #[test]
@@ -349,7 +349,7 @@ fn sgemv_trans_matches_cblas_stride() {
     let lda = max(m, m + 7);
 
     let mut a = vec![0.0f32; lda * n];
-    fill_a_colmajor(&mut a, m, n, lda);
+    fill_a_colmajor_f32(&mut a, m, n, lda);
 
     let incx = 2usize;
     let incy = 3usize; 
@@ -357,8 +357,8 @@ fn sgemv_trans_matches_cblas_stride() {
     let mut y = vec![0.0f32; 1 + (n - 1) * incy];
     let mut y_ref = vec![0.0f32; y.len()];
 
-    fill_vec_strided(&mut x, m, incx);
-    fill_vec_strided(&mut y, n, incy);
+    fill_vec_strided_f32(&mut x, m, incx);
+    fill_vec_strided_f32(&mut y, n, incy);
     y_ref.copy_from_slice(&y);
 
     let alpha = -0.6f32;
@@ -389,7 +389,7 @@ fn sgemv_trans_matches_cblas_stride() {
         );
     }
 
-    assert_close_strided(&y, &y_ref, n, incy, 1e-5);
+    assert_close_strided_f32(&y, &y_ref, n, incy, 1e-5);
 }
 
 
