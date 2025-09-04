@@ -17,8 +17,10 @@ fn bench_gemv(c: &mut Criterion) {
 
     let lda: usize = m + 8;
 
-    let alpha: f32 = 1.000123_f32;
-    let beta:  f32 = 0.000321_f32;
+    let alpha32  : f32 = 1.000123_f32;
+    let beta32   : f32 = 0.000321_f32;
+    let alpha64  : f64 = 1.000123_f64;
+    let beta64   : f64 = 0.000321_f64;
 
     c.bench_function("rusty_sgemv", |b| {
         b.iter_batched(
@@ -39,13 +41,13 @@ fn bench_gemv(c: &mut Criterion) {
                     black_box(Trans::NoTrans), 
                     black_box(m),
                     black_box(n),
-                    black_box(alpha),
+                    black_box(alpha32),
                     black_box(&a),
                     black_box(1isize),            
                     black_box(lda as isize),      
                     black_box(&x),
                     black_box(1isize),            
-                    black_box(beta),
+                    black_box(beta32),
                     black_box(&mut y),
                     black_box(1isize),            
                 );
@@ -76,12 +78,12 @@ fn bench_gemv(c: &mut Criterion) {
                         CBLAS_TRANSPOSE::CblasNoTrans,
                         black_box(m as i32),
                         black_box(n as i32),
-                        black_box(alpha),
+                        black_box(alpha32),
                         black_box(a.as_ptr()),
                         black_box(lda as i32),
                         black_box(x.as_ptr()),
                         black_box(1i32), 
-                        black_box(beta),
+                        black_box(beta32),
                         black_box(y.as_mut_ptr()),
                         black_box(1i32), 
                     );
@@ -111,13 +113,13 @@ fn bench_gemv(c: &mut Criterion) {
                     black_box(Trans::Trans),
                     black_box(m),
                     black_box(n),
-                    black_box(alpha),
+                    black_box(alpha32),
                     black_box(&a),
                     black_box(1isize),           
                     black_box(lda as isize),     
                     black_box(&x),
                     black_box(1isize),           
-                    black_box(beta),
+                    black_box(beta32),
                     black_box(&mut y),
                     black_box(1isize),           
                 );
@@ -148,12 +150,12 @@ fn bench_gemv(c: &mut Criterion) {
                         CBLAS_TRANSPOSE::CblasTrans,
                         black_box(m as i32),
                         black_box(n as i32),
-                        black_box(alpha),
+                        black_box(alpha32),
                         black_box(a.as_ptr()),
                         black_box(lda as i32),
                         black_box(x.as_ptr()),
                         black_box(1i32),           
-                        black_box(beta),
+                        black_box(beta32),
                         black_box(y.as_mut_ptr()),
                         black_box(1i32),           
                     );
@@ -163,9 +165,6 @@ fn bench_gemv(c: &mut Criterion) {
             BatchSize::LargeInput,
         )
     });
-
-    let alpha64: f64 = 1.000123_f64;
-    let beta64:  f64 = 0.000321_f64;
 
     c.bench_function("rusty_dgemv", |b| {
         b.iter_batched(
