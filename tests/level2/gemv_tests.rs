@@ -18,7 +18,6 @@ fn f32_from_u32(u: u32) -> f32 {
     let v = (u.wrapping_mul(2654435761)) >> 8;
     ((v & 0xFFFF) as f32 / 65536.0) - 0.5
 }
-#[inline]
 fn f64_from_u32(u: u32) -> f64 {
     let v = (u.wrapping_mul(2654435761)) >> 8;
     ((v & 0xFFFF) as f64 / 65536.0) - 0.5
