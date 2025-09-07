@@ -1,6 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion, BatchSize};
 use rusty_blas::level2::{
-    trans::Trans, 
+    enums::Trans, 
     sgemv::sgemv,  
     dgemv::dgemv,
 };
