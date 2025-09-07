@@ -8,7 +8,7 @@ use cblas_sys::{
 };
 
 use rusty_blas::level2::{ 
-    trans::Trans, 
+    enums::Trans, 
     sgemv::sgemv,   
     dgemv::dgemv, 
 };

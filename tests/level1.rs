@@ -19,3 +19,9 @@ mod swap_tests;
 #[path = "level1/axpy_tests.rs"] 
 mod axpy_tests; 
 
+#[path = "level1/rot_tests.rs"] 
+mod rot_tests; 
+
+#[path = "level1/dot_tests.rs"] 
+mod dot_tests;
+
