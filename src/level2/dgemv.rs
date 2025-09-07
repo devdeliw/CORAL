@@ -4,110 +4,19 @@ use crate::level1::extensions::{
     daxpyf::daxpyf,
     ddotf::ddotf,
 };
-use crate::level2::trans::Trans;
+use crate::level2::{
+    enums::Trans, 
+    buf_helpers::{
+        pack_y_to_unit_f64, 
+        pack_and_scale_x_f64, 
+        copy_back_y_from_unit_f64
+    },
+    assert_length_helpers::{ 
+        required_len_ok_vec,
+        required_len_ok_mat, 
+    }, 
+}; 
 
-#[inline(always)]
-fn required_len_ok_vec(len: usize, n: usize, inc: isize) -> bool {
-    if n == 0 { return true; }
-    let step = inc.unsigned_abs() as usize;
-    1 + (n - 1) * step <= len
-}
-
-#[inline(always)]
-fn required_len_ok_mat(len: usize, m: usize, n: usize, rs: isize, cs: isize) -> bool {
-    let (rmin, rmax) = if rs >= 0 { (0, (m - 1) as isize * rs) } else { ((m - 1) as isize * rs, 0) };
-    let (cmin, cmax) = if cs >= 0 { (0, (n - 1) as isize * cs) } else { ((n - 1) as isize * cs, 0) };
-    let min = rmin + cmin;
-    let max = rmax + cmax;
-    min >= 0 && (max as usize) < len
-}
-
-#[inline(always)]
-unsafe fn pack_and_scale_x(
-    n    : usize,
-    alpha: f64,
-    x    : &[f64],
-    incx : isize,
-    dst  : &mut Vec<f64>, // updated scaled x
-) { unsafe {
-    dst.clear();
-    dst.reserve_exact(n);
-    dst.set_len(n);
-
-    if n == 0 { return; }
-
-    if incx > 0 {
-        let step = incx as usize;
-        let mut px = x.as_ptr();
-        for i in 0..n {
-            *dst.get_unchecked_mut(i) = alpha * *px;
-            px = px.add(step);
-        }
-    } else {
-        let step = (-incx) as usize;
-        let mut px = x.as_ptr().add((n - 1) * step);
-        for i in 0..n {
-            *dst.get_unchecked_mut(i) = alpha * *px;
-            px = px.sub(step);
-        }
-    }
-}}
-
-#[inline(always)]
-unsafe fn pack_y_to_unit(
-    m   : usize,
-    y   : &[f64],
-    incy: isize,
-    ybuf: &mut Vec<f64>, // updated unit stride y buf
-) { unsafe {
-    ybuf.clear();
-    ybuf.reserve_exact(m);
-    ybuf.set_len(m);
-
-    if m == 0 { return; }
-
-    if incy > 0 {
-        let step = incy as usize;
-        let mut py = y.as_ptr();
-        for i in 0..m {
-            *ybuf.get_unchecked_mut(i) = *py;
-            py = py.add(step);
-        }
-    } else {
-        let step = (-incy) as usize;
-        let mut py = y.as_ptr().add((m - 1) * step);
-        for i in 0..m {
-            *ybuf.get_unchecked_mut(i) = *py;
-            py = py.sub(step);
-        }
-    }
-}}
-
-#[inline(always)]
-unsafe fn copy_back_y_from_unit(
-    m   : usize,
-    ybuf: &[f64],
-    y   : &mut [f64],
-    incy: isize,
-) { unsafe {
-    if m == 0 { return; }
-
-    if incy > 0 {
-        let step   = incy as usize;
-        let mut py = y.as_mut_ptr();
-        for i in 0..m {
-            *py = *ybuf.get_unchecked(i);
-            py  = py.add(step);
-        }
-    } else {
-        let step   = (-incy) as usize;
-        let mut py = y.as_mut_ptr().add((m - 1) * step);
-        for i in 0..m {
-            *py = *ybuf.get_unchecked(i);
-            py  = py.sub(step);
-        }
-    }
-}}
 
 #[inline(always)]
 unsafe fn pack_a_panel_into(
@@ -172,7 +81,7 @@ fn dgemv_notrans(
     if alpha == 0.0 { return; }
 
     let mut xbuf: Vec<f64> = Vec::new();
-    unsafe { pack_and_scale_x(n, alpha, x, incx, &mut xbuf); }
+    unsafe { pack_and_scale_x_f64(n, alpha, x, incx, &mut xbuf); }
 
     // if y non unit stride, pack into unit and write back
     let mut ybuf: Option<Vec<f64>> = None;
@@ -182,7 +91,7 @@ fn dgemv_notrans(
         y_unit = y.as_mut_ptr();
     } else {
         let mut tmp = Vec::<f64>::new();
-        unsafe { pack_y_to_unit(m, y, incy, &mut tmp); }
+        unsafe { pack_y_to_unit_f64(m, y, incy, &mut tmp); }
 
         y_unit = tmp.as_mut_ptr();
         ybuf   = Some(tmp);
@@ -247,7 +156,7 @@ fn dgemv_notrans(
     }
 
     if let Some(ytmp) = ybuf {
-        unsafe { copy_back_y_from_unit(m, &ytmp, y, incy); }
+        unsafe { copy_back_y_from_unit_f64(m, &ytmp, y, incy); }
     }
 }
 
@@ -284,7 +193,7 @@ fn dgemv_trans(
 
     // pack & scale x by alpha 
     let mut xbuf: Vec<f64> = Vec::new();
-    unsafe { pack_and_scale_x(m, alpha, x, incx, &mut xbuf); }
+    unsafe { pack_and_scale_x_f64(m, alpha, x, incx, &mut xbuf); }
 
     const BF: usize = 4; 
     let mut apack: Vec<f64> = Vec::new();
