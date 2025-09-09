@@ -1,6 +1,7 @@
 pub enum Trans {
     NoTrans,
-    Trans,      
+    Trans,  
+    ConjTrans
 }
 
 pub enum UpLo { 

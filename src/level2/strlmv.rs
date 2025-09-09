@@ -274,7 +274,7 @@ unsafe fn strlmv_unblk_scalar_trans(
 
 
 #[inline]
-pub fn strlmv_notrans(
+fn strlmv_notrans(
     n         : usize,
     unit_diag : bool,
     a         : &[f32],
@@ -336,7 +336,7 @@ pub fn strlmv_notrans(
 
 
 #[inline]
-pub fn strlmv_trans(
+fn strlmv_trans(
     n         : usize,
     unit_diag : bool,
     a         : &[f32],
@@ -469,7 +469,7 @@ pub fn strlmv_trans(
 
 
 #[inline]
-pub fn strlmv(
+pub(crate) fn strlmv(
     n          : usize,
     diag       : Diag,
     trans      : Trans,
@@ -481,8 +481,9 @@ pub fn strlmv(
 ) {
     let unit_diag = matches!(diag, Diag::UnitDiag);
     match trans {
-        Trans::NoTrans => strlmv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
-        Trans::Trans   => strlmv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::NoTrans   => strlmv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::Trans     => strlmv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::ConjTrans => strlmv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
     }
 }
 

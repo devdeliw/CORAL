@@ -261,3 +261,138 @@ pub(crate) unsafe fn copy_back_y_from_unit_f64(
     }
 }}
 
+#[inline(always)]
+pub(crate) unsafe fn pack_x_unit_c32(
+    len: usize,
+    x: &[f32], incx: isize,
+    out: &mut Vec<f32>,
+) { unsafe { 
+    out.clear();
+    out.reserve_exact(len * 2);
+    out.set_len(len * 2);
+
+    let mut p = if incx >= 0 {
+        x.as_ptr()
+    } else {
+        x.as_ptr().offset(((len as isize - 1) * incx) * 2)
+    };
+    let step = incx * 2;
+
+    for k in 0..len {
+        *out.get_unchecked_mut(2 * k) = *p;
+        *out.get_unchecked_mut(2 * k + 1) = *p.add(1);
+        p = p.offset(step);
+    }
+}} 
+
+#[inline(always)]
+pub(crate) unsafe fn pack_y_to_unit_c32(
+    len: usize,
+    y: &[f32], incy: isize,
+    out: &mut Vec<f32>,
+) { unsafe { 
+    out.clear();
+    out.reserve_exact(len * 2);
+    out.set_len(len * 2);
+
+    let mut p = if incy >= 0 {
+        y.as_ptr()
+    } else {
+        y.as_ptr().offset(((len as isize - 1) * incy) * 2)
+    };
+    let step = incy * 2;
+
+    for k in 0..len {
+        *out.get_unchecked_mut(2 * k) = *p;
+        *out.get_unchecked_mut(2 * k + 1) = *p.add(1);
+        p = p.offset(step);
+    }
+}} 
+
+#[inline(always)]
+pub(crate) unsafe fn copy_back_y_from_unit_c32(
+    len: usize,
+    y_unit: &[f32],
+    y: &mut [f32], incy: isize,
+) { unsafe { 
+    let mut p = if incy >= 0 {
+        y.as_mut_ptr()
+    } else {
+        y.as_mut_ptr().offset(((len as isize - 1) * incy) * 2)
+    };
+    let step = incy * 2;
+
+    for k in 0..len {
+        *p = *y_unit.get_unchecked(2 * k);
+        *p.add(1) = *y_unit.get_unchecked(2 * k + 1);
+        p = p.offset(step);
+    }
+}}
+
+#[inline(always)]
+pub(crate) unsafe fn pack_x_unit_c64(
+    len: usize,
+    x: &[f64], incx: isize,
+    out: &mut Vec<f64>,
+) { unsafe {
+    out.clear();
+    out.reserve_exact(len * 2);
+    out.set_len(len * 2);
+
+    let mut p = if incx >= 0 {
+        x.as_ptr()
+    } else {
+        x.as_ptr().offset(((len as isize - 1) * incx) * 2)
+    };
+    let step = incx * 2;
+
+    for k in 0..len {
+        *out.get_unchecked_mut(2 * k)     = *p;
+        *out.get_unchecked_mut(2 * k + 1) = *p.add(1);
+        p = p.offset(step);
+    }
+}}
+
+#[inline(always)]
+pub(crate) unsafe fn pack_y_to_unit_c64(
+    len: usize,
+    y: &[f64], incy: isize,
+    out: &mut Vec<f64>,
+) { unsafe {
+    out.clear();
+    out.reserve_exact(len * 2);
+    out.set_len(len * 2);
+
+    let mut p = if incy >= 0 {
+        y.as_ptr()
+    } else {
+        y.as_ptr().offset(((len as isize - 1) * incy) * 2)
+    };
+    let step = incy * 2;
+
+    for k in 0..len {
+        *out.get_unchecked_mut(2 * k)     = *p;
+        *out.get_unchecked_mut(2 * k + 1) = *p.add(1);
+        p = p.offset(step);
+    }
+}}
+
+#[inline(always)]
+pub(crate) unsafe fn copy_back_y_from_unit_c64(
+    len: usize,
+    y_unit: &[f64],
+    y: &mut [f64], incy: isize,
+) { unsafe {
+    let mut p = if incy >= 0 {
+        y.as_mut_ptr()
+    } else {
+        y.as_mut_ptr().offset(((len as isize - 1) * incy) * 2)
+    };
+    let step = incy * 2;
+
+    for k in 0..len {
+        *p       = *y_unit.get_unchecked(2 * k);
+        *p.add(1)= *y_unit.get_unchecked(2 * k + 1);
+        p = p.offset(step);
+    }
+}}

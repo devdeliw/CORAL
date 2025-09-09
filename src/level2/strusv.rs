@@ -354,8 +354,9 @@ pub fn strusv(
         Diag::NonUnitDiag => false, 
     };  
     match trans {
-        Trans::NoTrans => strusv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
-        Trans::Trans   => strusv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::NoTrans   => strusv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::Trans     => strusv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::ConjTrans => strusv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
     }
 }
 

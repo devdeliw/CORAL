@@ -324,8 +324,9 @@ pub fn strlsv(
         Diag::NonUnitDiag   => false, 
     };
     match trans {
-        Trans::NoTrans => strlsv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
-        Trans::Trans   => strlsv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::NoTrans   => strlsv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::Trans     => strlsv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx), 
+        Trans::ConjTrans => strlsv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
     }
 }
 

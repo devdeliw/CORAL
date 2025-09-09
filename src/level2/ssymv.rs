@@ -1,6 +1,13 @@
 use core::slice;
 use core::arch::aarch64::{
-    vdupq_n_f32, vld1q_f32, vst1q_f32, vmulq_f32, vmlaq_f32, vaddq_f32, vfmaq_f32, vaddvq_f32
+    vdupq_n_f32, 
+    vld1q_f32,
+    vst1q_f32, 
+    vmulq_f32, 
+    vmlaq_f32, 
+    vaddq_f32, 
+    vfmaq_f32, 
+    vaddvq_f32
 };
 use crate::level1::sscal::sscal;
 use crate::level2::{
@@ -22,8 +29,8 @@ pub fn ssymv(
     n           : usize,
     alpha       : f32,
     a           : &[f32],
-    inc_row_a   : isize,   // col-major = 1
-    inc_col_a   : isize,   // col-major > 0
+    inc_row_a   : isize,   // col major = 1
+    inc_col_a   : isize,   // col major > 0
     x           : &[f32],
     incx        : isize,
     beta        : f32,

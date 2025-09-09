@@ -255,7 +255,7 @@ unsafe fn strumv_unblk_scalar_trans(
 
 
 #[inline]
-pub fn strumv_notrans(
+fn strumv_notrans(
     n         : usize,
     unit_diag : bool,
     a         : &[f32],
@@ -337,7 +337,7 @@ pub fn strumv_notrans(
 }
 
 #[inline]
-pub fn strumv_trans(
+fn strumv_trans(
     n         : usize,
     unit_diag : bool,
     a         : &[f32],
@@ -487,8 +487,9 @@ pub fn strumv(
     let unit_diag = matches!(diag, Diag::UnitDiag);
 
     match trans {
-        Trans::NoTrans => strumv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
-        Trans::Trans   => strumv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx)
+        Trans::NoTrans   => strumv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::Trans     => strumv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx), 
+        Trans::ConjTrans => strumv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
     }
 }
 

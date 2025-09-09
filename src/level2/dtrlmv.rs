@@ -273,7 +273,7 @@ unsafe fn dtrlmv_unblk_scalar_trans(
 }}
 
 #[inline]
-pub fn dtrlmv_notrans(
+fn dtrlmv_notrans(
     n         : usize,
     unit_diag : bool,
     a         : &[f64],
@@ -334,7 +334,7 @@ pub fn dtrlmv_notrans(
 }
 
 #[inline]
-pub fn dtrlmv_trans(
+fn dtrlmv_trans(
     n         : usize,
     unit_diag : bool,
     a         : &[f64],
@@ -466,7 +466,7 @@ pub fn dtrlmv_trans(
 }
 
 #[inline]
-pub fn dtrlmv(
+pub(crate) fn dtrlmv(
     n          : usize,
     diag       : Diag,
     trans      : Trans,
@@ -478,8 +478,9 @@ pub fn dtrlmv(
 ) {
     let unit_diag = matches!(diag, Diag::UnitDiag);
     match trans {
-        Trans::NoTrans => dtrlmv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
-        Trans::Trans   => dtrlmv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::NoTrans   => dtrlmv_notrans(n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::Trans     => dtrlmv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
+        Trans::ConjTrans => dtrlmv_trans  (n, unit_diag, a, inc_row_a, inc_col_a, x, incx),
     }
 }
 

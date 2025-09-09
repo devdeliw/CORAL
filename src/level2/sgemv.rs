@@ -275,8 +275,11 @@ pub fn sgemv(
     incy        : isize,
 ) {
     match trans {
-        Trans::NoTrans => sgemv_notrans(m, n, alpha, a, inc_row_a, inc_col_a, x, incx, beta, y, incy),
-        Trans::Trans   => sgemv_trans  (m, n, alpha, a, inc_row_a, inc_col_a, x, incx, beta, y, incy),
+        Trans::NoTrans   => sgemv_notrans(m, n, alpha, a, inc_row_a, inc_col_a, x, incx, beta, y, incy),
+        Trans::Trans     => sgemv_trans  (m, n, alpha, a, inc_row_a, inc_col_a, x, incx, beta, y, incy),
+
+        // incorrect enum, but just implements sgemv_trans since matrix has real entries 
+        Trans::ConjTrans => sgemv_trans  (m, n, alpha, a, inc_row_a, inc_col_a, x, incx, beta, y, incy), 
     }
 }
 
