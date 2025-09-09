@@ -12,3 +12,6 @@ mod trmv_tests;
 
 #[path = "level2/symv_tests.rs"] 
 mod symv_tests;
+
+#[path = "level2/hemv_tests.rs"] 
+mod hemv_tests;
