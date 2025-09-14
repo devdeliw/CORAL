@@ -4,11 +4,11 @@
 //! over `n` elements of the input complex vector `x` with a specified stride. 
 //!
 //! # Arguments 
-//! - `n`    : Number of elements to sum. 
-//! - `x`    : Input slice containing interleaved complex vector elements 
-//!            `[re0, im0, re1, im1, ...]` 
-//! - `incx` : Stride between consecutive complex elements of `x` 
-//!            (measured in complex numbers; every step advances two scalar idxs) 
+//! - `n`    (usize)  : Number of elements to sum. 
+//! - `x`    (&[f32]) : Input slice containing interleaved complex vector elements 
+//!                   | `[re0, im0, re1, im1, ...]` 
+//! - `incx` (usize)  : Stride between consecutive complex elements of `x` 
+//!                     (measured in complex numbers; every step advances two scalar idxs) 
 //!
 //! # Returns 
 //! - `f32` sum of absolute values of the real and imag parts of selected vector elements. 
@@ -22,15 +22,24 @@
 //! # Author 
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{ 
-    vld1q_f32, vdupq_n_f32, vaddq_f32, vaddvq_f32, vabsq_f32,
+    vld1q_f32,
+    vdupq_n_f32, 
+    vaddq_f32,
+    vaddvq_f32, 
+    vabsq_f32,
 }; 
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 
 
 
 #[inline]
-pub fn scasum(n: usize, x: &[f32], incx: isize) -> f32 {
+#[cfg(target_arch = "aarch64")]
+pub fn scasum(
+    n       : usize,
+    x       : &[f32], 
+    incx    : usize
+) -> f32 {
     let mut res = 0.0;
 
     // quick return 
@@ -49,7 +58,7 @@ pub fn scasum(n: usize, x: &[f32], incx: isize) -> f32 {
             let mut acc3 = vdupq_n_f32(0.0); 
 
             let mut i = 0;
-            let end = 2 * n;
+            let end   = 2 * n;
             while i + 16 <= end {
                 let v0 = vabsq_f32(vld1q_f32(x.as_ptr().add(i)));
                 let v1 = vabsq_f32(vld1q_f32(x.as_ptr().add(i + 4)));
@@ -82,17 +91,13 @@ pub fn scasum(n: usize, x: &[f32], incx: isize) -> f32 {
             }
         } else {
             // non unit stride 
-            let step = incx.unsigned_abs() as usize;
-
-            let mut idx = if incx > 0 { 0usize } else { 2 * (n - 1) * step } as isize;
-            let delta   = if incx > 0 { (2 * step) as isize } else { -((2 * step) as isize) };
-
+            let mut ix = 0; 
             for _ in 0..n {
-                let i = idx as usize;
-                let re = *x.get_unchecked(i);
-                let im = *x.get_unchecked(i + 1);
+                let re = *x.get_unchecked(ix);
+                let im = *x.get_unchecked(ix + 1);
                 res += re.abs() + im.abs();
-                idx += delta;
+
+                ix += incx * 2;
             }
         }
     }

@@ -4,11 +4,11 @@
 //! two input vectors `x` and `y` over `n` entries with specified strides.
 //!
 //! # Arguments 
-//! - `n`    : Number of elements to swap. 
-//! - `x`    : First input/output slice containing vector elements. 
-//! - `incx` : Stride between consecutive elements of `x`. 
-//! - `y`    : Second input/output slice containing vector elements. 
-//! - `incy` : Stride between consecutive elements of `y`. 
+//! - `n`    (usize)      : Number of elements to swap. 
+//! - `x`    (&mut [f64]) : First input/output slice containing vector elements. 
+//! - `incx` (usize)      : Stride between consecutive elements of `x`. 
+//! - `y`    (&mut [f64]) : Second input/output slice containing vector elements. 
+//! - `incy` (usize)      : Stride between consecutive elements of `y`. 
 //!
 //! # Returns 
 //! - Nothing. The contents of `x` and `y` are swapped in place.
@@ -22,19 +22,27 @@
 //! # Author 
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{
-    vld1q_f64, vst1q_f64
+    vld1q_f64, 
+    vst1q_f64
 };
 use crate::level1::assert_length_helpers::required_len_ok;
 
 
 #[inline(always)]
-pub fn dswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {
+#[cfg(target_arch = "aarch64")]
+pub fn dswap(
+    n       : usize, 
+    x       : &mut [f64], 
+    incx    : usize, 
+    y       : &mut [f64], 
+    incy    : usize
+) {
     // quick return 
     if n == 0 { return; }
 
-    debug_assert!(incx != 0 && incy != 0, "increments must be nonzero");
+    debug_assert!(incx > 0 && incy > 0, "increments must be nonzero");
     debug_assert!(required_len_ok(x.len(), n, incx), "x too short for n/incx");
     debug_assert!(required_len_ok(y.len(), n, incy), "y too short for n/incy");
     
@@ -44,8 +52,7 @@ pub fn dswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {
             let px = x.as_mut_ptr(); 
             let py = y.as_mut_ptr(); 
 
-            let mut i = 0usize; 
-
+            let mut i = 0; 
             while i + 8 <= n { 
                 let ax0 = vld1q_f64(px.add(i)); 
                 let ax1 = vld1q_f64(px.add(i + 2)); 
@@ -92,21 +99,19 @@ pub fn dswap(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize) {
 
         // non unit stride 
         let px = x.as_mut_ptr(); 
-        let py = y.as_mut_ptr(); 
+        let py = y.as_mut_ptr();
 
-        let stepx = if incx > 0 { incx as usize } else { (-incx) as usize }; 
-        let stepy = if incy > 0 { incy as usize } else { (-incy) as usize }; 
-
-        let mut ix = if incx >= 0 { 0usize } else { (n - 1) * stepx }; 
-        let mut iy = if incy >= 0 { 0usize } else { (n - 1) * stepy }; 
+        let mut ix = 0; 
+        let mut iy = 0; 
 
         for _ in 0..n { 
             let a = *px.add(ix); 
             *px.add(ix) = *py.add(iy); 
             *py.add(iy) = a; 
 
-            if incx >= 0 { ix += stepx } else { ix = ix.wrapping_sub(stepx) };
-            if incy >= 0 { iy += stepy } else { iy = iy.wrapping_sub(stepy) }; 
+            ix += incx; 
+            iy += incy;
+
         }
     }
 }

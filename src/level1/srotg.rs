@@ -11,10 +11,10 @@
 //! the rotation.
 //!
 //! # Arguments
-//! - `a` : Input scalar, overwritten with `r`, the rotated value.
-//! - `b` : Input scalar, overwritten with `z`, a parameter related to the rotation.
-//! - `c` : Output scalar cosine component of the rotation.
-//! - `s` : Output scalar sine component of the rotation.
+//! - `a` (&mut f32) : Input scalar, overwritten with `r`, the rotated value.
+//! - `b` (&mut f32) : Input scalar, overwritten with `z`, a parameter related to the rotation.
+//! - `c` (&mut f32) : Output scalar cosine component of the rotation.
+//! - `s` (&mut f32) : Output scalar sine component of the rotation.
 //!
 //! # Returns
 //! - Nothing. The results are written in place to `a`, `b`, `c`, and `s`.
@@ -30,8 +30,13 @@
 
 
 #[inline]
-pub fn srotg(a: &mut f32, b: &mut f32, c: &mut f32, s: &mut f32) {
-    let roe = if a.abs() > b.abs() { *a } else { *b };
+pub fn srotg(
+    a: &mut f32, 
+    b: &mut f32,
+    c: &mut f32, 
+    s: &mut f32
+) {
+    let roe   = if a.abs() > b.abs() { *a } else { *b };
     let scale = a.abs() + b.abs();
 
     // degenerate quick return  

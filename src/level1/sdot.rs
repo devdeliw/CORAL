@@ -5,11 +5,11 @@
 //! with specified strides.
 //!
 //! # Arguments
-//! - `n`    : Number of elements in the vectors.
-//! - `x`    : Input slice containing the first vector.
-//! - `incx` : Stride between consecutive elements of `x`.
-//! - `y`    : Input slice containing the second vector.
-//! - `incy` : Stride between consecutive elements of `y`.
+//! - `n`    (usize)  : Number of elements in the vectors.
+//! - `x`    (&[f32]) : Input slice containing the first vector.
+//! - `incx` (usize)  : Stride between consecutive elements of `x`.
+//! - `y`    (&[f32]) : Input slice containing the second vector.
+//! - `incy` (usize)  : Stride between consecutive elements of `y`.
 //!
 //! # Returns
 //! - `f32` dot product of the selected vector elements.
@@ -23,19 +23,30 @@
 //! # Author
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{ 
-    vld1q_f32, vdupq_n_f32, vfmaq_f32, vaddvq_f32, vaddq_f32 
+    vld1q_f32,
+    vdupq_n_f32, 
+    vfmaq_f32, 
+    vaddvq_f32,
+    vaddq_f32 
 };
 use crate::level1::assert_length_helpers::required_len_ok; 
 
 
 #[inline] 
-pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 { 
+#[cfg(target_arch = "aarch64")]
+pub fn sdot(
+    n       : usize, 
+    x       : &[f32], 
+    incx    : usize, 
+    y       : &[f32], 
+    incy    : usize
+) -> f32 { 
     // quick return 
     if n == 0 { return 0.0; }
 
-    debug_assert!(incx != 0 && incy != 0, "increments must be nonzero");
+    debug_assert!(incx > 0 && incy > 0, "increments must be nonzero");
     debug_assert!(required_len_ok(x.len(), n, incx), "x too short for n/incx");
     debug_assert!(required_len_ok(y.len(), n, incy), "y too short for n/incy");
 
@@ -57,7 +68,7 @@ pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 {
             let mut i = 0usize; 
 
             while i + 32 <= n { 
-                let ax0 = vld1q_f32(px.add(i)); 
+                let ax0 = vld1q_f32(px.add(i + 0)); 
                 let ax1 = vld1q_f32(px.add(i + 4)); 
                 let ax2 = vld1q_f32(px.add(i + 8)); 
                 let ax3 = vld1q_f32(px.add(i + 12)); 
@@ -66,7 +77,7 @@ pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 {
                 let ax6 = vld1q_f32(px.add(i + 24)); 
                 let ax7 = vld1q_f32(px.add(i + 28)); 
 
-                let ay0 = vld1q_f32(py.add(i)); 
+                let ay0 = vld1q_f32(py.add(i + 0)); 
                 let ay1 = vld1q_f32(py.add(i + 4)); 
                 let ay2 = vld1q_f32(py.add(i + 8)); 
                 let ay3 = vld1q_f32(py.add(i + 12));
@@ -75,6 +86,7 @@ pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 {
                 let ay6 = vld1q_f32(py.add(i + 24)); 
                 let ay7 = vld1q_f32(py.add(i + 28)); 
 
+                // acc += ax * ay 
                 acc0 = vfmaq_f32(acc0, ax0, ay0);
                 acc1 = vfmaq_f32(acc1, ax1, ay1); 
                 acc2 = vfmaq_f32(acc2, ax2, ay2); 
@@ -85,6 +97,25 @@ pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 {
                 acc7 = vfmaq_f32(acc7, ax7, ay7); 
 
                 i += 32; 
+            }
+
+            while i + 16 <= n { 
+                let ax0 = vld1q_f32(px.add(i + 0)); 
+                let ax1 = vld1q_f32(px.add(i + 4)); 
+                let ax2 = vld1q_f32(px.add(i + 8)); 
+                let ax3 = vld1q_f32(px.add(i + 12));
+
+                let ay0 = vld1q_f32(py.add(i + 0)); 
+                let ay1 = vld1q_f32(py.add(i + 4)); 
+                let ay2 = vld1q_f32(py.add(i + 8)); 
+                let ay3 = vld1q_f32(py.add(i + 12));
+
+                acc0 = vfmaq_f32(acc0, ax0, ay0); 
+                acc1 = vfmaq_f32(acc1, ax1, ay1); 
+                acc2 = vfmaq_f32(acc2, ax2, ay2);
+                acc3 = vfmaq_f32(acc3, ax3, ay3); 
+
+                i += 16
             }
 
             while i + 4 <= n { 
@@ -98,7 +129,7 @@ pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 {
             let accv1   = vaddq_f32(vaddq_f32(acc0, acc1), vaddq_f32(acc2, acc3)); 
             let accv2   = vaddq_f32(vaddq_f32(acc4, acc5), vaddq_f32(acc6, acc7)); 
             let accv    = vaddq_f32(accv1, accv2); 
-            let mut acc = vaddvq_f32(accv); 
+            let mut acc = vaddvq_f32(accv); // total  
 
             // tail 
             while i < n { 
@@ -112,12 +143,12 @@ pub fn sdot(n: usize, x: &[f32], incx: isize, y: &[f32], incy: isize) -> f32 {
     } 
     // non unit stride 
     unsafe {
-        let mut ix: isize = if incx >= 0 { 0 } else { ((n - 1) as isize) * (-incx) }; 
-        let mut iy: isize = if incy >= 0 { 0 } else { ((n - 1) as isize) * (-incy) }; 
+        let mut ix  = 0; 
+        let mut iy  = 0; 
+        let mut acc = 0.0; 
 
-        let mut acc = 0.0f32; 
         for _ in 0..n { 
-            acc += *px.offset(ix) * *py.offset(iy); 
+            acc += *px.add(ix) * *py.add(iy); 
             ix += incx; 
             iy += incy; 
         }

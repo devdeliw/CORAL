@@ -4,9 +4,9 @@
 //! `n` elements of the input vector `x` with a specified stride. 
 //!
 //! # Arguments 
-//! - `n`    : Number of elements to sum. 
-//! - `x`    : Input slice containing vector elements 
-//! - `incx` : Stride between consecutive elements of `x` 
+//! - `n`    (usize)  : Number of elements to sum. 
+//! - `x`    (&[f32]) : Input slice containing vector elements 
+//! - `incx` (usize)  : Stride between consecutive elements of `x` 
 //!
 //! # Returns 
 //! - `f32` sum of absolute values of selected vector elements. 
@@ -20,15 +20,24 @@
 //! # Author 
 //! Deval Deliwala 
 
-
+#[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{ 
-    vld1q_f32, vdupq_n_f32, vaddq_f32, vaddvq_f32, vabsq_f32,
+    vld1q_f32, 
+    vdupq_n_f32,
+    vaddq_f32, 
+    vaddvq_f32,
+    vabsq_f32,
 }; 
 use crate::level1::assert_length_helpers::required_len_ok; 
 
 
 #[inline]
-pub fn sasum(n: usize, x: &[f32], incx: isize) -> f32 {
+#[cfg(target_arch = "aarch64")]
+pub fn sasum(
+    n       : usize, 
+    x       : &[f32],
+    incx    : usize
+) -> f32 {
     let mut res = 0.0;
 
     // quick return 
@@ -48,11 +57,13 @@ pub fn sasum(n: usize, x: &[f32], incx: isize) -> f32 {
 
             let mut i = 0;
             while i + 16 <= n {
+
                 let v0 = vabsq_f32(vld1q_f32(x.as_ptr().add(i)));
                 let v1 = vabsq_f32(vld1q_f32(x.as_ptr().add(i + 4)));
                 let v2 = vabsq_f32(vld1q_f32(x.as_ptr().add(i + 8)));
                 let v3 = vabsq_f32(vld1q_f32(x.as_ptr().add(i + 12)));
 
+                // acc += |x| 
                 acc0 = vaddq_f32(acc0, v0);
                 acc1 = vaddq_f32(acc1, v1);
                 acc2 = vaddq_f32(acc2, v2);
@@ -79,15 +90,11 @@ pub fn sasum(n: usize, x: &[f32], incx: isize) -> f32 {
             }
         } else {
             // non unit stride 
-            let step = incx.unsigned_abs() as usize;
-
-            let mut idx = if incx > 0 { 0usize } else { (n - 1) * step } as isize;
-            let delta   = if incx > 0 { step as isize } else { -(step as isize) };
-
+            let mut ix = 0; 
             for _ in 0..n {
-                let i = idx as usize;
-                res += (*x.get_unchecked(i)).abs();
-                idx += delta;
+                res += (*x.get_unchecked(ix)).abs();
+                
+                ix += incx; 
             }
         }
     }

@@ -10,13 +10,13 @@
 //! - `+1.0` : Alternate simplified form with fixed off-diagonal structure.
 //!
 //! # Arguments
-//! - `n`     : Number of elements to process.
-//! - `x`     : First input/output slice containing vector elements.
-//! - `incx`  : Stride between consecutive elements of `x`.
-//! - `y`     : Second input/output slice containing vector elements.
-//! - `incy`  : Stride between consecutive elements of `y`.
-//! - `param` : Array of 5 parameters defining the modified Givens rotation
-//!             (`flag, h11, h21, h12, h22`).
+//! - `n`     (usize)      : Number of elements to process.
+//! - `x`     (&mut [f64]) : First input/output slice containing vector elements.
+//! - `incx`  (usize)      : Stride between consecutive elements of `x`.
+//! - `y`     (&mut [f64]) : Second input/output slice containing vector elements.
+//! - `incy`  (usize)      : Stride between consecutive elements of `y`.
+//! - `param` (&[f64; 5])  : Array of 5 parameters defining the modified Givens rotation
+//!                          (`flag, h11, h21, h12, h22`).
 //!
 //! # Returns
 //! - Nothing. The contents of `x` and `y` are updated in place.
@@ -30,15 +30,28 @@
 //! # Author
 //! Deval Deliwala 
 
-
+#[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{
-    vld1q_f64, vst1q_f64, vdupq_n_f64, vfmaq_f64, vmulq_f64, vsubq_f64,
+    vld1q_f64,
+    vst1q_f64, 
+    vdupq_n_f64, 
+    vfmaq_f64, 
+    vsubq_f64,
+    vmulq_f64, 
 };
 use crate::level1::assert_length_helpers::required_len_ok;
 
 
 #[inline]
-pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, param: &[f64; 5]) {
+#[cfg(target_arch = "aarch64")]
+pub fn drotm(
+    n       : usize,
+    x       : &mut [f64], 
+    incx    : usize, 
+    y       : &mut [f64],
+    incy    : usize, 
+    param   : &[f64; 5]
+) {
     // quick return
     if n == 0 { return; }
 
@@ -67,22 +80,22 @@ pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, p
                 let h12v = vdupq_n_f64(param[3]);
                 let h22v = vdupq_n_f64(param[4]);
 
-                let mut i = 0usize;
+                let mut i = 0;
                 while i + 16 <= n {
-                    let x0 = vld1q_f64(px.add(i +  0));
-                    let x1 = vld1q_f64(px.add(i +  2));
-                    let x2 = vld1q_f64(px.add(i +  4));
-                    let x3 = vld1q_f64(px.add(i +  6));
-                    let x4 = vld1q_f64(px.add(i +  8));
+                    let x0 = vld1q_f64(px.add(i + 0));
+                    let x1 = vld1q_f64(px.add(i + 2));
+                    let x2 = vld1q_f64(px.add(i + 4));
+                    let x3 = vld1q_f64(px.add(i + 6));
+                    let x4 = vld1q_f64(px.add(i + 8));
                     let x5 = vld1q_f64(px.add(i + 10));
                     let x6 = vld1q_f64(px.add(i + 12));
                     let x7 = vld1q_f64(px.add(i + 14));
 
-                    let y0 = vld1q_f64(py.add(i +  0));
-                    let y1 = vld1q_f64(py.add(i +  2));
-                    let y2 = vld1q_f64(py.add(i +  4));
-                    let y3 = vld1q_f64(py.add(i +  6));
-                    let y4 = vld1q_f64(py.add(i +  8));
+                    let y0 = vld1q_f64(py.add(i + 0));
+                    let y1 = vld1q_f64(py.add(i + 2));
+                    let y2 = vld1q_f64(py.add(i + 4));
+                    let y3 = vld1q_f64(py.add(i + 6));
+                    let y4 = vld1q_f64(py.add(i + 8));
                     let y5 = vld1q_f64(py.add(i + 10));
                     let y6 = vld1q_f64(py.add(i + 12));
                     let y7 = vld1q_f64(py.add(i + 14));
@@ -105,20 +118,20 @@ pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, p
                     let yn6 = vfmaq_f64(vmulq_f64(h22v, y6), x6, h21v);
                     let yn7 = vfmaq_f64(vmulq_f64(h22v, y7), x7, h21v);
 
-                    vst1q_f64(py.add(i +  0), yn0);
-                    vst1q_f64(py.add(i +  2), yn1);
-                    vst1q_f64(py.add(i +  4), yn2);
-                    vst1q_f64(py.add(i +  6), yn3);
-                    vst1q_f64(py.add(i +  8), yn4);
+                    vst1q_f64(py.add(i + 0), yn0);
+                    vst1q_f64(py.add(i + 2), yn1);
+                    vst1q_f64(py.add(i + 4), yn2);
+                    vst1q_f64(py.add(i + 6), yn3);
+                    vst1q_f64(py.add(i + 8), yn4);
                     vst1q_f64(py.add(i + 10), yn5);
                     vst1q_f64(py.add(i + 12), yn6);
                     vst1q_f64(py.add(i + 14), yn7);
 
-                    vst1q_f64(px.add(i +  0), xn0);
-                    vst1q_f64(px.add(i +  2), xn1);
-                    vst1q_f64(px.add(i +  4), xn2);
-                    vst1q_f64(px.add(i +  6), xn3);
-                    vst1q_f64(px.add(i +  8), xn4);
+                    vst1q_f64(px.add(i + 0), xn0);
+                    vst1q_f64(px.add(i + 2), xn1);
+                    vst1q_f64(px.add(i + 4), xn2);
+                    vst1q_f64(px.add(i + 6), xn3);
+                    vst1q_f64(px.add(i + 8), xn4);
                     vst1q_f64(px.add(i + 10), xn5);
                     vst1q_f64(px.add(i + 12), xn6);
                     vst1q_f64(px.add(i + 14), xn7);
@@ -157,22 +170,22 @@ pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, p
                 let h12v = vdupq_n_f64(param[3]);
                 let h21v = vdupq_n_f64(param[2]);
 
-                let mut i = 0usize;
+                let mut i = 0;
                 while i + 16 <= n {
-                    let x0 = vld1q_f64(px.add(i +  0));
-                    let x1 = vld1q_f64(px.add(i +  2));
-                    let x2 = vld1q_f64(px.add(i +  4));
-                    let x3 = vld1q_f64(px.add(i +  6));
-                    let x4 = vld1q_f64(px.add(i +  8));
+                    let x0 = vld1q_f64(px.add(i + 0));
+                    let x1 = vld1q_f64(px.add(i + 2));
+                    let x2 = vld1q_f64(px.add(i + 4));
+                    let x3 = vld1q_f64(px.add(i + 6));
+                    let x4 = vld1q_f64(px.add(i + 8));
                     let x5 = vld1q_f64(px.add(i + 10));
                     let x6 = vld1q_f64(px.add(i + 12));
                     let x7 = vld1q_f64(px.add(i + 14));
 
-                    let y0 = vld1q_f64(py.add(i +  0));
-                    let y1 = vld1q_f64(py.add(i +  2));
-                    let y2 = vld1q_f64(py.add(i +  4));
-                    let y3 = vld1q_f64(py.add(i +  6));
-                    let y4 = vld1q_f64(py.add(i +  8));
+                    let y0 = vld1q_f64(py.add(i + 0));
+                    let y1 = vld1q_f64(py.add(i + 2));
+                    let y2 = vld1q_f64(py.add(i + 4));
+                    let y3 = vld1q_f64(py.add(i + 6));
+                    let y4 = vld1q_f64(py.add(i + 8));
                     let y5 = vld1q_f64(py.add(i + 10));
                     let y6 = vld1q_f64(py.add(i + 12));
                     let y7 = vld1q_f64(py.add(i + 14));
@@ -195,20 +208,20 @@ pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, p
                     let yn6 = vfmaq_f64(y6, x6, h21v);
                     let yn7 = vfmaq_f64(y7, x7, h21v);
 
-                    vst1q_f64(py.add(i +  0), yn0);
-                    vst1q_f64(py.add(i +  2), yn1);
-                    vst1q_f64(py.add(i +  4), yn2);
-                    vst1q_f64(py.add(i +  6), yn3);
-                    vst1q_f64(py.add(i +  8), yn4);
+                    vst1q_f64(py.add(i + 0), yn0);
+                    vst1q_f64(py.add(i + 2), yn1);
+                    vst1q_f64(py.add(i + 4), yn2);
+                    vst1q_f64(py.add(i + 6), yn3);
+                    vst1q_f64(py.add(i + 8), yn4);
                     vst1q_f64(py.add(i + 10), yn5);
                     vst1q_f64(py.add(i + 12), yn6);
                     vst1q_f64(py.add(i + 14), yn7);
 
-                    vst1q_f64(px.add(i +  0), xn0);
-                    vst1q_f64(px.add(i +  2), xn1);
-                    vst1q_f64(px.add(i +  4), xn2);
-                    vst1q_f64(px.add(i +  6), xn3);
-                    vst1q_f64(px.add(i +  8), xn4);
+                    vst1q_f64(px.add(i + 0), xn0);
+                    vst1q_f64(px.add(i + 2), xn1);
+                    vst1q_f64(px.add(i + 4), xn2);
+                    vst1q_f64(px.add(i + 6), xn3);
+                    vst1q_f64(px.add(i + 8), xn4);
                     vst1q_f64(px.add(i + 10), xn5);
                     vst1q_f64(px.add(i + 12), xn6);
                     vst1q_f64(px.add(i + 14), xn7);
@@ -247,22 +260,22 @@ pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, p
                 let h11v = vdupq_n_f64(param[1]);
                 let h22v = vdupq_n_f64(param[4]);
 
-                let mut i = 0usize;
+                let mut i = 0;
                 while i + 16 <= n {
-                    let x0 = vld1q_f64(px.add(i +  0));
-                    let x1 = vld1q_f64(px.add(i +  2));
-                    let x2 = vld1q_f64(px.add(i +  4));
-                    let x3 = vld1q_f64(px.add(i +  6));
-                    let x4 = vld1q_f64(px.add(i +  8));
+                    let x0 = vld1q_f64(px.add(i + 0));
+                    let x1 = vld1q_f64(px.add(i + 2));
+                    let x2 = vld1q_f64(px.add(i + 4));
+                    let x3 = vld1q_f64(px.add(i + 6));
+                    let x4 = vld1q_f64(px.add(i + 8));
                     let x5 = vld1q_f64(px.add(i + 10));
                     let x6 = vld1q_f64(px.add(i + 12));
                     let x7 = vld1q_f64(px.add(i + 14));
 
-                    let y0 = vld1q_f64(py.add(i +  0));
-                    let y1 = vld1q_f64(py.add(i +  2));
-                    let y2 = vld1q_f64(py.add(i +  4));
-                    let y3 = vld1q_f64(py.add(i +  6));
-                    let y4 = vld1q_f64(py.add(i +  8));
+                    let y0 = vld1q_f64(py.add(i + 0));
+                    let y1 = vld1q_f64(py.add(i + 2));
+                    let y2 = vld1q_f64(py.add(i + 4));
+                    let y3 = vld1q_f64(py.add(i + 6));
+                    let y4 = vld1q_f64(py.add(i + 8));
                     let y5 = vld1q_f64(py.add(i + 10));
                     let y6 = vld1q_f64(py.add(i + 12));
                     let y7 = vld1q_f64(py.add(i + 14));
@@ -285,20 +298,20 @@ pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, p
                     let yn6 = vsubq_f64(vmulq_f64(h22v, y6), x6);
                     let yn7 = vsubq_f64(vmulq_f64(h22v, y7), x7);
 
-                    vst1q_f64(py.add(i +  0), yn0);
-                    vst1q_f64(py.add(i +  2), yn1);
-                    vst1q_f64(py.add(i +  4), yn2);
-                    vst1q_f64(py.add(i +  6), yn3);
-                    vst1q_f64(py.add(i +  8), yn4);
+                    vst1q_f64(py.add(i + 0), yn0);
+                    vst1q_f64(py.add(i + 2), yn1);
+                    vst1q_f64(py.add(i + 4), yn2);
+                    vst1q_f64(py.add(i + 6), yn3);
+                    vst1q_f64(py.add(i + 8), yn4);
                     vst1q_f64(py.add(i + 10), yn5);
                     vst1q_f64(py.add(i + 12), yn6);
                     vst1q_f64(py.add(i + 14), yn7);
 
-                    vst1q_f64(px.add(i +  0), xn0);
-                    vst1q_f64(px.add(i +  2), xn1);
-                    vst1q_f64(px.add(i +  4), xn2);
-                    vst1q_f64(px.add(i +  6), xn3);
-                    vst1q_f64(px.add(i +  8), xn4);
+                    vst1q_f64(px.add(i + 0), xn0);
+                    vst1q_f64(px.add(i + 2), xn1);
+                    vst1q_f64(px.add(i + 4), xn2);
+                    vst1q_f64(px.add(i + 6), xn3);
+                    vst1q_f64(px.add(i + 8), xn4);
                     vst1q_f64(px.add(i + 10), xn5);
                     vst1q_f64(px.add(i + 12), xn6);
                     vst1q_f64(px.add(i + 14), xn7);
@@ -323,8 +336,10 @@ pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, p
                 while i < n {
                     let xi = *px.add(i);
                     let yi = *py.add(i);
+
                     let xn = param[1] * xi + yi;     
-                    let yn = (-xi) + param[4] * yi; 
+                    let yn = (-xi) + param[4] * yi;
+
                     *py.add(i) = yn;
                     *px.add(i) = xn;
                     i += 1;
@@ -336,47 +351,56 @@ pub fn drotm(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, p
 
     // non unit stride 
     unsafe {
-        let mut ix: isize = if incx >= 0 { 0 } else { ((n - 1) as isize) * (-incx) };
-        let mut iy: isize = if incy >= 0 { 0 } else { ((n - 1) as isize) * (-incy) };
+        let mut ix = 0; 
+        let mut iy = 0;
 
         if flag < 0.0 {
             let h11 = param[1];
             let h21 = param[2];
             let h12 = param[3];
             let h22 = param[4];
+
             for _ in 0..n {
-                let xi = *px.offset(ix);
-                let yi = *py.offset(iy);
+                let xi = *px.add(ix);
+                let yi = *py.add(iy);
                 let xn = h11 * xi + h12 * yi;
                 let yn = h21 * xi + h22 * yi;
-                *py.offset(iy) = yn;
-                *px.offset(ix) = xn;
+
+                *py.add(iy) = yn;
+                *px.add(ix) = xn;
+
                 ix += incx;
                 iy += incy;
             }
         } else if flag == 0.0 {
             let h12 = param[3];
             let h21 = param[2];
+
             for _ in 0..n {
-                let xi = *px.offset(ix);
-                let yi = *py.offset(iy);
+                let xi = *px.add(ix);
+                let yi = *py.add(iy);
                 let xn = xi + h12 * yi;
                 let yn = h21 * xi + yi;
-                *py.offset(iy) = yn;
-                *px.offset(ix) = xn;
+
+                *py.add(iy) = yn;
+                *px.add(ix) = xn;
+
                 ix += incx;
                 iy += incy;
             }
         } else {
             let h11 = param[1];
             let h22 = param[4];
+
             for _ in 0..n {
-                let xi = *px.offset(ix);
-                let yi = *py.offset(iy);
+                let xi = *px.add(ix);
+                let yi = *py.add(iy);
                 let xn = h11 * xi + yi;
                 let yn = -xi + h22 * yi;
-                *py.offset(iy) = yn;
-                *px.offset(ix) = xn;
+
+                *py.add(iy) = yn;
+                *px.add(ix) = xn;
+
                 ix += incx;
                 iy += incy;
             }

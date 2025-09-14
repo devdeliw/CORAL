@@ -5,12 +5,12 @@
 //! vector `x` with a specified stride.
 //!
 //! # Arguments
-//! - `n`    : Number of elements in the vector.
-//! - `x`    : Input slice containing vector elements.
-//! - `incx` : Stride between consecutive elements of `x`.
+//! - `n`    (usize)  : Number of elements in the vector.
+//! - `x`    (&[f32]) : Input slice containing vector elements.
+//! - `incx` (usize)  : Stride between consecutive elements of `x`.
 //!
 //! # Returns
-//! - `usize` 1-based index of the first element with maximum absolute value.
+//! - `usize` 0-based index of the first element with maximum absolute value.
 //!
 //! # Notes
 //! - For `incx == 1`, [`isamax`] uses unrolled NEON SIMD instructions for optimized
@@ -21,16 +21,30 @@
 //! # Author
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")] 
 use core::arch::aarch64::{ 
-    vld1q_u32, vdupq_n_u32, vaddq_u32, vbslq_u32, vminvq_u32, 
-    vld1q_f32, vdupq_n_f32, vabsq_f32, vbslq_f32, vceqq_f32, vmaxvq_f32, 
+    vld1q_u32, 
+    vdupq_n_u32,
+    vaddq_u32, 
+    vbslq_u32, 
+    vminvq_u32, 
+    vld1q_f32, 
+    vdupq_n_f32, 
+    vabsq_f32,
+    vbslq_f32, 
+    vceqq_f32, 
+    vmaxvq_f32, 
 }; 
 use crate::level1::assert_length_helpers::required_len_ok; 
 
 
-#[inline] 
-pub fn isamax(n: usize, x: &[f32], incx: isize) -> usize {
+#[inline]
+#[cfg(target_arch = "aarch64")] 
+pub fn isamax(
+    n       : usize, 
+    x       : &[f32], 
+    incx    : usize
+) -> usize {
     // quick return 
     if n == 0 || incx <= 0 { return 0; }
 
@@ -38,12 +52,12 @@ pub fn isamax(n: usize, x: &[f32], incx: isize) -> usize {
 
     unsafe {
         let mut best_val = f32::NEG_INFINITY;
-        let mut best_idx = 0usize;
+        let mut best_idx = 0;
 
         // fast path 
         if incx == 1 {
-            let mut i  = 0usize;
-            let iota   = vld1q_u32([0u32, 1, 2, 3].as_ptr());
+            let mut i  = 0;
+            let iota   = vld1q_u32([0, 1, 2, 3].as_ptr());
             let allmax = vdupq_n_u32(u32::MAX);
             let ninf   = vdupq_n_f32(f32::NEG_INFINITY);
 
@@ -61,11 +75,11 @@ pub fn isamax(n: usize, x: &[f32], incx: isize) -> usize {
                 v2 = vbslq_f32(vceqq_f32(v2, v2), v2, ninf);
                 v3 = vbslq_f32(vceqq_f32(v3, v3), v3, ninf);
 
-                
                 let m0 = vmaxvq_f32(v0);
                 let m1 = vmaxvq_f32(v1);
                 let m2 = vmaxvq_f32(v2);
                 let m3 = vmaxvq_f32(v3);
+
                 let mut block_max = m0;
                 if m1 > block_max { block_max = m1; }
                 if m2 > block_max { block_max = m2; }
@@ -106,27 +120,32 @@ pub fn isamax(n: usize, x: &[f32], incx: isize) -> usize {
             let mut p = x.as_ptr().add(i);
             while i < n {
                 let v = (*p).abs();
+
                 if v > best_val { 
                     best_val = v; 
                     best_idx = i;
                 }
-                p = p.add(1); i += 1;
+                p = p.add(1);
+                i += 1;
             }
         } else {
             // non unit stride 
-            let step = incx as usize;
-            let mut i = 0usize;
+            let mut i = 0;
             let mut p = x.as_ptr();
+
             while i < n {
                 let v = (*p).abs();
+
                 if v > best_val { 
                     best_val = v; 
                     best_idx = i; 
                 }
-                p = p.add(step); i += 1;
+
+                p = p.add(incx);
+                i += 1;
             }
         }
 
-        best_idx + 1
+        best_idx
     }
 }

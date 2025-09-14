@@ -12,11 +12,11 @@
 //! - `param[0] = +1.0` : Alternate simplified form with fixed structure.
 //!
 //! # Arguments
-//! - `sd1`   : Input/output scalar, updated scaling factor for the first component.
-//! - `sd2`   : Input/output scalar, updated scaling factor for the second component.
-//! - `sx1`   : Input/output scalar, updated first vector component.
-//! - `sy1`   : Input scalar, second vector component (not modified).
-//! - `param` : Output array of 5 elements defining the modified Givens rotation.
+//! - `sd1`   (&mut f32)      : Input/output scalar, updated scaling factor for the first component.
+//! - `sd2`   (&mut f32)      : Input/output scalar, updated scaling factor for the second component.
+//! - `sx1`   (&mut f32)      : Input/output scalar, updated first vector component.
+//! - `sy1`   (f32)           : Input scalar, second vector component (not modified).
+//! - `param` (&mut [f32; 5]) : Output array of 5 elements defining the modified Givens rotation.
 //!
 //! # Returns
 //! - Nothing. Updates `sd1`, `sd2`, `sx1`, and fills `param` in place.
@@ -32,7 +32,13 @@
 
 
 #[inline]
-pub fn srotmg(sd1: &mut f32, sd2: &mut f32, sx1: &mut f32, sy1: f32, param: &mut [f32; 5]) {
+pub fn srotmg(
+    sd1     : &mut f32,
+    sd2     : &mut f32, 
+    sx1     : &mut f32, 
+    sy1     : f32, 
+    param   : &mut [f32; 5]
+) {
     const GAM: f32 = 4096.0;
     const GAMSQ: f32 = GAM * GAM;       
     const RGAMSQ: f32 = 1.0 / GAMSQ;    
@@ -53,7 +59,8 @@ pub fn srotmg(sd1: &mut f32, sd2: &mut f32, sx1: &mut f32, sy1: f32, param: &mut
         *sx1  = 0.0;
     } else {
         let sp2 = *sd2 * sy1;
-        // second component already 0 
+
+        // second comp 0 
         if sp2 == 0.0 {
             param[0] = -2.0;
             return;

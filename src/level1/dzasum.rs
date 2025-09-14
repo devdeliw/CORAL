@@ -22,14 +22,24 @@
 //! # Author 
 //! Deval Deliwala
 
+#[cfg(target_arch = "aarch64")] 
 use core::arch::aarch64::{ 
-    vld1q_f64, vdupq_n_f64, vaddq_f64, vaddvq_f64, vabsq_f64,
+    vld1q_f64,
+    vdupq_n_f64, 
+    vaddq_f64, 
+    vaddvq_f64, 
+    vabsq_f64,
 }; 
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 
 
 
 #[inline]
-pub fn dzasum(n: usize, x: &[f64], incx: isize) -> f64 {
+#[cfg(target_arch = "aarch64")] 
+pub fn dzasum(
+    n       : usize, 
+    x       : &[f64],
+    incx    : usize
+) -> f64 {
     let mut res = 0.0;
 
     // quick return 
@@ -48,7 +58,7 @@ pub fn dzasum(n: usize, x: &[f64], incx: isize) -> f64 {
             let mut acc3 = vdupq_n_f64(0.0);
 
             let mut i = 0;
-            let end = 2 * n;
+            let end   = 2 * n;
             while i + 8 <= end {
                 let v0 = vabsq_f64(vld1q_f64(x.as_ptr().add(i)));
                 let v1 = vabsq_f64(vld1q_f64(x.as_ptr().add(i + 2)));
@@ -82,17 +92,13 @@ pub fn dzasum(n: usize, x: &[f64], incx: isize) -> f64 {
             }
         } else {
             // non unit stride 
-            let step = incx.unsigned_abs() as usize;
-
-            let mut idx = if incx > 0 { 0usize } else { 2 * (n - 1) * step } as isize;
-            let delta   = if incx > 0 { (2 * step) as isize } else { -((2 * step) as isize) };
-
+            let mut ix = 0; 
             for _ in 0..n {
-                let i = idx as usize;
-                let re = *x.get_unchecked(i);
-                let im = *x.get_unchecked(i + 1);
+                let re = *x.get_unchecked(ix);
+                let im = *x.get_unchecked(ix + 1);
                 res += re.abs() + im.abs();
-                idx += delta;
+
+                ix += incx * 2;
             }
         }
     }

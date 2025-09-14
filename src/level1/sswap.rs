@@ -4,11 +4,11 @@
 //! two input vectors `x` and `y` over `n` entries with specified strides.
 //!
 //! # Arguments 
-//! - `n`    : Number of elements to swap. 
-//! - `x`    : First input/output slice containing vector elements. 
-//! - `incx` : Stride between consecutive elements of `x`. 
-//! - `y`    : Second input/output slice containing vector elements. 
-//! - `incy` : Stride between consecutive elements of `y`. 
+//! - `n`    (usize)      : Number of elements to swap. 
+//! - `x`    (&mut [f32]) : First input/output slice containing vector elements. 
+//! - `incx` (usize)      : Stride between consecutive elements of `x`. 
+//! - `y`    (&mut [f32]) : Second input/output slice containing vector elements. 
+//! - `incy` (usize)      : Stride between consecutive elements of `y`. 
 //!
 //! # Returns 
 //! - Nothing. The contents of `x` and `y` are swapped in place.
@@ -22,19 +22,27 @@
 //! # Author 
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")] 
 use core::arch::aarch64::{
-    vld1q_f32, vst1q_f32
+    vld1q_f32, 
+    vst1q_f32
 };
 use crate::level1::assert_length_helpers::required_len_ok; 
 
 
 #[inline(always)]
-pub fn sswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
+#[cfg(target_arch = "aarch64")] 
+pub fn sswap(
+    n       : usize,
+    x       : &mut [f32], 
+    incx    : usize, 
+    y       : &mut [f32], 
+    incy    : usize
+) {
     // quick return 
     if n == 0 { return; }
 
-    debug_assert!(incx != 0 && incy != 0, "increments must be nonzero");
+    debug_assert!(incx > 0 && incy > 0, "increments must be nonzero");
     debug_assert!(required_len_ok(x.len(), n, incx), "x too short for n/incx");
     debug_assert!(required_len_ok(y.len(), n, incy), "y too short for n/incy");
     
@@ -44,7 +52,7 @@ pub fn sswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
             let px = x.as_mut_ptr(); 
             let py = y.as_mut_ptr(); 
 
-            let mut i = 0usize; 
+            let mut i = 0; 
 
             while i + 16 <= n { 
                 let ax0 = vld1q_f32(px.add(i)); 
@@ -57,14 +65,15 @@ pub fn sswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
                 let ay2 = vld1q_f32(py.add(i + 8)); 
                 let ay3 = vld1q_f32(py.add(i + 12)); 
 
+                // swap
                 vst1q_f32(py.add(i), ax0);
-                vst1q_f32(py.add(i + 4), ax1);
-                vst1q_f32(py.add(i + 8), ax2);
+                vst1q_f32(py.add(i + 4),  ax1);
+                vst1q_f32(py.add(i + 8),  ax2);
                 vst1q_f32(py.add(i + 12), ax3);
 
                 vst1q_f32(px.add(i), ay0);
-                vst1q_f32(px.add(i + 4), ay1);
-                vst1q_f32(px.add(i + 8), ay2);
+                vst1q_f32(px.add(i + 4),  ay1);
+                vst1q_f32(px.add(i + 8),  ay2);
                 vst1q_f32(px.add(i + 12), ay3);
 
                 i += 16; 
@@ -94,19 +103,16 @@ pub fn sswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
         let px = x.as_mut_ptr(); 
         let py = y.as_mut_ptr(); 
 
-        let stepx = if incx > 0 { incx as usize } else { (-incx) as usize }; 
-        let stepy = if incy > 0 { incy as usize } else { (-incy) as usize }; 
-
-        let mut ix = if incx >= 0 { 0usize } else { (n - 1) * stepx }; 
-        let mut iy = if incy >= 0 { 0usize } else { (n - 1) * stepy }; 
+        let mut ix = 0; 
+        let mut iy = 0; 
 
         for _ in 0..n { 
-            let a = *px.add(ix); 
+            let a = *px.add(ix);
             *px.add(ix) = *py.add(iy); 
             *py.add(iy) = a; 
 
-            if incx >= 0 { ix += stepx } else { ix = ix.wrapping_sub(stepx) };
-            if incy >= 0 { iy += stepy } else { iy = iy.wrapping_sub(stepy) }; 
+            ix += incx; 
+            iy += incy; 
         }
     }
 }

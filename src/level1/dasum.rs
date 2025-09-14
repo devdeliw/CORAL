@@ -4,9 +4,9 @@
 //! `n` elements of the input vector `x` with a specified stride. 
 //!
 //! # Arguments 
-//! - `n`    : Number of elements to sum. 
-//! - `x`    : Input slice containing vector elements 
-//! - `incx` : Stride between consecutive elements of `x` 
+//! - `n`    (usize)  : Number of elements to sum. 
+//! - `x`    (&[f64]) : Input slice containing vector elements 
+//! - `incx` (usize)  : Stride between consecutive elements of `x` 
 //!
 //! # Returns 
 //! - `f64` sum of absolute values of selected vector elements. 
@@ -20,7 +20,7 @@
 //! # Author 
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")] 
 use core::arch::aarch64::{ 
     vld1q_f64, vdupq_n_f64, vaddq_f64, vaddvq_f64, vabsq_f64,
 };
@@ -28,7 +28,12 @@ use crate::level1::assert_length_helpers::required_len_ok;
 
 
 #[inline]
-pub fn dasum(n: usize, x: &[f64], incx: isize) -> f64 {
+#[cfg(target_arch = "aarch64")] 
+pub fn dasum(
+    n       : usize, 
+    x       : &[f64], 
+    incx    : usize
+) -> f64 {
     let mut res = 0.0;
 
     // quick return 
@@ -53,6 +58,7 @@ pub fn dasum(n: usize, x: &[f64], incx: isize) -> f64 {
                 let v2 = vabsq_f64(vld1q_f64(x.as_ptr().add(i + 4)));
                 let v3 = vabsq_f64(vld1q_f64(x.as_ptr().add(i + 6)));
 
+                // acc += |x|
                 acc0 = vaddq_f64(acc0, v0);
                 acc1 = vaddq_f64(acc1, v1);
                 acc2 = vaddq_f64(acc2, v2);
@@ -82,15 +88,11 @@ pub fn dasum(n: usize, x: &[f64], incx: isize) -> f64 {
             }
         } else {
             // non unit stride 
-            let step = incx.unsigned_abs() as usize;
-
-            let mut idx = if incx > 0 { 0usize } else { (n - 1) * step } as isize;
-            let delta   = if incx > 0 { step as isize } else { -(step as isize) };
-
+            let mut ix = 0; 
             for _ in 0..n {
-                let i = idx as usize;
-                res += (*x.get_unchecked(i)).abs();
-                idx += delta;
+                res += (*x.get_unchecked(ix)).abs();
+
+                ix += incx; 
             }
         }
     }

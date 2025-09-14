@@ -4,15 +4,15 @@
 //! two input complex vectors `x` and `y` over `n` entries with specified strides.
 //!
 //! # Arguments 
-//! - `n`    : Number of complex elements to swap. 
-//! - `x`    : First input/output slice containing interleaved complex vector elements 
-//!            `[re0, im0, re1, im1, ...]`. 
-//! - `incx` : Stride between consecutive complex elements of `x` 
-//!            (measured in complex numbers; every step advances two scalar idxs). 
-//! - `y`    : Second input/output slice containing interleaved complex vector elements 
-//!            `[re0, im0, re1, im1, ...]`. 
-//! - `incy` : Stride between consecutive complex elements of `y` 
-//!            (measured in complex numbers; every step advances two scalar idxs). 
+//! - `n`    (usize)      : Number of complex elements to swap. 
+//! - `x`    (&mut [f32]) : First input/output slice containing interleaved complex vector elements 
+//!                       | `[re0, im0, re1, im1, ...]`. 
+//! - `incx` (usize)      : Stride between consecutive complex elements of `x` 
+//!                       | (measured in complex numbers; every step advances two scalar idxs). 
+//! - `y`    (&mut [f32]) : Second input/output slice containing interleaved complex vector elements 
+//!                       | `[re0, im0, re1, im1, ...]`. 
+//! - `incy` (usize)      : Stride between consecutive complex elements of `y` 
+//!                         (measured in complex numbers; every step advances two scalar idxs). 
 //!
 //! # Returns 
 //! - Nothing. The contents of `x` and `y` are swapped in place.
@@ -26,19 +26,27 @@
 //! # Author 
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")] 
 use core::arch::aarch64::{
-    vld1q_f32, vst1q_f32, 
+    vld1q_f32, 
+    vst1q_f32, 
 };
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
 
 
 #[inline(always)]
-pub fn cswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
+#[cfg(target_arch = "aarch64")] 
+pub fn cswap(
+    n       : usize, 
+    x       : &mut [f32],
+    incx    : usize, 
+    y       : &mut [f32], 
+    incy    : usize
+) {
     // quick return 
     if n == 0 { return; }
 
-    debug_assert!(incx != 0 && incy != 0);
+    debug_assert!(incx > 0 && incy > 0);
     debug_assert!(required_len_ok_cplx(x.len(), n, incx));
     debug_assert!(required_len_ok_cplx(y.len(), n, incy));
 
@@ -46,10 +54,10 @@ pub fn cswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
         // fast path 
         if incx == 1 && incy == 1 {
             let len = 2 * n; 
-            let px = x.as_mut_ptr();
-            let py = y.as_mut_ptr();
-            let mut i = 0usize;
+            let px  = x.as_mut_ptr();
+            let py  = y.as_mut_ptr();
 
+            let mut i = 0;
             while i + 16 <= len {
                 let ax0 = vld1q_f32(px.add(i + 0));
                 let ax1 = vld1q_f32(px.add(i + 4));
@@ -95,10 +103,9 @@ pub fn cswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
         // non unit stride 
         let px = x.as_mut_ptr();
         let py = y.as_mut_ptr();
-        let stepx = (if incx > 0 { incx as usize } else { (-incx) as usize }) * 2;
-        let stepy = (if incy > 0 { incy as usize } else { (-incy) as usize }) * 2;
-        let mut ix = if incx >= 0 { 0usize } else { (n - 1) * stepx };
-        let mut iy = if incy >= 0 { 0usize } else { (n - 1) * stepy };
+
+        let mut ix = 0; 
+        let mut iy = 0;
 
         for _ in 0..n {
             let a0 = *px.add(ix);
@@ -109,8 +116,8 @@ pub fn cswap(n: usize, x: &mut [f32], incx: isize, y: &mut [f32], incy: isize) {
             *px.add(ix + 1) = *py.add(iy + 1);
             *py.add(iy + 1) = a1;
 
-            if incx >= 0 { ix += stepx } else { ix = ix.wrapping_sub(stepx) }
-            if incy >= 0 { iy += stepy } else { iy = iy.wrapping_sub(stepy) }
+            ix += incx * 2;
+            iy += incy * 2;
         }
     }
 }

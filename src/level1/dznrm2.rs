@@ -5,11 +5,11 @@
 //! input vector `x` with a specified stride.
 //!
 //! # Arguments
-//! - `n`    : Number of complex elements in the vector.
-//! - `x`    : Input slice containing interleaved complex vector elements
-//!            `[re0, im0, re1, im1, ...]`.
-//! - `incx` : Stride between consecutive complex elements of `x`
-//!            (measured in complex numbers; every step advances two scalar idxs).
+//! - `n`    (usize)  : Number of complex elements in the vector.
+//! - `x`    (&[f64]) : Input slice containing interleaved complex vector elements
+//!                   | `[re0, im0, re1, im1, ...]`.
+//! - `incx` (usize)  : Stride between consecutive complex elements of `x`
+//!                     (measured in complex numbers; every step advances two scalar idxs).
 //!
 //! # Returns
 //! - `f64` Euclidean norm of the selected complex vector elements.
@@ -24,18 +24,32 @@
 //! # Author
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{
-    vld1q_f64, vdupq_n_f64, vaddvq_f64, vabsq_f64, vmulq_f64, vmaxq_f64, vmaxvq_f64, vfmaq_f64,  
+    vld1q_f64,
+    vdupq_n_f64,
+    vaddvq_f64, 
+    vabsq_f64, 
+    vmulq_f64, 
+    vmaxq_f64,
+    vmaxvq_f64, 
+    vfmaq_f64,  
 };
 use crate::level1::nrm2_helpers::upd_f64; 
+use crate::level1::assert_length_helpers::required_len_ok_cplx;
  
-
 #[inline]
-pub fn dznrm2(n: usize, x: &[f64], incx: isize) -> f64 { 
+#[cfg(target_arch = "aarch64")]
+pub fn dznrm2(
+    n       : usize,
+    x       : &[f64],
+    incx    : usize
+) -> f64 { 
     if n == 0 || incx == 0 { 
         return 0.0; 
     } 
+
+    debug_assert!(required_len_ok_cplx(x.len(), n, incx), "x too short for n/incx (complex)");
 
     let mut scale : f64 = 0.0; 
     let mut ssq   : f64 = 1.0; 
@@ -44,7 +58,6 @@ pub fn dznrm2(n: usize, x: &[f64], incx: isize) -> f64 {
         // fast path 
         if incx == 1 { 
             let end = 2 * n; 
-            debug_assert!(x.len() >= end); 
 
             let mut i = 0; 
             while i + 4 <= end { 
@@ -58,7 +71,7 @@ pub fn dznrm2(n: usize, x: &[f64], incx: isize) -> f64 {
                 let chunk_max = vmaxvq_f64(m); 
 
                 if chunk_max > 0.0 { 
-                    let inv  = 1.0f64 / chunk_max; 
+                    let inv  = 1.0 / chunk_max; 
                     let vinv = vdupq_n_f64(inv); 
 
                     // normalize
@@ -79,6 +92,7 @@ pub fn dznrm2(n: usize, x: &[f64], incx: isize) -> f64 {
             // tail 
             while i < end { 
                 let v = *x.as_ptr().add(i);  
+
                 if v != 0.0 { 
                     let a = v.abs(); 
                     if scale < a { 
@@ -92,18 +106,14 @@ pub fn dznrm2(n: usize, x: &[f64], incx: isize) -> f64 {
                         scale = a; 
                     }
                 }
+
                 i += 1; 
             }
         } else { 
             // non unit stride
-            let s = incx.unsigned_abs() as usize; 
-            debug_assert!(x.len() >= 2 * (1 + (n - 1) * s)); 
-
-            let mut idx:  isize = if incx > 0 { 0 } else { (2 * (n - 1) * s) as isize }; 
-            let     dlt:  isize = if incx > 0 { (2 * s) as isize } else { -((2 * s) as isize) }; 
-
+            let mut ix = 0; 
             for _ in 0..n { 
-                let re = *x.get_unchecked(idx as usize);
+                let re = *x.get_unchecked(ix);
                 if re != 0.0 { 
                     let a = re.abs(); 
                     if scale < a { 
@@ -118,7 +128,7 @@ pub fn dznrm2(n: usize, x: &[f64], incx: isize) -> f64 {
                     }
                 }
 
-                let im = *x.get_unchecked(idx as usize + 1);
+                let im = *x.get_unchecked(ix + 1);
                 if im != 0.0 { 
                     let a = im.abs(); 
                     if scale < a { 
@@ -133,7 +143,7 @@ pub fn dznrm2(n: usize, x: &[f64], incx: isize) -> f64 {
                     }
                 }
 
-                idx += dlt;
+                ix += incx * 2;
             }
         }
     }

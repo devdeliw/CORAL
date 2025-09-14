@@ -10,17 +10,17 @@
 //! of each complex number, over `n` complex entries with specified strides.
 //!
 //! # Arguments
-//! - `n`    : Number of complex elements to process.
-//! - `x`    : Input/output slice containing interleaved complex vector elements
-//!            `[re0, im0, re1, im1, ...]`, updated in place.
-//! - `incx` : Stride between consecutive complex elements of `x`
-//!            (measured in complex numbers; every step advances two scalar idxs).
-//! - `y`    : Input/output slice containing interleaved complex vector elements,
-//!            updated in place.
-//! - `incy` : Stride between consecutive complex elements of `y`
-//!            (measured in complex numbers; every step advances two scalar idxs).
-//! - `c`    : Cosine component of the rotation.
-//! - `s`    : Sine component of the rotation.
+//! - `n`    (usize)      : Number of complex elements to process.
+//! - `x`    (&mut [f64]) : Input/output slice containing interleaved complex vector elements
+//!                       | `[re0, im0, re1, im1, ...]`, updated in place.
+//! - `incx` (usize)      : Stride between consecutive complex elements of `x`
+//!                       | (measured in complex numbers; every step advances two scalar idxs).
+//! - `y`    (&mut [f64]) : Input/output slice containing interleaved complex vector elements,
+//!                       | updated in place.
+//! - `incy` (usize)      : Stride between consecutive complex elements of `y`
+//!                       | (measured in complex numbers; every step advances two scalar idxs).
+//! - `c`    (f64)        : Cosine component of the rotation.
+//! - `s`    (f64)        : Sine component of the rotation.
 //!
 //! # Returns
 //! - Nothing. The contents of `x` and `y` are updated in place.
@@ -34,15 +34,29 @@
 //! # Author
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")] 
 use core::arch::aarch64::{
-    vld1q_f64, vst1q_f64, vdupq_n_f64, vfmaq_f64, vmulq_f64, vsubq_f64,
+    vld1q_f64, 
+    vst1q_f64, 
+    vdupq_n_f64,
+    vfmaq_f64, 
+    vmulq_f64, 
+    vsubq_f64,
 };
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
 
 
 #[inline]
-pub fn zdrot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c: f64, s: f64) {
+#[cfg(target_arch = "aarch64")] 
+pub fn zdrot(
+    n       : usize, 
+    x       : &mut [f64], 
+    incx    : usize, 
+    y       : &mut [f64], 
+    incy    : usize, 
+    c       : f64,
+    s       : f64
+) {
     // quick return
     if n == 0 { return; }
 
@@ -60,7 +74,7 @@ pub fn zdrot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c
             let s2 = vdupq_n_f64(s);
 
             let len   = 2 * n;
-            let mut i = 0usize;
+            let mut i = 0;
             while i + 8 <= len {
                 let x0 = vld1q_f64(px.add(i + 0));
                 let x1 = vld1q_f64(px.add(i + 2));
@@ -124,14 +138,14 @@ pub fn zdrot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c
 
     // non unit stride 
     unsafe {
-        let mut ix: isize = if incx >= 0 { 0 } else { ((n - 1) as isize) * (-incx) };
-        let mut iy: isize = if incy >= 0 { 0 } else { ((n - 1) as isize) * (-incy) };
+        let mut ix = 0; 
+        let mut iy = 0; 
 
         for _ in 0..n {
-            let xr = *px.offset(2*ix + 0);
-            let xi = *px.offset(2*ix + 1);
-            let yr = *py.offset(2*iy + 0);
-            let yi = *py.offset(2*iy + 1);
+            let xr = *px.add(2*ix + 0);
+            let xi = *px.add(2*ix + 1);
+            let yr = *py.add(2*iy + 0);
+            let yi = *py.add(2*iy + 1);
 
             let xnr = c * xr + s * yr;
             let xni = c * xi + s * yi;
@@ -139,10 +153,10 @@ pub fn zdrot(n: usize, x: &mut [f64], incx: isize, y: &mut [f64], incy: isize, c
             let ynr = c * yr - s * xr;
             let yni = c * yi - s * xi;
 
-            *px.offset(2*ix + 0) = xnr;
-            *px.offset(2*ix + 1) = xni;
-            *py.offset(2*iy + 0) = ynr;
-            *py.offset(2*iy + 1) = yni;
+            *px.add(2*ix + 0) = xnr;
+            *px.add(2*ix + 1) = xni;
+            *py.add(2*iy + 0) = ynr;
+            *py.add(2*iy + 1) = yni;
 
             ix += incx;
             iy += incy;

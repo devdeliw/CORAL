@@ -13,7 +13,6 @@ pub fn saxpyf(
     y     : &mut [f32],
     incy  : isize,
 ) {
-    // quick return
     if m == 0 || n == 0 { return; }
 
     debug_assert!(incx != 0 && incy != 0, "BLAS increments must be non-zero");
@@ -28,26 +27,190 @@ pub fn saxpyf(
     }
 
     unsafe {
-        // fast path 
         if incx == 1 && incy == 1 {
             let mut j = 0usize;
 
-            // f = 4 cols at a time 
-            while j + 4 <= n {
-                let x0 = *x.get_unchecked(j + 0);
-                let x1 = *x.get_unchecked(j + 1);
-                let x2 = *x.get_unchecked(j + 2);
-                let x3 = *x.get_unchecked(j + 3);
+            while j + 8 <= n {
+                let s0 = vdupq_n_f32(*x.get_unchecked(j + 0));
+                let s1 = vdupq_n_f32(*x.get_unchecked(j + 1));
+                let s2 = vdupq_n_f32(*x.get_unchecked(j + 2));
+                let s3 = vdupq_n_f32(*x.get_unchecked(j + 3));
+                let s4 = vdupq_n_f32(*x.get_unchecked(j + 4));
+                let s5 = vdupq_n_f32(*x.get_unchecked(j + 5));
+                let s6 = vdupq_n_f32(*x.get_unchecked(j + 6));
+                let s7 = vdupq_n_f32(*x.get_unchecked(j + 7));
 
-                if x0 == 0.0 && x1 == 0.0 && x2 == 0.0 && x3 == 0.0 {
-                    j += 4;
-                    continue;
+                let pa0 = a.as_ptr().add((j + 0) * lda);
+                let pa1 = a.as_ptr().add((j + 1) * lda);
+                let pa2 = a.as_ptr().add((j + 2) * lda);
+                let pa3 = a.as_ptr().add((j + 3) * lda);
+                let pa4 = a.as_ptr().add((j + 4) * lda);
+                let pa5 = a.as_ptr().add((j + 5) * lda);
+                let pa6 = a.as_ptr().add((j + 6) * lda);
+                let pa7 = a.as_ptr().add((j + 7) * lda);
+
+                let mut i = 0usize;
+
+                while i + 16 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+
+                    let mut y0 = vld1q_f32(yb.add( 0));
+                    let mut y1 = vld1q_f32(yb.add( 4));
+                    let mut y2 = vld1q_f32(yb.add( 8));
+                    let mut y3 = vld1q_f32(yb.add(12));
+
+                    let mut a0p = pa0.add(i);
+                    let mut a1p = pa1.add(i);
+                    let mut a2p = pa2.add(i);
+                    let mut a3p = pa3.add(i);
+                    let mut a4p = pa4.add(i);
+                    let mut a5p = pa5.add(i);
+                    let mut a6p = pa6.add(i);
+                    let mut a7p = pa7.add(i);
+
+                    // col 0
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y1 = vfmaq_f32(y1, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y2 = vfmaq_f32(y2, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y3 = vfmaq_f32(y3, s0, vld1q_f32(a0p));
+
+                    // col 1
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y1 = vfmaq_f32(y1, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y2 = vfmaq_f32(y2, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y3 = vfmaq_f32(y3, s1, vld1q_f32(a1p));
+
+                    // col 2
+                    y0 = vfmaq_f32(y0, s2, vld1q_f32(a2p)); a2p = a2p.add(4);
+                    y1 = vfmaq_f32(y1, s2, vld1q_f32(a2p)); a2p = a2p.add(4);
+                    y2 = vfmaq_f32(y2, s2, vld1q_f32(a2p)); a2p = a2p.add(4);
+                    y3 = vfmaq_f32(y3, s2, vld1q_f32(a2p));
+
+                    // col 3
+                    y0 = vfmaq_f32(y0, s3, vld1q_f32(a3p)); a3p = a3p.add(4);
+                    y1 = vfmaq_f32(y1, s3, vld1q_f32(a3p)); a3p = a3p.add(4);
+                    y2 = vfmaq_f32(y2, s3, vld1q_f32(a3p)); a3p = a3p.add(4);
+                    y3 = vfmaq_f32(y3, s3, vld1q_f32(a3p));
+
+                    // col 4
+                    y0 = vfmaq_f32(y0, s4, vld1q_f32(a4p)); a4p = a4p.add(4);
+                    y1 = vfmaq_f32(y1, s4, vld1q_f32(a4p)); a4p = a4p.add(4);
+                    y2 = vfmaq_f32(y2, s4, vld1q_f32(a4p)); a4p = a4p.add(4);
+                    y3 = vfmaq_f32(y3, s4, vld1q_f32(a4p));
+
+                    // col 5
+                    y0 = vfmaq_f32(y0, s5, vld1q_f32(a5p)); a5p = a5p.add(4);
+                    y1 = vfmaq_f32(y1, s5, vld1q_f32(a5p)); a5p = a5p.add(4);
+                    y2 = vfmaq_f32(y2, s5, vld1q_f32(a5p)); a5p = a5p.add(4);
+                    y3 = vfmaq_f32(y3, s5, vld1q_f32(a5p));
+
+                    // col 6
+                    y0 = vfmaq_f32(y0, s6, vld1q_f32(a6p)); a6p = a6p.add(4);
+                    y1 = vfmaq_f32(y1, s6, vld1q_f32(a6p)); a6p = a6p.add(4);
+                    y2 = vfmaq_f32(y2, s6, vld1q_f32(a6p)); a6p = a6p.add(4);
+                    y3 = vfmaq_f32(y3, s6, vld1q_f32(a6p));
+
+                    // col 7
+                    y0 = vfmaq_f32(y0, s7, vld1q_f32(a7p)); a7p = a7p.add(4);
+                    y1 = vfmaq_f32(y1, s7, vld1q_f32(a7p)); a7p = a7p.add(4);
+                    y2 = vfmaq_f32(y2, s7, vld1q_f32(a7p)); a7p = a7p.add(4);
+                    y3 = vfmaq_f32(y3, s7, vld1q_f32(a7p));
+
+                    vst1q_f32(yb.add( 0), y0);
+                    vst1q_f32(yb.add( 4), y1);
+                    vst1q_f32(yb.add( 8), y2);
+                    vst1q_f32(yb.add(12), y3);
+
+                    i += 16;
                 }
 
-                let s0 = vdupq_n_f32(x0);
-                let s1 = vdupq_n_f32(x1);
-                let s2 = vdupq_n_f32(x2);
-                let s3 = vdupq_n_f32(x3);
+                while i + 8 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb.add(0));
+                    let mut y1 = vld1q_f32(yb.add(4));
+
+                    let mut a0p = pa0.add(i);
+                    let mut a1p = pa1.add(i);
+                    let mut a2p = pa2.add(i);
+                    let mut a3p = pa3.add(i);
+                    let mut a4p = pa4.add(i);
+                    let mut a5p = pa5.add(i);
+                    let mut a6p = pa6.add(i);
+                    let mut a7p = pa7.add(i);
+
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y1 = vfmaq_f32(y1, s0, vld1q_f32(a0p));
+
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y1 = vfmaq_f32(y1, s1, vld1q_f32(a1p));
+
+                    y0 = vfmaq_f32(y0, s2, vld1q_f32(a2p)); a2p = a2p.add(4);
+                    y1 = vfmaq_f32(y1, s2, vld1q_f32(a2p));
+
+                    y0 = vfmaq_f32(y0, s3, vld1q_f32(a3p)); a3p = a3p.add(4);
+                    y1 = vfmaq_f32(y1, s3, vld1q_f32(a3p));
+
+                    y0 = vfmaq_f32(y0, s4, vld1q_f32(a4p)); a4p = a4p.add(4);
+                    y1 = vfmaq_f32(y1, s4, vld1q_f32(a4p));
+
+                    y0 = vfmaq_f32(y0, s5, vld1q_f32(a5p)); a5p = a5p.add(4);
+                    y1 = vfmaq_f32(y1, s5, vld1q_f32(a5p));
+
+                    y0 = vfmaq_f32(y0, s6, vld1q_f32(a6p)); a6p = a6p.add(4);
+                    y1 = vfmaq_f32(y1, s6, vld1q_f32(a6p));
+
+                    y0 = vfmaq_f32(y0, s7, vld1q_f32(a7p)); a7p = a7p.add(4);
+                    y1 = vfmaq_f32(y1, s7, vld1q_f32(a7p));
+
+                    vst1q_f32(yb.add(0), y0);
+                    vst1q_f32(yb.add(4), y1);
+                    i += 8;
+                }
+
+                while i + 4 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb);
+
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(pa0.add(i)));
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(pa1.add(i)));
+                    y0 = vfmaq_f32(y0, s2, vld1q_f32(pa2.add(i)));
+                    y0 = vfmaq_f32(y0, s3, vld1q_f32(pa3.add(i)));
+                    y0 = vfmaq_f32(y0, s4, vld1q_f32(pa4.add(i)));
+                    y0 = vfmaq_f32(y0, s5, vld1q_f32(pa5.add(i)));
+                    y0 = vfmaq_f32(y0, s6, vld1q_f32(pa6.add(i)));
+                    y0 = vfmaq_f32(y0, s7, vld1q_f32(pa7.add(i)));
+
+                    vst1q_f32(yb, y0);
+
+                    i += 4;
+                }
+
+                // tail
+                while i < m {
+                    let mut acc = *y.get_unchecked(i);
+
+                    acc += *x.get_unchecked(j + 0) * *pa0.add(i);
+                    acc += *x.get_unchecked(j + 1) * *pa1.add(i);
+                    acc += *x.get_unchecked(j + 2) * *pa2.add(i);
+                    acc += *x.get_unchecked(j + 3) * *pa3.add(i);
+                    acc += *x.get_unchecked(j + 4) * *pa4.add(i);
+                    acc += *x.get_unchecked(j + 5) * *pa5.add(i);
+                    acc += *x.get_unchecked(j + 6) * *pa6.add(i);
+                    acc += *x.get_unchecked(j + 7) * *pa7.add(i);
+
+                    *y.get_unchecked_mut(i) = acc;
+
+                    i += 1;
+                }
+
+                j += 8;
+            }
+
+            if j + 4 <= n {
+                let s0 = vdupq_n_f32(*x.get_unchecked(j + 0));
+                let s1 = vdupq_n_f32(*x.get_unchecked(j + 1));
+                let s2 = vdupq_n_f32(*x.get_unchecked(j + 2));
+                let s3 = vdupq_n_f32(*x.get_unchecked(j + 3));
 
                 let pa0 = a.as_ptr().add((j + 0) * lda);
                 let pa1 = a.as_ptr().add((j + 1) * lda);
@@ -55,364 +218,221 @@ pub fn saxpyf(
                 let pa3 = a.as_ptr().add((j + 3) * lda);
 
                 let mut i = 0usize;
-
                 while i + 16 <= m {
-                    let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                    let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
-                    let mut y2 = vld1q_f32(y.as_ptr().add(i + 8));
-                    let mut y3 = vld1q_f32(y.as_ptr().add(i + 12));
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb.add( 0));
+                    let mut y1 = vld1q_f32(yb.add( 4));
+                    let mut y2 = vld1q_f32(yb.add( 8));
+                    let mut y3 = vld1q_f32(yb.add(12));
 
-                    let a00 = vld1q_f32(pa0.add(i + 0));
-                    let a01 = vld1q_f32(pa0.add(i + 4));
-                    let a02 = vld1q_f32(pa0.add(i + 8));
-                    let a03 = vld1q_f32(pa0.add(i + 12));
-                    y0 = vfmaq_f32(y0, s0, a00);
-                    y1 = vfmaq_f32(y1, s0, a01);
-                    y2 = vfmaq_f32(y2, s0, a02);
-                    y3 = vfmaq_f32(y3, s0, a03);
+                    let mut a0p = pa0.add(i);
+                    let mut a1p = pa1.add(i);
+                    let mut a2p = pa2.add(i);
+                    let mut a3p = pa3.add(i);
 
-                    let b00 = vld1q_f32(pa1.add(i + 0));
-                    let b01 = vld1q_f32(pa1.add(i + 4));
-                    let b02 = vld1q_f32(pa1.add(i + 8));
-                    let b03 = vld1q_f32(pa1.add(i + 12));
-                    y0 = vfmaq_f32(y0, s1, b00);
-                    y1 = vfmaq_f32(y1, s1, b01);
-                    y2 = vfmaq_f32(y2, s1, b02);
-                    y3 = vfmaq_f32(y3, s1, b03);
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y1 = vfmaq_f32(y1, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y2 = vfmaq_f32(y2, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y3 = vfmaq_f32(y3, s0, vld1q_f32(a0p));
 
-                    let c00 = vld1q_f32(pa2.add(i + 0));
-                    let c01 = vld1q_f32(pa2.add(i + 4));
-                    let c02 = vld1q_f32(pa2.add(i + 8));
-                    let c03 = vld1q_f32(pa2.add(i + 12));
-                    y0 = vfmaq_f32(y0, s2, c00);
-                    y1 = vfmaq_f32(y1, s2, c01);
-                    y2 = vfmaq_f32(y2, s2, c02);
-                    y3 = vfmaq_f32(y3, s2, c03);
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y1 = vfmaq_f32(y1, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y2 = vfmaq_f32(y2, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y3 = vfmaq_f32(y3, s1, vld1q_f32(a1p));
 
-                    let d00 = vld1q_f32(pa3.add(i + 0));
-                    let d01 = vld1q_f32(pa3.add(i + 4));
-                    let d02 = vld1q_f32(pa3.add(i + 8));
-                    let d03 = vld1q_f32(pa3.add(i + 12));
-                    y0 = vfmaq_f32(y0, s3, d00);
-                    y1 = vfmaq_f32(y1, s3, d01);
-                    y2 = vfmaq_f32(y2, s3, d02);
-                    y3 = vfmaq_f32(y3, s3, d03);
+                    y0 = vfmaq_f32(y0, s2, vld1q_f32(a2p)); a2p = a2p.add(4);
+                    y1 = vfmaq_f32(y1, s2, vld1q_f32(a2p)); a2p = a2p.add(4);
+                    y2 = vfmaq_f32(y2, s2, vld1q_f32(a2p)); a2p = a2p.add(4);
+                    y3 = vfmaq_f32(y3, s2, vld1q_f32(a2p));
 
-                    vst1q_f32(y.as_mut_ptr().add(i + 0),  y0);
-                    vst1q_f32(y.as_mut_ptr().add(i + 4),  y1);
-                    vst1q_f32(y.as_mut_ptr().add(i + 8),  y2);
-                    vst1q_f32(y.as_mut_ptr().add(i + 12), y3);
+                    y0 = vfmaq_f32(y0, s3, vld1q_f32(a3p)); a3p = a3p.add(4);
+                    y1 = vfmaq_f32(y1, s3, vld1q_f32(a3p)); a3p = a3p.add(4);
+                    y2 = vfmaq_f32(y2, s3, vld1q_f32(a3p)); a3p = a3p.add(4);
+                    y3 = vfmaq_f32(y3, s3, vld1q_f32(a3p));
+
+                    vst1q_f32(yb.add( 0), y0);
+                    vst1q_f32(yb.add( 4), y1);
+                    vst1q_f32(yb.add( 8), y2);
+                    vst1q_f32(yb.add(12), y3);
 
                     i += 16;
                 }
-
                 while i + 8 <= m {
-                    let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                    let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb.add(0));
+                    let mut y1 = vld1q_f32(yb.add(4));
 
-                    let a00 = vld1q_f32(pa0.add(i + 0));
-                    let a01 = vld1q_f32(pa0.add(i + 4));
-                    y0 = vfmaq_f32(y0, s0, a00);
-                    y1 = vfmaq_f32(y1, s0, a01);
+                    let mut a0p = pa0.add(i);
+                    let mut a1p = pa1.add(i);
+                    let mut a2p = pa2.add(i);
+                    let mut a3p = pa3.add(i);
 
-                    let b00 = vld1q_f32(pa1.add(i + 0));
-                    let b01 = vld1q_f32(pa1.add(i + 4));
-                    y0 = vfmaq_f32(y0, s1, b00);
-                    y1 = vfmaq_f32(y1, s1, b01);
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y1 = vfmaq_f32(y1, s0, vld1q_f32(a0p));
 
-                    let c00 = vld1q_f32(pa2.add(i + 0));
-                    let c01 = vld1q_f32(pa2.add(i + 4));
-                    y0 = vfmaq_f32(y0, s2, c00);
-                    y1 = vfmaq_f32(y1, s2, c01);
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y1 = vfmaq_f32(y1, s1, vld1q_f32(a1p));
 
-                    let d00 = vld1q_f32(pa3.add(i + 0));
-                    let d01 = vld1q_f32(pa3.add(i + 4));
-                    y0 = vfmaq_f32(y0, s3, d00);
-                    y1 = vfmaq_f32(y1, s3, d01);
+                    y0 = vfmaq_f32(y0, s2, vld1q_f32(a2p)); a2p = a2p.add(4);
+                    y1 = vfmaq_f32(y1, s2, vld1q_f32(a2p));
 
-                    vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
-                    vst1q_f32(y.as_mut_ptr().add(i + 4), y1);
+                    y0 = vfmaq_f32(y0, s3, vld1q_f32(a3p)); a3p = a3p.add(4);
+                    y1 = vfmaq_f32(y1, s3, vld1q_f32(a3p));
+
+                    vst1q_f32(yb.add(0), y0);
+                    vst1q_f32(yb.add(4), y1);
+
                     i += 8;
                 }
-
                 while i + 4 <= m {
-                    let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                    let a00 = vld1q_f32(pa0.add(i + 0));
-                    let b00 = vld1q_f32(pa1.add(i + 0));
-                    let c00 = vld1q_f32(pa2.add(i + 0));
-                    let d00 = vld1q_f32(pa3.add(i + 0));
-                    y0 = vfmaq_f32(y0, s0, a00);
-                    y0 = vfmaq_f32(y0, s1, b00);
-                    y0 = vfmaq_f32(y0, s2, c00);
-                    y0 = vfmaq_f32(y0, s3, d00);
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb);
 
-                    vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(pa0.add(i)));
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(pa1.add(i)));
+                    y0 = vfmaq_f32(y0, s2, vld1q_f32(pa2.add(i)));
+                    y0 = vfmaq_f32(y0, s3, vld1q_f32(pa3.add(i)));
 
+                    vst1q_f32(yb, y0);
                     i += 4;
                 }
-
                 while i < m {
-                    let mut acc = *y.as_ptr().add(i);
-                    acc += x0 * *pa0.add(i);
-                    acc += x1 * *pa1.add(i);
-                    acc += x2 * *pa2.add(i);
-                    acc += x3 * *pa3.add(i);
-
-                    *y.as_mut_ptr().add(i) = acc;
-
+                    let mut acc = *y.get_unchecked(i);
+                    acc += *x.get_unchecked(j + 0) * *pa0.add(i);
+                    acc += *x.get_unchecked(j + 1) * *pa1.add(i);
+                    acc += *x.get_unchecked(j + 2) * *pa2.add(i);
+                    acc += *x.get_unchecked(j + 3) * *pa3.add(i);
+                    *y.get_unchecked_mut(i) = acc;
                     i += 1;
                 }
 
                 j += 4;
             }
 
-            // leftover, also unrolled 
-            let rem = n - j;
-            match rem {
-                3 => {
-                    let x0 = *x.get_unchecked(j + 0);
-                    let x1 = *x.get_unchecked(j + 1);
-                    let x2 = *x.get_unchecked(j + 2);
-                    if x0 == 0.0 && x1 == 0.0 && x2 == 0.0 { return; }
+            if j + 2 <= n {
+                let s0 = vdupq_n_f32(*x.get_unchecked(j + 0));
+                let s1 = vdupq_n_f32(*x.get_unchecked(j + 1));
 
-                    let s0 = vdupq_n_f32(x0);
-                    let s1 = vdupq_n_f32(x1);
-                    let s2 = vdupq_n_f32(x2);
+                let pa0 = a.as_ptr().add((j + 0) * lda);
+                let pa1 = a.as_ptr().add((j + 1) * lda);
 
-                    let pa0 = a.as_ptr().add((j + 0) * lda);
-                    let pa1 = a.as_ptr().add((j + 1) * lda);
-                    let pa2 = a.as_ptr().add((j + 2) * lda);
+                let mut i = 0usize;
+                while i + 16 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb.add( 0));
+                    let mut y1 = vld1q_f32(yb.add( 4));
+                    let mut y2 = vld1q_f32(yb.add( 8));
+                    let mut y3 = vld1q_f32(yb.add(12));
 
-                    let mut i = 0usize;
-                    while i + 16 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
-                        let mut y2 = vld1q_f32(y.as_ptr().add(i + 8));
-                        let mut y3 = vld1q_f32(y.as_ptr().add(i + 12));
+                    let mut a0p = pa0.add(i);
+                    let mut a1p = pa1.add(i);
 
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        let a01 = vld1q_f32(pa0.add(i + 4));
-                        let a02 = vld1q_f32(pa0.add(i + 8));
-                        let a03 = vld1q_f32(pa0.add(i + 12));
-                        y0 = vfmaq_f32(y0, s0, a00);
-                        y1 = vfmaq_f32(y1, s0, a01);
-                        y2 = vfmaq_f32(y2, s0, a02);
-                        y3 = vfmaq_f32(y3, s0, a03);
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y1 = vfmaq_f32(y1, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y2 = vfmaq_f32(y2, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y3 = vfmaq_f32(y3, s0, vld1q_f32(a0p));
 
-                        let b00 = vld1q_f32(pa1.add(i + 0));
-                        let b01 = vld1q_f32(pa1.add(i + 4));
-                        let b02 = vld1q_f32(pa1.add(i + 8));
-                        let b03 = vld1q_f32(pa1.add(i + 12));
-                        y0 = vfmaq_f32(y0, s1, b00);
-                        y1 = vfmaq_f32(y1, s1, b01);
-                        y2 = vfmaq_f32(y2, s1, b02);
-                        y3 = vfmaq_f32(y3, s1, b03);
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y1 = vfmaq_f32(y1, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y2 = vfmaq_f32(y2, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y3 = vfmaq_f32(y3, s1, vld1q_f32(a1p));
 
-                        let c00 = vld1q_f32(pa2.add(i + 0));
-                        let c01 = vld1q_f32(pa2.add(i + 4));
-                        let c02 = vld1q_f32(pa2.add(i + 8));
-                        let c03 = vld1q_f32(pa2.add(i + 12));
-                        y0 = vfmaq_f32(y0, s2, c00);
-                        y1 = vfmaq_f32(y1, s2, c01);
-                        y2 = vfmaq_f32(y2, s2, c02);
-                        y3 = vfmaq_f32(y3, s2, c03);
+                    vst1q_f32(yb.add( 0), y0);
+                    vst1q_f32(yb.add( 4), y1);
+                    vst1q_f32(yb.add( 8), y2);
+                    vst1q_f32(yb.add(12), y3);
 
-                        vst1q_f32(y.as_mut_ptr().add(i + 0),  y0);
-                        vst1q_f32(y.as_mut_ptr().add(i + 4),  y1);
-                        vst1q_f32(y.as_mut_ptr().add(i + 8),  y2);
-                        vst1q_f32(y.as_mut_ptr().add(i + 12), y3);
-
-                        i += 16;
-                    }
-                    while i + 8 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
-
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        let a01 = vld1q_f32(pa0.add(i + 4));
-                        y0 = vfmaq_f32(y0, s0, a00);
-                        y1 = vfmaq_f32(y1, s0, a01);
-
-                        let b00 = vld1q_f32(pa1.add(i + 0));
-                        let b01 = vld1q_f32(pa1.add(i + 4));
-                        y0 = vfmaq_f32(y0, s1, b00);
-                        y1 = vfmaq_f32(y1, s1, b01);
-
-                        let c00 = vld1q_f32(pa2.add(i + 0));
-                        let c01 = vld1q_f32(pa2.add(i + 4));
-                        y0 = vfmaq_f32(y0, s2, c00);
-                        y1 = vfmaq_f32(y1, s2, c01);
-
-                        vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
-                        vst1q_f32(y.as_mut_ptr().add(i + 4), y1);
-
-                        i += 8;
-                    }
-                    while i + 4 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        let b00 = vld1q_f32(pa1.add(i + 0));
-                        let c00 = vld1q_f32(pa2.add(i + 0));
-                        y0 = vfmaq_f32(y0, s0, a00);
-                        y0 = vfmaq_f32(y0, s1, b00);
-                        y0 = vfmaq_f32(y0, s2, c00);
-                        vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
-
-                        i += 4;
-                    }
-                    while i < m {
-                        let mut acc = *y.as_ptr().add(i);
-                        acc += x0 * *pa0.add(i);
-                        acc += x1 * *pa1.add(i);
-                        acc += x2 * *pa2.add(i);
-                        *y.as_mut_ptr().add(i) = acc;
-
-                        i += 1;
-                    }
+                    i += 16;
                 }
-                2 => {
-                    let x0 = *x.get_unchecked(j + 0);
-                    let x1 = *x.get_unchecked(j + 1);
-                    if x0 == 0.0 && x1 == 0.0 { return; }
+                while i + 8 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb.add(0));
+                    let mut y1 = vld1q_f32(yb.add(4));
 
-                    let s0 = vdupq_n_f32(x0);
-                    let s1 = vdupq_n_f32(x1);
+                    let mut a0p = pa0.add(i);
+                    let mut a1p = pa1.add(i);
 
-                    let pa0 = a.as_ptr().add((j + 0) * lda);
-                    let pa1 = a.as_ptr().add((j + 1) * lda);
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y1 = vfmaq_f32(y1, s0, vld1q_f32(a0p));
 
-                    let mut i = 0usize;
-                    while i + 16 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
-                        let mut y2 = vld1q_f32(y.as_ptr().add(i + 8));
-                        let mut y3 = vld1q_f32(y.as_ptr().add(i + 12));
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(a1p)); a1p = a1p.add(4);
+                    y1 = vfmaq_f32(y1, s1, vld1q_f32(a1p));
 
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        let a01 = vld1q_f32(pa0.add(i + 4));
-                        let a02 = vld1q_f32(pa0.add(i + 8));
-                        let a03 = vld1q_f32(pa0.add(i + 12));
-                        y0 = vfmaq_f32(y0, s0, a00);
-                        y1 = vfmaq_f32(y1, s0, a01);
-                        y2 = vfmaq_f32(y2, s0, a02);
-                        y3 = vfmaq_f32(y3, s0, a03);
+                    vst1q_f32(yb.add(0), y0);
+                    vst1q_f32(yb.add(4), y1);
 
-                        let b00 = vld1q_f32(pa1.add(i + 0));
-                        let b01 = vld1q_f32(pa1.add(i + 4));
-                        let b02 = vld1q_f32(pa1.add(i + 8));
-                        let b03 = vld1q_f32(pa1.add(i + 12));
-                        y0 = vfmaq_f32(y0, s1, b00);
-                        y1 = vfmaq_f32(y1, s1, b01);
-                        y2 = vfmaq_f32(y2, s1, b02);
-                        y3 = vfmaq_f32(y3, s1, b03);
-
-                        vst1q_f32(y.as_mut_ptr().add(i + 0),  y0);
-                        vst1q_f32(y.as_mut_ptr().add(i + 4),  y1);
-                        vst1q_f32(y.as_mut_ptr().add(i + 8),  y2);
-                        vst1q_f32(y.as_mut_ptr().add(i + 12), y3);
-
-                        i += 16;
-                    }
-                    while i + 8 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
-
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        let a01 = vld1q_f32(pa0.add(i + 4));
-                        y0 = vfmaq_f32(y0, s0, a00);
-                        y1 = vfmaq_f32(y1, s0, a01);
-
-                        let b00 = vld1q_f32(pa1.add(i + 0));
-                        let b01 = vld1q_f32(pa1.add(i + 4));
-                        y0 = vfmaq_f32(y0, s1, b00);
-                        y1 = vfmaq_f32(y1, s1, b01);
-
-                        vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
-                        vst1q_f32(y.as_mut_ptr().add(i + 4), y1);
-
-                        i += 8;
-                    }
-                    while i + 4 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        let b00 = vld1q_f32(pa1.add(i + 0));
-                        y0 = vfmaq_f32(y0, s0, a00);
-                        y0 = vfmaq_f32(y0, s1, b00);
-                        vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
-
-                        i += 4;
-                    }
-                    while i < m {
-                        let mut acc = *y.as_ptr().add(i);
-                        acc += x0 * *pa0.add(i);
-                        acc += x1 * *pa1.add(i);
-                        *y.as_mut_ptr().add(i) = acc;
-
-                        i += 1;
-                    }
+                    i += 8;
                 }
-                1 => {
-                    let x0 = *x.get_unchecked(j + 0);
-                    if x0 == 0.0 { return; }
+                while i + 4 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb);
 
-                    let s0 = vdupq_n_f32(x0);
-                    let pa0 = a.as_ptr().add((j + 0) * lda);
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(pa0.add(i)));
+                    y0 = vfmaq_f32(y0, s1, vld1q_f32(pa1.add(i)));
 
-                    let mut i = 0usize;
-                    while i + 16 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
-                        let mut y2 = vld1q_f32(y.as_ptr().add(i + 8));
-                        let mut y3 = vld1q_f32(y.as_ptr().add(i + 12));
-
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        let a01 = vld1q_f32(pa0.add(i + 4));
-                        let a02 = vld1q_f32(pa0.add(i + 8));
-                        let a03 = vld1q_f32(pa0.add(i + 12));
-                        y0 = vfmaq_f32(y0, s0, a00);
-                        y1 = vfmaq_f32(y1, s0, a01);
-                        y2 = vfmaq_f32(y2, s0, a02);
-                        y3 = vfmaq_f32(y3, s0, a03);
-
-                        vst1q_f32(y.as_mut_ptr().add(i + 0),  y0);
-                        vst1q_f32(y.as_mut_ptr().add(i + 4),  y1);
-                        vst1q_f32(y.as_mut_ptr().add(i + 8),  y2);
-                        vst1q_f32(y.as_mut_ptr().add(i + 12), y3);
-
-                        i += 16;
-                    }
-                    while i + 8 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let mut y1 = vld1q_f32(y.as_ptr().add(i + 4));
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        let a01 = vld1q_f32(pa0.add(i + 4));
-
-                        y0 = vfmaq_f32(y0, s0, a00);
-                        y1 = vfmaq_f32(y1, s0, a01);
-
-                        vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
-                        vst1q_f32(y.as_mut_ptr().add(i + 4), y1);
-
-                        i += 8;
-                    }
-                    while i + 4 <= m {
-                        let mut y0 = vld1q_f32(y.as_ptr().add(i + 0));
-                        let a00 = vld1q_f32(pa0.add(i + 0));
-                        y0 = vfmaq_f32(y0, s0, a00);
-
-                        vst1q_f32(y.as_mut_ptr().add(i + 0), y0);
-
-                        i += 4;
-                    }
-                    while i < m {
-                        let acc = *y.as_ptr().add(i) + x0 * *pa0.add(i);
-
-                        *y.as_mut_ptr().add(i) = acc;
-
-                        i += 1;
-                    }
+                    vst1q_f32(yb, y0);
+                    i += 4;
                 }
-                _ => {}
+                while i < m {
+                    let mut acc = *y.get_unchecked(i);
+                    acc += *x.get_unchecked(j + 0) * *pa0.add(i);
+                    acc += *x.get_unchecked(j + 1) * *pa1.add(i);
+                    *y.get_unchecked_mut(i) = acc;
+                    i += 1;
+                }
+
+                j += 2;
+            }
+
+            if j < n {
+                let s0 = vdupq_n_f32(*x.get_unchecked(j));
+                let pa0 = a.as_ptr().add(j * lda);
+
+                let mut i = 0usize;
+                while i + 16 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb.add( 0));
+                    let mut y1 = vld1q_f32(yb.add( 4));
+                    let mut y2 = vld1q_f32(yb.add( 8));
+                    let mut y3 = vld1q_f32(yb.add(12));
+
+                    let mut a0p = pa0.add(i);
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y1 = vfmaq_f32(y1, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y2 = vfmaq_f32(y2, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y3 = vfmaq_f32(y3, s0, vld1q_f32(a0p));
+
+                    vst1q_f32(yb.add( 0), y0);
+                    vst1q_f32(yb.add( 4), y1);
+                    vst1q_f32(yb.add( 8), y2);
+                    vst1q_f32(yb.add(12), y3);
+
+                    i += 16;
+                }
+                while i + 8 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+                    let mut y0 = vld1q_f32(yb.add(0));
+                    let mut y1 = vld1q_f32(yb.add(4));
+
+                    let mut a0p = pa0.add(i);
+                    y0 = vfmaq_f32(y0, s0, vld1q_f32(a0p)); a0p = a0p.add(4);
+                    y1 = vfmaq_f32(y1, s0, vld1q_f32(a0p));
+
+                    vst1q_f32(yb.add(0), y0);
+                    vst1q_f32(yb.add(4), y1);
+
+                    i += 8;
+                }
+                while i + 4 <= m {
+                    let yb = y.as_mut_ptr().add(i);
+                    let y0 = vfmaq_f32(vld1q_f32(yb), s0, vld1q_f32(pa0.add(i)));
+                    vst1q_f32(yb, y0);
+                    i += 4;
+                }
+                while i < m {
+                    *y.get_unchecked_mut(i) = *y.get_unchecked(i) + *x.get_unchecked(j) * *pa0.add(i);
+                    i += 1;
+                }
             }
 
             return;
@@ -425,12 +445,11 @@ pub fn saxpyf(
         for j in 0..n {
             let scaled = *px;
             if scaled != 0.0 {
-                // a is column-major; contiguous 
                 let col_ptr = a.as_ptr().add(j * lda);
                 let col = core::slice::from_raw_parts(col_ptr, m);
                 saxpy(m, scaled, col, 1, y, incy);
             }
-            px = px.offset(incx);
+            px = px.add(incx as usize);
         }
     }
 }

@@ -5,9 +5,9 @@
 //! input vector `x` with a specified stride.
 //!
 //! # Arguments
-//! - `n`    : Number of elements in the vector.
-//! - `x`    : Input slice containing vector elements.
-//! - `incx` : Stride between consecutive elements of `x`.
+//! - `n`    (usize)  : Number of elements in the vector.
+//! - `x`    (&[f32]) : Input slice containing vector elements.
+//! - `incx` (usize)  : Stride between consecutive elements of `x`.
 //!
 //! # Returns
 //! - `f32` Euclidean norm of the selected vector elements.
@@ -22,19 +22,34 @@
 //! # Author
 //! Deval Deliwala
 
-
+#[cfg(target_arch = "aarch64")] 
 use core::arch::aarch64::{ 
-    vld1q_f32, vdupq_n_f32, vaddvq_f32, vabsq_f32, vmulq_f32, vmaxq_f32, vmaxvq_f32, vfmaq_f32, 
+    vld1q_f32,
+    vdupq_n_f32,
+    vaddvq_f32,
+    vabsq_f32, 
+    vmulq_f32, 
+    vmaxq_f32, 
+    vmaxvq_f32, 
+    vfmaq_f32, 
 };
 use crate::level1::nrm2_helpers::upd_f32;
+use crate::level1::assert_length_helpers::required_len_ok; 
 
 
 #[inline]
-pub fn snrm2(n: usize, x: &[f32], incx: isize) -> f32 { 
+#[cfg(target_arch = "aarch64")] 
+pub fn snrm2(
+    n       : usize, 
+    x       : &[f32], 
+    incx    : usize
+) -> f32 { 
     // quick return 
     if n == 0 || incx == 0 { 
         return 0.0; 
     } 
+
+    debug_assert!(required_len_ok(x.len(), n, incx), "x too short for n/incx");
 
     let mut scale : f32 = 0.0; 
     let mut ssq   : f32 = 1.0; 
@@ -42,7 +57,6 @@ pub fn snrm2(n: usize, x: &[f32], incx: isize) -> f32 {
     unsafe { 
         // fast path 
         if incx == 1 { 
-            debug_assert!(x.len() >= n); 
             let mut i = 0; 
             while i + 16 <= n { 
                 let v0 = vld1q_f32(x.as_ptr().add(i)); 
@@ -61,7 +75,7 @@ pub fn snrm2(n: usize, x: &[f32], incx: isize) -> f32 {
                 let chunk_max = vmaxvq_f32(m); 
 
                 if chunk_max > 0.0 { 
-                    let inv  = 1.0f32 / chunk_max; 
+                    let inv  = 1.0 / chunk_max; 
                     let vinv = vdupq_n_f32(inv); 
 
                     // normalize
@@ -103,16 +117,14 @@ pub fn snrm2(n: usize, x: &[f32], incx: isize) -> f32 {
             }
         } else { 
             // non unit stride
-            let step = incx.unsigned_abs() as usize; 
-            debug_assert!(x.len() >= 1 + (n - 1) * step); 
-
-            let mut idx: isize = if incx > 0 { 0 } else { (n - 1) * step } as isize; 
-            let delta: isize   = if incx > 0 { step as isize } else { -(step as isize) }; 
-
+            
+            let mut ix = 0; 
             for _ in 0..n { 
-                let xi = *x.get_unchecked(idx as usize);
+                let xi = *x.get_unchecked(ix);
+
                 if xi != 0.0 { 
-                    let absxi = xi.abs(); 
+                    let absxi = xi.abs();
+
                     if scale < absxi { 
                         let r = scale / absxi; 
                         ssq   = 1.0 + ssq * (r * r); 
@@ -124,7 +136,8 @@ pub fn snrm2(n: usize, x: &[f32], incx: isize) -> f32 {
                         scale = absxi;
                     }
                 }
-                idx += delta;
+
+                ix += incx;
             }
         }
     }

@@ -12,11 +12,11 @@
 //! - `param[0] = +1.0` : Alternate simplified form with fixed structure.
 //!
 //! # Arguments
-//! - `sd1`   : Input/output scalar, updated scaling factor for the first component.
-//! - `sd2`   : Input/output scalar, updated scaling factor for the second component.
-//! - `sx1`   : Input/output scalar, updated first vector component.
-//! - `sy1`   : Input scalar, second vector component (not modified).
-//! - `param` : Output array of 5 elements defining the modified Givens rotation.
+//! - `sd1`   (&mut f64)      : Input/output scalar, updated scaling factor for the first component.
+//! - `sd2`   (&mut f64)      : Input/output scalar, updated scaling factor for the second component.
+//! - `sx1`   (&mut f64)      : Input/output scalar, updated first vector component.
+//! - `sy1`   (&mut f64)      : Input scalar, second vector component (not modified).
+//! - `param` (&mut [f64; 5]) : Output array of 5 elements defining the modified Givens rotation.
 //!
 //! # Returns
 //! - Nothing. Updates `sd1`, `sd2`, `sx1`, and fills `param` in place.
@@ -30,9 +30,14 @@
 //! # Author
 //! Deval Deliwala
 
-
 #[inline]
-pub fn drotmg(sd1: &mut f64, sd2: &mut f64, sx1: &mut f64, sy1: f64, param: &mut [f64; 5]) {
+pub fn drotmg(
+    sd1     : &mut f64, 
+    sd2     : &mut f64,
+    sx1     : &mut f64,
+    sy1     : f64, 
+    param   : &mut [f64; 5]
+) {
     const GAM: f64 = 4096.0;
     const GAMSQ: f64 = GAM * GAM;
     const RGAMSQ: f64 = 1.0 / GAMSQ;
@@ -52,7 +57,8 @@ pub fn drotmg(sd1: &mut f64, sd2: &mut f64, sx1: &mut f64, sy1: f64, param: &mut
         *sx1 = 0.0;
     } else {
         let sp2 = *sd2 * sy1;
-        // second component already 0
+
+        // second component  0
         if sp2 == 0.0 {
             param[0] = -2.0;
             return;

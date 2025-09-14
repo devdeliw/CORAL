@@ -5,16 +5,14 @@
 //! For complex data, each element occupy two slots (real + imag).
 
 #[inline]
-pub(crate) fn required_len_ok(len: usize, n: usize, inc: isize) -> bool {
+pub(crate) fn required_len_ok(len: usize, n: usize, inc: usize) -> bool {
     if n == 0 { return true; }
-    let step = if inc >= 0 { inc as usize } else { (-inc) as usize };
-    len >= (n - 1).saturating_mul(step) + 1
+    len >= (n - 1).saturating_mul(inc) + 1
 }
 
 
 #[inline]
-pub(crate) fn required_len_ok_cplx(len: usize, n: usize, inc: isize) -> bool {
+pub(crate) fn required_len_ok_cplx(len: usize, n: usize, inc: usize) -> bool {
     if n == 0 { return true; }
-    let step = (if inc >= 0 { inc as usize } else { (-inc) as usize }) * 2;
-    len >= (n - 1).saturating_mul(step) + 2 
+    len >= (n - 1).saturating_mul(inc * 2) + 2 
 }

@@ -7,14 +7,14 @@
 //! The absolute value of a complex number is defined here as |Re(x)| + |Im(x)|.
 //!
 //! # Arguments
-//! - `n`    : Number of complex elements in the vector.
-//! - `x`    : Input slice containing interleaved complex vector elements
-//!            `[re0, im0, re1, im1, ...]`.
-//! - `incx` : Stride between consecutive complex elements of `x`
-//!            (measured in complex numbers; every step advances two scalar idxs).
+//! - `n`    (usize)  : Number of complex elements in the vector.
+//! - `x`    (&[f64]) : Input slice containing interleaved complex vector elements
+//!                   | `[re0, im0, re1, im1, ...]`.
+//! - `incx` (usize)  : Stride between consecutive complex elements of `x`
+//!                     (measured in complex numbers; every step advances two scalar idxs).
 //!
 //! # Returns
-//! - `usize` 1-based index of the first complex element with maximum absolute value.
+//! - `usize` 0-based index of the first complex element with maximum absolute value.
 //!
 //! # Notes
 //! - For `incx == 1`, [`izamax`] uses unrolled NEON SIMD instructions for optimized
@@ -33,7 +33,11 @@ use core::arch::aarch64::{
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
 
 #[inline]
-pub fn izamax(n: usize, x: &[f64], incx: isize) -> usize {
+pub fn izamax(
+    n       : usize,
+    x       : &[f64], 
+    incx    : usize
+) -> usize {
     // quick return 
     if n == 0 || incx <= 0 { return 0; }
 
@@ -41,11 +45,11 @@ pub fn izamax(n: usize, x: &[f64], incx: isize) -> usize {
 
     unsafe {
         let mut best_val = f64::NEG_INFINITY;
-        let mut best_idx = 0usize;
+        let mut best_idx = 0;
 
         // fast path 
         if incx == 1 {
-            let mut i = 0usize;
+            let mut i = 0;
             let allmax = vdupq_n_u64(u64::MAX);
             let ninf   = vdupq_n_f64(f64::NEG_INFINITY);
 
@@ -127,30 +131,35 @@ pub fn izamax(n: usize, x: &[f64], incx: isize) -> usize {
                 let re = *p;
                 let im = *p.add(1);
                 let v = re.abs() + im.abs();
+
                 if v > best_val { 
                     best_val = v; 
                     best_idx = k; 
                 }
-                p = p.add(2); k += 1;
+
+                p = p.add(2); 
+                k += 1;
             }
         } else {
             // non unit scalar 
-            let step = (incx as usize) * 2;
-            let mut i = 0usize;
+            let mut i = 0;
             let mut p = x.as_ptr();
             while i < n {
                 let re = *p;
                 let im = *p.add(1);
                 let v = re.abs() + im.abs();
+
                 if v > best_val { 
                     best_val = v; 
                     best_idx = i;
                 }
-                p = p.add(step); i += 1;
+
+                p = p.add(incx * 2);
+                i += 1;
             }
         }
 
-        best_idx + 1
+        best_idx
     }
 }
 
