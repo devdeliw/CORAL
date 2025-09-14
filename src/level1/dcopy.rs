@@ -4,11 +4,11 @@
 //! the input vector `x` into the output vector `y` with specified strides.
 //!
 //! # Arguments
-//! - `n`    : Number of elements to copy.
-//! - `x`    : Input slice containing vector elements.
-//! - `incx` : Stride between consecutive elements of `x`.
-//! - `y`    : Output slice to receive copied elements.
-//! - `incy` : Stride between consecutive elements of `y`.
+//! - `n`    (usize)      : Number of elements to copy.
+//! - `x`    (&[f64])     : Input slice containing vector elements.
+//! - `incx` (usize)      : Stride between consecutive elements of `x`.
+//! - `y`    (&mut [f64]) : Output slice to receive copied elements.
+//! - `incy` (usize)      : Stride between consecutive elements of `y`.
 //!
 //! # Returns
 //! - Nothing. The contents of `y` are overwritten with elements from `x`.
@@ -22,12 +22,16 @@
 //! # Author
 //! Deval Deliwala
 
-
 use crate::level1::assert_length_helpers::required_len_ok; 
 
-
 #[inline(always)]
-pub fn dcopy(n: usize, x: &[f64], incx: isize, y: &mut [f64], incy: isize) {
+pub fn dcopy(
+    n       : usize,
+    x       : &[f64],
+    incx    : usize, 
+    y       : &mut [f64], 
+    incy    : usize
+) {
     if n == 0 { return; }
 
     debug_assert!(incx != 0 && incy != 0, "BLAS increments must be non-zero");
@@ -42,10 +46,10 @@ pub fn dcopy(n: usize, x: &[f64], incx: isize, y: &mut [f64], incy: isize) {
         }
 
         // non unit stride 
-        let mut ix: isize = if incx >= 0 { 0 } else { (n as isize - 1) * (-incx) };
-        let mut iy: isize = if incy >= 0 { 0 } else { (n as isize - 1) * (-incy) };
+        let mut ix = 0; 
+        let mut iy = 0; 
         for _ in 0..n {
-            *y.get_unchecked_mut(iy as usize) = *x.get_unchecked(ix as usize);
+            *y.get_unchecked_mut(iy) = *x.get_unchecked(ix);
             ix += incx;
             iy += incy;
         }

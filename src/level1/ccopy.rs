@@ -4,15 +4,15 @@
 //! the input vector `x` into the output vector `y` with specified strides.
 //!
 //! # Arguments
-//! - `n`    : Number of complex elements to copy.
-//! - `x`    : Input slice containing interleaved complex vector elements
-//!            `[re0, im0, re1, im1, ...]`.
-//! - `incx` : Stride between consecutive complex elements of `x`
-//!            (measured in complex numbers; every step advances two scalar idxs).
-//! - `y`    : Output slice to receive copied complex elements
-//!            `[re0, im0, re1, im1, ...]`.
-//! - `incy` : Stride between consecutive complex elements of `y`
-//!            (measured in complex numbers; every step advances two scalar idxs).
+//! - `n`    (usize)      : Number of complex elements to copy.
+//! - `x`    (&[f32])     : Input slice containing interleaved complex vector elements
+//!                       | `[re0, im0, re1, im1, ...]`.
+//! - `incx` (usize)      : Stride between consecutive complex elements of `x`
+//!                       | (measured in complex numbers; every step advances two scalar idxs).
+//! - `y`    (&mut [f32]) : Output slice to receive copied complex elements
+//!                       `[re0, im0, re1, im1, ...]`.
+//! - `incy` (usize)      : Stride between consecutive complex elements of `y`
+//!                       (measured in complex numbers; every step advances two scalar idxs).
 //!
 //! # Returns
 //! - Nothing. The contents of `y` are overwritten with elements from `x`.
@@ -30,7 +30,13 @@
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 
 
 #[inline(always)]
-pub fn ccopy(n: usize, x: &[f32], incx: isize, y: &mut [f32], incy: isize) {
+pub fn ccopy(
+    n       : usize, 
+    x       : &[f32],
+    incx    : usize,
+    y       : &mut [f32],
+    incy    : usize
+) {
     // quick return 
     if n == 0 { return; }
 
@@ -44,17 +50,13 @@ pub fn ccopy(n: usize, x: &[f32], incx: isize, y: &mut [f32], incy: isize) {
             return;
         }
 
-        let stepx: isize = incx * 2; 
-        let stepy: isize = incy * 2;
-        let mut ix: isize = if stepx >= 0 { 0 } else { (n as isize - 1) * (-stepx) };
-        let mut iy: isize = if stepy >= 0 { 0 } else { (n as isize - 1) * (-stepy) };
+        let mut ix = 0; 
+        let mut iy = 0; 
         for _ in 0..n {
-            let ixi = ix as usize;
-            let iyi = iy as usize;
-            *y.get_unchecked_mut(iyi)     = *x.get_unchecked(ixi);
-            *y.get_unchecked_mut(iyi + 1) = *x.get_unchecked(ixi + 1);
-            ix += stepx;
-            iy += stepy;
+            *y.get_unchecked_mut(iy)     = *x.get_unchecked(ix);
+            *y.get_unchecked_mut(iy + 1) = *x.get_unchecked(ix + 1);
+            ix += incx * 2;
+            iy += incy * 2;
         }
     }
 }
