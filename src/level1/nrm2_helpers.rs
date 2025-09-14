@@ -11,7 +11,12 @@
 
 
 #[inline(always)] 
-pub(crate) fn upd_f32(scale: &mut f32, ssq: &mut f32, cmax: f32, cssq: f32) {
+pub(crate) fn upd_f32(
+    scale   : &mut f32,
+    ssq     : &mut f32,
+    cmax    : f32,
+    cssq    : f32
+) {
     if *scale < cmax {
 
         let r  = *scale / cmax;
@@ -33,7 +38,12 @@ pub(crate) fn upd_f32(scale: &mut f32, ssq: &mut f32, cmax: f32, cssq: f32) {
 
 
 #[inline(always)] 
-pub(crate) fn upd_f64(scale: &mut f64, ssq: &mut f64, cmax: f64, cssq: f64) {
+pub(crate) fn upd_f64(
+    scale   : &mut f64, 
+    ssq     : &mut f64, 
+    cmax    : f64, 
+    cssq    : f64
+) {
     if *scale < cmax {
 
         let r  = *scale / cmax;
