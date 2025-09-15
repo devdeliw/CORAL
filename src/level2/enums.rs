@@ -1,15 +1,15 @@
-pub enum Trans {
-    NoTrans,
-    Trans,  
-    ConjTrans
+pub enum CoralTranspose{
+    NoTranspose,
+    Transpose,  
+    ConjugateTranspose
 }
 
-pub enum UpLo { 
+pub enum CoralTriangular { 
     UpperTriangular, 
     LowerTriangular 
 }   
 
-pub enum Diag {
+pub enum CoralDiag {
     UnitDiag, 
     NonUnitDiag
 }
