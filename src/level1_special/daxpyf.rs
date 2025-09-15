@@ -1,0 +1,515 @@
+//! Performs a matrix-vector multiply and accumulation: y := y + A x
+//!
+//! This function implements an optimized fused double-precision BLAS [`daxpy`]
+//! operation using NEON intrinsics on AArch64. It computes the product
+//! of a matrix `A` (size m × n) and a vector `x` (length n), and
+//! accumulates the result into `y` (length m).
+//!
+//! # Arguments
+//! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
+//! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
+//! - `x`      (&[f64])     : Input vector of length `n_cols`.
+//! - `incx`   (usize)      : Stride between consecutive elements of `x`.
+//! - `matrix` (&[f64])     : Column-major matrix `A` of dimensions
+//!                         | (`lda` × `n_cols`).
+//! - `lda`    (usize)      : Leading dimension (column stride) of `A`,
+//!                         | must be ≥ `n_rows`.
+//! - `y`      (&mut [f64]) : Input/output vector of length `n_rows`.
+//! - `incy`   (usize)      : Stride between consecutive elements of `y`.
+//!
+//! # Notes
+//! - For unit strides (`incx == 1`, `incy == 1`), the kernel uses
+//!   SIMD microkernels with blocking for high performance.
+//! - For non-unit strides, it falls back to scalar [`daxpy`] updates.
+
+#[cfg(target_arch = "aarch64")]
+use core::arch::aarch64::{
+    vld1q_f64, 
+    vdupq_n_f64, 
+    vfmaq_f64,
+    vst1q_f64 
+};
+
+use crate::level1::assert_length_helpers::required_len_ok;
+use crate::level2::assert_length_helpers::required_len_ok_matrix;
+use crate::level1::daxpy::daxpy;
+
+const MC: usize = 128;
+const NR: usize = 8;
+
+#[inline(always)]
+#[cfg(target_arch = "aarch64")]
+pub fn daxpyf(
+    n_rows : usize,
+    n_cols : usize,
+    x      : &[f64],
+    incx   : usize,
+    matrix : &[f64],
+    lda    : usize,
+    y      : &mut [f64],
+    incy   : usize,
+) {
+    // quick return
+    if n_rows == 0 || n_cols == 0 { return; }
+
+    debug_assert!(incx > 0 && incy > 0, "BLAS increments must be non-zero");
+    debug_assert!(required_len_ok(x.len(), n_cols, incx), "x too short for n/incx");
+    debug_assert!(required_len_ok(y.len(), n_rows, incy), "y too short for m/incy");
+    debug_assert!(lda >= n_rows, "lda must be larger than n_rows");
+    debug_assert!(
+        required_len_ok_matrix(matrix.len(), n_rows, n_cols, lda),
+        "matrix not large enough given n_rows, n_cols, and lda col stride"
+    );
+
+    // fast path
+    if incx == 1 && incy == 1 {
+        unsafe {
+            let row_block = MC;
+            let mut row_idx = 0;
+
+            while row_idx < n_rows {
+                let mr = core::cmp::min(row_block, n_rows - row_idx);
+
+                let mut col_idx = 0;
+
+                // 8 columns at a time
+                while col_idx + NR <= n_cols {
+                    // first 8 values in x
+                    let x0 = vdupq_n_f64(*x.get_unchecked(col_idx + 0));
+                    let x1 = vdupq_n_f64(*x.get_unchecked(col_idx + 1));
+                    let x2 = vdupq_n_f64(*x.get_unchecked(col_idx + 2));
+                    let x3 = vdupq_n_f64(*x.get_unchecked(col_idx + 3));
+                    let x4 = vdupq_n_f64(*x.get_unchecked(col_idx + 4));
+                    let x5 = vdupq_n_f64(*x.get_unchecked(col_idx + 5));
+                    let x6 = vdupq_n_f64(*x.get_unchecked(col_idx + 6));
+                    let x7 = vdupq_n_f64(*x.get_unchecked(col_idx + 7));
+
+                    // pointers to first 8 columns in matrix
+                    let pa0 = matrix.as_ptr().add((col_idx + 0) * lda + row_idx);
+                    let pa1 = matrix.as_ptr().add((col_idx + 1) * lda + row_idx);
+                    let pa2 = matrix.as_ptr().add((col_idx + 2) * lda + row_idx);
+                    let pa3 = matrix.as_ptr().add((col_idx + 3) * lda + row_idx);
+                    let pa4 = matrix.as_ptr().add((col_idx + 4) * lda + row_idx);
+                    let pa5 = matrix.as_ptr().add((col_idx + 5) * lda + row_idx);
+                    let pa6 = matrix.as_ptr().add((col_idx + 6) * lda + row_idx);
+                    let pa7 = matrix.as_ptr().add((col_idx + 7) * lda + row_idx);
+
+                    // 8 rows at a time
+                    let mut i = 0;
+                    while i + 8 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+
+                        // first 8 values in y
+                        let mut y0 = vld1q_f64(py);
+                        let mut y1 = vld1q_f64(py.add(2));
+                        let mut y2 = vld1q_f64(py.add(4));
+                        let mut y3 = vld1q_f64(py.add(6));
+
+                        // pointer at ith row for each col
+                        let mut a0p = pa0.add(i);
+                        let mut a1p = pa1.add(i);
+                        let mut a2p = pa2.add(i);
+                        let mut a3p = pa3.add(i);
+                        let mut a4p = pa4.add(i);
+                        let mut a5p = pa5.add(i);
+                        let mut a6p = pa6.add(i);
+                        let mut a7p = pa7.add(i);
+
+                        // col 0
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y1 = vfmaq_f64(y1, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y2 = vfmaq_f64(y2, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y3 = vfmaq_f64(y3, x0, vld1q_f64(a0p));
+
+                        // col 1
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y1 = vfmaq_f64(y1, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y2 = vfmaq_f64(y2, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y3 = vfmaq_f64(y3, x1, vld1q_f64(a1p));
+
+                        // col 2
+                        y0 = vfmaq_f64(y0, x2, vld1q_f64(a2p)); a2p = a2p.add(2);
+                        y1 = vfmaq_f64(y1, x2, vld1q_f64(a2p)); a2p = a2p.add(2);
+                        y2 = vfmaq_f64(y2, x2, vld1q_f64(a2p)); a2p = a2p.add(2);
+                        y3 = vfmaq_f64(y3, x2, vld1q_f64(a2p));
+
+                        // col 3
+                        y0 = vfmaq_f64(y0, x3, vld1q_f64(a3p)); a3p = a3p.add(2);
+                        y1 = vfmaq_f64(y1, x3, vld1q_f64(a3p)); a3p = a3p.add(2);
+                        y2 = vfmaq_f64(y2, x3, vld1q_f64(a3p)); a3p = a3p.add(2);
+                        y3 = vfmaq_f64(y3, x3, vld1q_f64(a3p));
+
+                        // col 4
+                        y0 = vfmaq_f64(y0, x4, vld1q_f64(a4p)); a4p = a4p.add(2);
+                        y1 = vfmaq_f64(y1, x4, vld1q_f64(a4p)); a4p = a4p.add(2);
+                        y2 = vfmaq_f64(y2, x4, vld1q_f64(a4p)); a4p = a4p.add(2);
+                        y3 = vfmaq_f64(y3, x4, vld1q_f64(a4p));
+
+                        // col 5
+                        y0 = vfmaq_f64(y0, x5, vld1q_f64(a5p)); a5p = a5p.add(2);
+                        y1 = vfmaq_f64(y1, x5, vld1q_f64(a5p)); a5p = a5p.add(2);
+                        y2 = vfmaq_f64(y2, x5, vld1q_f64(a5p)); a5p = a5p.add(2);
+                        y3 = vfmaq_f64(y3, x5, vld1q_f64(a5p));
+
+                        // col 6
+                        y0 = vfmaq_f64(y0, x6, vld1q_f64(a6p)); a6p = a6p.add(2);
+                        y1 = vfmaq_f64(y1, x6, vld1q_f64(a6p)); a6p = a6p.add(2);
+                        y2 = vfmaq_f64(y2, x6, vld1q_f64(a6p)); a6p = a6p.add(2);
+                        y3 = vfmaq_f64(y3, x6, vld1q_f64(a6p));
+
+                        // col 7
+                        y0 = vfmaq_f64(y0, x7, vld1q_f64(a7p)); a7p = a7p.add(2);
+                        y1 = vfmaq_f64(y1, x7, vld1q_f64(a7p)); a7p = a7p.add(2);
+                        y2 = vfmaq_f64(y2, x7, vld1q_f64(a7p)); a7p = a7p.add(2);
+                        y3 = vfmaq_f64(y3, x7, vld1q_f64(a7p));
+
+                        vst1q_f64(py, y0);
+                        vst1q_f64(py.add(2), y1);
+                        vst1q_f64(py.add(4), y2);
+                        vst1q_f64(py.add(6), y3);
+
+                        i += 8;
+                    }
+
+                    // 4 rows at a time 
+                    while i + 4 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+                        let mut y0 = vld1q_f64(py);
+                        let mut y1 = vld1q_f64(py.add(2));
+
+                        let mut a0p = pa0.add(i);
+                        let mut a1p = pa1.add(i);
+                        let mut a2p = pa2.add(i);
+                        let mut a3p = pa3.add(i);
+                        let mut a4p = pa4.add(i);
+                        let mut a5p = pa5.add(i);
+                        let mut a6p = pa6.add(i);
+                        let mut a7p = pa7.add(i);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y1 = vfmaq_f64(y1, x0, vld1q_f64(a0p));
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y1 = vfmaq_f64(y1, x1, vld1q_f64(a1p));
+                        y0 = vfmaq_f64(y0, x2, vld1q_f64(a2p)); a2p = a2p.add(2);
+                        y1 = vfmaq_f64(y1, x2, vld1q_f64(a2p));
+                        y0 = vfmaq_f64(y0, x3, vld1q_f64(a3p)); a3p = a3p.add(2);
+                        y1 = vfmaq_f64(y1, x3, vld1q_f64(a3p));
+                        y0 = vfmaq_f64(y0, x4, vld1q_f64(a4p)); a4p = a4p.add(2);
+                        y1 = vfmaq_f64(y1, x4, vld1q_f64(a4p));
+                        y0 = vfmaq_f64(y0, x5, vld1q_f64(a5p)); a5p = a5p.add(2);
+                        y1 = vfmaq_f64(y1, x5, vld1q_f64(a5p));
+                        y0 = vfmaq_f64(y0, x6, vld1q_f64(a6p)); a6p = a6p.add(2);
+                        y1 = vfmaq_f64(y1, x6, vld1q_f64(a6p));
+                        y0 = vfmaq_f64(y0, x7, vld1q_f64(a7p)); a7p = a7p.add(2);
+                        y1 = vfmaq_f64(y1, x7, vld1q_f64(a7p));
+
+                        vst1q_f64(py, y0);
+                        vst1q_f64(py.add(2), y1);
+
+                        i += 4;
+                    }
+
+                    // 2 rows at a time 
+                    while i + 2 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+                        let mut y0 = vld1q_f64(py);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(pa0.add(i)));
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(pa1.add(i)));
+                        y0 = vfmaq_f64(y0, x2, vld1q_f64(pa2.add(i)));
+                        y0 = vfmaq_f64(y0, x3, vld1q_f64(pa3.add(i)));
+                        y0 = vfmaq_f64(y0, x4, vld1q_f64(pa4.add(i)));
+                        y0 = vfmaq_f64(y0, x5, vld1q_f64(pa5.add(i)));
+                        y0 = vfmaq_f64(y0, x6, vld1q_f64(pa6.add(i)));
+                        y0 = vfmaq_f64(y0, x7, vld1q_f64(pa7.add(i)));
+
+                        vst1q_f64(py, y0);
+                        i += 2;
+                    }
+
+                    // tail 
+                    while i < mr {
+                        let mut acc = *y.get_unchecked(row_idx + i);
+
+                        acc += *x.get_unchecked(col_idx) * *pa0.add(i);
+                        acc += *x.get_unchecked(col_idx + 1) * *pa1.add(i);
+                        acc += *x.get_unchecked(col_idx + 2) * *pa2.add(i);
+                        acc += *x.get_unchecked(col_idx + 3) * *pa3.add(i);
+                        acc += *x.get_unchecked(col_idx + 4) * *pa4.add(i);
+                        acc += *x.get_unchecked(col_idx + 5) * *pa5.add(i);
+                        acc += *x.get_unchecked(col_idx + 6) * *pa6.add(i);
+                        acc += *x.get_unchecked(col_idx + 7) * *pa7.add(i);
+
+                        *y.get_unchecked_mut(row_idx + i) = acc;
+                        i += 1;
+                    }
+
+                    col_idx += NR;
+                }
+
+                if col_idx + 4 <= n_cols {
+                    let x0 = vdupq_n_f64(*x.get_unchecked(col_idx));
+                    let x1 = vdupq_n_f64(*x.get_unchecked(col_idx + 1));
+                    let x2 = vdupq_n_f64(*x.get_unchecked(col_idx + 2));
+                    let x3 = vdupq_n_f64(*x.get_unchecked(col_idx + 3));
+
+                    let pa0 = matrix.as_ptr().add(col_idx * lda + row_idx);
+                    let pa1 = matrix.as_ptr().add((col_idx + 1) * lda + row_idx);
+                    let pa2 = matrix.as_ptr().add((col_idx + 2) * lda + row_idx);
+                    let pa3 = matrix.as_ptr().add((col_idx + 3) * lda + row_idx);
+
+                    let mut i = 0;
+                    while i + 8 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+
+                        let mut y0 = vld1q_f64(py);
+                        let mut y1 = vld1q_f64(py.add(2));
+                        let mut y2 = vld1q_f64(py.add(4));
+                        let mut y3 = vld1q_f64(py.add(6));
+
+                        let mut a0p = pa0.add(i);
+                        let mut a1p = pa1.add(i);
+                        let mut a2p = pa2.add(i);
+                        let mut a3p = pa3.add(i);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y1 = vfmaq_f64(y1, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y2 = vfmaq_f64(y2, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y3 = vfmaq_f64(y3, x0, vld1q_f64(a0p));
+
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y1 = vfmaq_f64(y1, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y2 = vfmaq_f64(y2, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y3 = vfmaq_f64(y3, x1, vld1q_f64(a1p));
+
+                        y0 = vfmaq_f64(y0, x2, vld1q_f64(a2p)); a2p = a2p.add(2);
+                        y1 = vfmaq_f64(y1, x2, vld1q_f64(a2p)); a2p = a2p.add(2);
+                        y2 = vfmaq_f64(y2, x2, vld1q_f64(a2p)); a2p = a2p.add(2);
+                        y3 = vfmaq_f64(y3, x2, vld1q_f64(a2p));
+
+                        y0 = vfmaq_f64(y0, x3, vld1q_f64(a3p)); a3p = a3p.add(2);
+                        y1 = vfmaq_f64(y1, x3, vld1q_f64(a3p)); a3p = a3p.add(2);
+                        y2 = vfmaq_f64(y2, x3, vld1q_f64(a3p)); a3p = a3p.add(2);
+                        y3 = vfmaq_f64(y3, x3, vld1q_f64(a3p));
+
+                        vst1q_f64(py, y0);
+                        vst1q_f64(py.add(2), y1);
+                        vst1q_f64(py.add(4), y2);
+                        vst1q_f64(py.add(6), y3);
+
+                        i += 8;
+                    }
+
+                    // tail
+                    while i + 4 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+                        let mut y0 = vld1q_f64(py);
+                        let mut y1 = vld1q_f64(py.add(2));
+
+                        let mut a0p = pa0.add(i);
+                        let mut a1p = pa1.add(i);
+                        let mut a2p = pa2.add(i);
+                        let mut a3p = pa3.add(i);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y1 = vfmaq_f64(y1, x0, vld1q_f64(a0p));
+
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y1 = vfmaq_f64(y1, x1, vld1q_f64(a1p));
+
+                        y0 = vfmaq_f64(y0, x2, vld1q_f64(a2p)); a2p = a2p.add(2);
+                        y1 = vfmaq_f64(y1, x2, vld1q_f64(a2p));
+
+                        y0 = vfmaq_f64(y0, x3, vld1q_f64(a3p)); a3p = a3p.add(2);
+                        y1 = vfmaq_f64(y1, x3, vld1q_f64(a3p));
+
+                        vst1q_f64(py, y0);
+                        vst1q_f64(py.add(2), y1);
+
+                        i += 4;
+                    }
+
+                    while i + 2 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+                        let mut y0 = vld1q_f64(py);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(pa0.add(i)));
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(pa1.add(i)));
+                        y0 = vfmaq_f64(y0, x2, vld1q_f64(pa2.add(i)));
+                        y0 = vfmaq_f64(y0, x3, vld1q_f64(pa3.add(i)));
+
+                        vst1q_f64(py, y0);
+                        i += 2;
+                    }
+
+                    while i < mr {
+                        let mut acc = *y.get_unchecked(row_idx + i);
+                        acc += *x.get_unchecked(col_idx) * *pa0.add(i);
+                        acc += *x.get_unchecked(col_idx + 1) * *pa1.add(i);
+                        acc += *x.get_unchecked(col_idx + 2) * *pa2.add(i);
+                        acc += *x.get_unchecked(col_idx + 3) * *pa3.add(i);
+
+                        *y.get_unchecked_mut(row_idx + i) = acc;
+                        i += 1;
+                    }
+
+                    col_idx += 4;
+                }
+
+                if col_idx + 2 <= n_cols {
+                    let x0 = vdupq_n_f64(*x.get_unchecked(col_idx));
+                    let x1 = vdupq_n_f64(*x.get_unchecked(col_idx + 1));
+
+                    let pa0 = matrix.as_ptr().add(col_idx * lda + row_idx);
+                    let pa1 = matrix.as_ptr().add((col_idx + 1) * lda + row_idx);
+
+                    let mut i = 0;
+                    while i + 8 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+
+                        let mut y0 = vld1q_f64(py);
+                        let mut y1 = vld1q_f64(py.add(2));
+                        let mut y2 = vld1q_f64(py.add(4));
+                        let mut y3 = vld1q_f64(py.add(6));
+
+                        let mut a0p = pa0.add(i);
+                        let mut a1p = pa1.add(i);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y1 = vfmaq_f64(y1, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y2 = vfmaq_f64(y2, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y3 = vfmaq_f64(y3, x0, vld1q_f64(a0p));
+
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y1 = vfmaq_f64(y1, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y2 = vfmaq_f64(y2, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y3 = vfmaq_f64(y3, x1, vld1q_f64(a1p));
+
+                        vst1q_f64(py, y0);
+                        vst1q_f64(py.add(2), y1);
+                        vst1q_f64(py.add(4), y2);
+                        vst1q_f64(py.add(6), y3);
+
+                        i += 8;
+                    }
+
+                    // tail
+                    while i + 4 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+                        let mut y0 = vld1q_f64(py);
+                        let mut y1 = vld1q_f64(py.add(2));
+
+                        let mut a0p = pa0.add(i);
+                        let mut a1p = pa1.add(i);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y1 = vfmaq_f64(y1, x0, vld1q_f64(a0p));
+
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(a1p)); a1p = a1p.add(2);
+                        y1 = vfmaq_f64(y1, x1, vld1q_f64(a1p));
+
+                        vst1q_f64(py, y0);
+                        vst1q_f64(py.add(2), y1);
+
+                        i += 4;
+                    }
+
+                    while i + 2 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+                        let mut y0 = vld1q_f64(py);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(pa0.add(i)));
+                        y0 = vfmaq_f64(y0, x1, vld1q_f64(pa1.add(i)));
+
+                        vst1q_f64(py, y0);
+                        i += 2;
+                    }
+
+                    while i < mr {
+                        let mut acc = *y.get_unchecked(row_idx + i);
+                        acc += *x.get_unchecked(col_idx) * *pa0.add(i);
+                        acc += *x.get_unchecked(col_idx + 1) * *pa1.add(i);
+                        *y.get_unchecked_mut(row_idx + i) = acc;
+                        i += 1;
+                    }
+
+                    col_idx += 2;
+                }
+
+                if col_idx < n_cols {
+                    let x0 = vdupq_n_f64(*x.get_unchecked(col_idx));
+                    let pa0 = matrix.as_ptr().add(col_idx * lda + row_idx);
+
+                    let mut i = 0;
+                    while i + 8 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+
+                        let mut y0 = vld1q_f64(py);
+                        let mut y1 = vld1q_f64(py.add(2));
+                        let mut y2 = vld1q_f64(py.add(4));
+                        let mut y3 = vld1q_f64(py.add(6));
+
+                        let mut a0p = pa0.add(i);
+
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y1 = vfmaq_f64(y1, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y2 = vfmaq_f64(y2, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y3 = vfmaq_f64(y3, x0, vld1q_f64(a0p));
+
+                        vst1q_f64(py, y0);
+                        vst1q_f64(py.add(2), y1);
+                        vst1q_f64(py.add(4), y2);
+                        vst1q_f64(py.add(6), y3);
+
+                        i += 8;
+                    }
+
+                    // tail
+                    while i + 4 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+                        let mut y0 = vld1q_f64(py);
+                        let mut y1 = vld1q_f64(py.add(2));
+
+                        let mut a0p = pa0.add(i);
+                        y0 = vfmaq_f64(y0, x0, vld1q_f64(a0p)); a0p = a0p.add(2);
+                        y1 = vfmaq_f64(y1, x0, vld1q_f64(a0p));
+
+                        vst1q_f64(py, y0);
+                        vst1q_f64(py.add(2), y1);
+
+                        i += 4;
+                    }
+
+                    while i + 2 <= mr {
+                        let py = y.as_mut_ptr().add(row_idx + i);
+                        let y0 = vfmaq_f64(vld1q_f64(py), x0, vld1q_f64(pa0.add(i)));
+                        vst1q_f64(py, y0);
+                        i += 2;
+                    }
+
+                    while i < mr {
+                        *y.get_unchecked_mut(row_idx + i) += *x.get_unchecked(col_idx) * *pa0.add(i);
+                        i += 1;
+                    }
+                }
+
+                row_idx += mr;
+            }
+
+            return; 
+        }
+    } else { 
+        // non unit stride
+        for col_idx in 0..n_cols {
+            unsafe { 
+                let scaled = *x.get_unchecked(col_idx * incx);
+                if scaled != 0.0 {
+                    let col_ptr = matrix.as_ptr().add(col_idx * lda);
+                    let col = core::slice::from_raw_parts(col_ptr, n_rows);
+                    daxpy(n_rows, scaled, col, 1, y, incy);
+                }
+            }
+        }
+    }
+}
+
