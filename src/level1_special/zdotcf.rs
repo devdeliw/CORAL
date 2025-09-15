@@ -505,14 +505,14 @@ pub fn zdotcf(
                     let mut i = 0;
 
                     while i + 8 <= mr {
-                        let x0 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
-                        let x1 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
-                        let x2 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
-                        let x3 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
-                        let x4 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 4)));
-                        let x5 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 5)));
-                        let x6 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 6)));
-                        let x7 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 7)));
+                        let x0  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
+                        let x1  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
+                        let x2  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
+                        let x3  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
+                        let x4  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 4)));
+                        let x5  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 5)));
+                        let x6  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 6)));
+                        let x7  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 7)));
                         let xr0 = vuzp1q_f64(x0, x1); let xi0 = vuzp2q_f64(x0, x1);
                         let xr1 = vuzp1q_f64(x2, x3); let xi1 = vuzp2q_f64(x2, x3);
                         let xr2 = vuzp1q_f64(x4, x5); let xi2 = vuzp2q_f64(x4, x5);
@@ -520,14 +520,14 @@ pub fn zdotcf(
 
                         macro_rules! upd8 {
                             ($col:ident, $re:ident, $im:ident) => {{
-                                let a0 = vld1q_f64($col.add(2 * (i + 0)));
-                                let a1 = vld1q_f64($col.add(2 * (i + 1)));
-                                let a2 = vld1q_f64($col.add(2 * (i + 2)));
-                                let a3 = vld1q_f64($col.add(2 * (i + 3)));
-                                let a4 = vld1q_f64($col.add(2 * (i + 4)));
-                                let a5 = vld1q_f64($col.add(2 * (i + 5)));
-                                let a6 = vld1q_f64($col.add(2 * (i + 6)));
-                                let a7 = vld1q_f64($col.add(2 * (i + 7)));
+                                let a0  = vld1q_f64($col.add(2 * (i + 0)));
+                                let a1  = vld1q_f64($col.add(2 * (i + 1)));
+                                let a2  = vld1q_f64($col.add(2 * (i + 2)));
+                                let a3  = vld1q_f64($col.add(2 * (i + 3)));
+                                let a4  = vld1q_f64($col.add(2 * (i + 4)));
+                                let a5  = vld1q_f64($col.add(2 * (i + 5)));
+                                let a6  = vld1q_f64($col.add(2 * (i + 6)));
+                                let a7  = vld1q_f64($col.add(2 * (i + 7)));
                                 let ar0 = vuzp1q_f64(a0, a1); let ai0 = vuzp2q_f64(a0, a1);
                                 let ar1 = vuzp1q_f64(a2, a3); let ai1 = vuzp2q_f64(a2, a3);
                                 let ar2 = vuzp1q_f64(a4, a5); let ai2 = vuzp2q_f64(a4, a5);
@@ -560,19 +560,19 @@ pub fn zdotcf(
                     }
 
                     while i + 4 <= mr {
-                        let x0 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
-                        let x1 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
-                        let x2 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
-                        let x3 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
+                        let x0  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
+                        let x1  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
+                        let x2  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
+                        let x3  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
                         let xr0 = vuzp1q_f64(x0, x1); let xi0 = vuzp2q_f64(x0, x1);
                         let xr1 = vuzp1q_f64(x2, x3); let xi1 = vuzp2q_f64(x2, x3);
 
                         macro_rules! upd4 {
                             ($col:ident, $re:ident, $im:ident) => {{
-                                let a0 = vld1q_f64($col.add(2 * (i + 0)));
-                                let a1 = vld1q_f64($col.add(2 * (i + 1)));
-                                let a2 = vld1q_f64($col.add(2 * (i + 2)));
-                                let a3 = vld1q_f64($col.add(2 * (i + 3)));
+                                let a0  = vld1q_f64($col.add(2 * (i + 0)));
+                                let a1  = vld1q_f64($col.add(2 * (i + 1)));
+                                let a2  = vld1q_f64($col.add(2 * (i + 2)));
+                                let a3  = vld1q_f64($col.add(2 * (i + 3)));
                                 let ar0 = vuzp1q_f64(a0, a1); let ai0 = vuzp2q_f64(a0, a1);
                                 let ar1 = vuzp1q_f64(a2, a3); let ai1 = vuzp2q_f64(a2, a3);
                                 $re = vfmaq_f64($re, ar0, xr0);
@@ -675,27 +675,27 @@ pub fn zdotcf(
                     let mut i = 0;
 
                     while i + 8 <= mr {
-                        let x0 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
-                        let x1 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
-                        let x2 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
-                        let x3 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
-                        let x4 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 4)));
-                        let x5 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 5)));
-                        let x6 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 6)));
-                        let x7 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 7)));
+                        let x0  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
+                        let x1  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
+                        let x2  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
+                        let x3  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
+                        let x4  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 4)));
+                        let x5  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 5)));
+                        let x6  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 6)));
+                        let x7  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 7)));
                         let xr0 = vuzp1q_f64(x0, x1); let xi0 = vuzp2q_f64(x0, x1);
                         let xr1 = vuzp1q_f64(x2, x3); let xi1 = vuzp2q_f64(x2, x3);
                         let xr2 = vuzp1q_f64(x4, x5); let xi2 = vuzp2q_f64(x4, x5);
                         let xr3 = vuzp1q_f64(x6, x7); let xi3 = vuzp2q_f64(x6, x7);
 
-                        let a0 = vld1q_f64(col0.add(2 * (i + 0)));
-                        let a1 = vld1q_f64(col0.add(2 * (i + 1)));
-                        let a2 = vld1q_f64(col0.add(2 * (i + 2)));
-                        let a3 = vld1q_f64(col0.add(2 * (i + 3)));
-                        let a4 = vld1q_f64(col0.add(2 * (i + 4)));
-                        let a5 = vld1q_f64(col0.add(2 * (i + 5)));
-                        let a6 = vld1q_f64(col0.add(2 * (i + 6)));
-                        let a7 = vld1q_f64(col0.add(2 * (i + 7)));
+                        let a0  = vld1q_f64(col0.add(2 * (i + 0)));
+                        let a1  = vld1q_f64(col0.add(2 * (i + 1)));
+                        let a2  = vld1q_f64(col0.add(2 * (i + 2)));
+                        let a3  = vld1q_f64(col0.add(2 * (i + 3)));
+                        let a4  = vld1q_f64(col0.add(2 * (i + 4)));
+                        let a5  = vld1q_f64(col0.add(2 * (i + 5)));
+                        let a6  = vld1q_f64(col0.add(2 * (i + 6)));
+                        let a7  = vld1q_f64(col0.add(2 * (i + 7)));
                         let ar0 = vuzp1q_f64(a0, a1); let ai0 = vuzp2q_f64(a0, a1);
                         let ar1 = vuzp1q_f64(a2, a3); let ai1 = vuzp2q_f64(a2, a3);
                         let ar2 = vuzp1q_f64(a4, a5); let ai2 = vuzp2q_f64(a4, a5);
@@ -717,14 +717,14 @@ pub fn zdotcf(
                         acc_im0 = vfmaq_f64(acc_im0, ar3, xi3);
                         acc_im0 = vfmsq_f64(acc_im0, ai3, xr3);
 
-                        let b0 = vld1q_f64(col1.add(2 * (i + 0)));
-                        let b1 = vld1q_f64(col1.add(2 * (i + 1)));
-                        let b2 = vld1q_f64(col1.add(2 * (i + 2)));
-                        let b3 = vld1q_f64(col1.add(2 * (i + 3)));
-                        let b4 = vld1q_f64(col1.add(2 * (i + 4)));
-                        let b5 = vld1q_f64(col1.add(2 * (i + 5)));
-                        let b6 = vld1q_f64(col1.add(2 * (i + 6)));
-                        let b7 = vld1q_f64(col1.add(2 * (i + 7)));
+                        let b0  = vld1q_f64(col1.add(2 * (i + 0)));
+                        let b1  = vld1q_f64(col1.add(2 * (i + 1)));
+                        let b2  = vld1q_f64(col1.add(2 * (i + 2)));
+                        let b3  = vld1q_f64(col1.add(2 * (i + 3)));
+                        let b4  = vld1q_f64(col1.add(2 * (i + 4)));
+                        let b5  = vld1q_f64(col1.add(2 * (i + 5)));
+                        let b6  = vld1q_f64(col1.add(2 * (i + 6)));
+                        let b7  = vld1q_f64(col1.add(2 * (i + 7)));
                         let br0 = vuzp1q_f64(b0, b1); let bi0 = vuzp2q_f64(b0, b1);
                         let br1 = vuzp1q_f64(b2, b3); let bi1 = vuzp2q_f64(b2, b3);
                         let br2 = vuzp1q_f64(b4, b5); let bi2 = vuzp2q_f64(b4, b5);
@@ -750,17 +750,17 @@ pub fn zdotcf(
                     }
 
                     while i + 4 <= mr {
-                        let x0 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
-                        let x1 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
-                        let x2 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
-                        let x3 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
+                        let x0  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
+                        let x1  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
+                        let x2  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
+                        let x3  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
                         let xr0 = vuzp1q_f64(x0, x1); let xi0 = vuzp2q_f64(x0, x1);
                         let xr1 = vuzp1q_f64(x2, x3); let xi1 = vuzp2q_f64(x2, x3);
 
-                        let a0 = vld1q_f64(col0.add(2 * (i + 0)));
-                        let a1 = vld1q_f64(col0.add(2 * (i + 1)));
-                        let a2 = vld1q_f64(col0.add(2 * (i + 2)));
-                        let a3 = vld1q_f64(col0.add(2 * (i + 3)));
+                        let a0  = vld1q_f64(col0.add(2 * (i + 0)));
+                        let a1  = vld1q_f64(col0.add(2 * (i + 1)));
+                        let a2  = vld1q_f64(col0.add(2 * (i + 2)));
+                        let a3  = vld1q_f64(col0.add(2 * (i + 3)));
                         let ar0 = vuzp1q_f64(a0, a1); let ai0 = vuzp2q_f64(a0, a1);
                         let ar1 = vuzp1q_f64(a2, a3); let ai1 = vuzp2q_f64(a2, a3);
                         acc_re0 = vfmaq_f64(acc_re0, ar0, xr0);
@@ -772,10 +772,10 @@ pub fn zdotcf(
                         acc_im0 = vfmaq_f64(acc_im0, ar1, xi1);
                         acc_im0 = vfmsq_f64(acc_im0, ai1, xr1);
 
-                        let b0 = vld1q_f64(col1.add(2 * (i + 0)));
-                        let b1 = vld1q_f64(col1.add(2 * (i + 1)));
-                        let b2 = vld1q_f64(col1.add(2 * (i + 2)));
-                        let b3 = vld1q_f64(col1.add(2 * (i + 3)));
+                        let b0  = vld1q_f64(col1.add(2 * (i + 0)));
+                        let b1  = vld1q_f64(col1.add(2 * (i + 1)));
+                        let b2  = vld1q_f64(col1.add(2 * (i + 2)));
+                        let b3  = vld1q_f64(col1.add(2 * (i + 3)));
                         let br0 = vuzp1q_f64(b0, b1); let bi0 = vuzp2q_f64(b0, b1);
                         let br1 = vuzp1q_f64(b2, b3); let bi1 = vuzp2q_f64(b2, b3);
                         acc_re1 = vfmaq_f64(acc_re1, br0, xr0);
@@ -796,17 +796,17 @@ pub fn zdotcf(
                         let xr = vuzp1q_f64(x0, x1);
                         let xi = vuzp2q_f64(x0, x1);
 
-                        let a0 = vld1q_f64(col0.add(2 * (i + 0)));
-                        let a1 = vld1q_f64(col0.add(2 * (i + 1)));
-                        let ar = vuzp1q_f64(a0, a1); let ai = vuzp2q_f64(a0, a1);
+                        let a0  = vld1q_f64(col0.add(2 * (i + 0)));
+                        let a1  = vld1q_f64(col0.add(2 * (i + 1)));
+                        let ar  = vuzp1q_f64(a0, a1); let ai = vuzp2q_f64(a0, a1);
                         acc_re0 = vfmaq_f64(acc_re0, ar, xr);
                         acc_re0 = vfmaq_f64(acc_re0, ai, xi);
                         acc_im0 = vfmaq_f64(acc_im0, ar, xi);
                         acc_im0 = vfmsq_f64(acc_im0, ai, xr);
 
-                        let b0 = vld1q_f64(col1.add(2 * (i + 0)));
-                        let b1 = vld1q_f64(col1.add(2 * (i + 1)));
-                        let br = vuzp1q_f64(b0, b1); let bi = vuzp2q_f64(b0, b1);
+                        let b0  = vld1q_f64(col1.add(2 * (i + 0)));
+                        let b1  = vld1q_f64(col1.add(2 * (i + 1)));
+                        let br  = vuzp1q_f64(b0, b1); let bi = vuzp2q_f64(b0, b1);
                         acc_re1 = vfmaq_f64(acc_re1, br, xr);
                         acc_re1 = vfmaq_f64(acc_re1, bi, xi);
                         acc_im1 = vfmaq_f64(acc_im1, br, xi);
@@ -859,27 +859,27 @@ pub fn zdotcf(
                     let mut i = 0;
 
                     while i + 8 <= mr {
-                        let x0 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
-                        let x1 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
-                        let x2 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
-                        let x3 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
-                        let x4 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 4)));
-                        let x5 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 5)));
-                        let x6 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 6)));
-                        let x7 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 7)));
+                        let x0  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
+                        let x1  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
+                        let x2  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
+                        let x3  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
+                        let x4  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 4)));
+                        let x5  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 5)));
+                        let x6  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 6)));
+                        let x7  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 7)));
                         let xr0 = vuzp1q_f64(x0, x1); let xi0 = vuzp2q_f64(x0, x1);
                         let xr1 = vuzp1q_f64(x2, x3); let xi1 = vuzp2q_f64(x2, x3);
                         let xr2 = vuzp1q_f64(x4, x5); let xi2 = vuzp2q_f64(x4, x5);
                         let xr3 = vuzp1q_f64(x6, x7); let xi3 = vuzp2q_f64(x6, x7);
 
-                        let a0 = vld1q_f64(col0.add(2 * (i + 0)));
-                        let a1 = vld1q_f64(col0.add(2 * (i + 1)));
-                        let a2 = vld1q_f64(col0.add(2 * (i + 2)));
-                        let a3 = vld1q_f64(col0.add(2 * (i + 3)));
-                        let a4 = vld1q_f64(col0.add(2 * (i + 4)));
-                        let a5 = vld1q_f64(col0.add(2 * (i + 5)));
-                        let a6 = vld1q_f64(col0.add(2 * (i + 6)));
-                        let a7 = vld1q_f64(col0.add(2 * (i + 7)));
+                        let a0  = vld1q_f64(col0.add(2 * (i + 0)));
+                        let a1  = vld1q_f64(col0.add(2 * (i + 1)));
+                        let a2  = vld1q_f64(col0.add(2 * (i + 2)));
+                        let a3  = vld1q_f64(col0.add(2 * (i + 3)));
+                        let a4  = vld1q_f64(col0.add(2 * (i + 4)));
+                        let a5  = vld1q_f64(col0.add(2 * (i + 5)));
+                        let a6  = vld1q_f64(col0.add(2 * (i + 6)));
+                        let a7  = vld1q_f64(col0.add(2 * (i + 7)));
                         let ar0 = vuzp1q_f64(a0, a1); let ai0 = vuzp2q_f64(a0, a1);
                         let ar1 = vuzp1q_f64(a2, a3); let ai1 = vuzp2q_f64(a2, a3);
                         let ar2 = vuzp1q_f64(a4, a5); let ai2 = vuzp2q_f64(a4, a5);
@@ -906,17 +906,17 @@ pub fn zdotcf(
                     }
 
                     while i + 4 <= mr {
-                        let x0 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
-                        let x1 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
-                        let x2 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
-                        let x3 = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
+                        let x0  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 0)));
+                        let x1  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 1)));
+                        let x2  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 2)));
+                        let x3  = vld1q_f64(x_ptr.add(2 * (row_idx + i + 3)));
                         let xr0 = vuzp1q_f64(x0, x1); let xi0 = vuzp2q_f64(x0, x1);
                         let xr1 = vuzp1q_f64(x2, x3); let xi1 = vuzp2q_f64(x2, x3);
 
-                        let a0 = vld1q_f64(col0.add(2 * (i + 0)));
-                        let a1 = vld1q_f64(col0.add(2 * (i + 1)));
-                        let a2 = vld1q_f64(col0.add(2 * (i + 2)));
-                        let a3 = vld1q_f64(col0.add(2 * (i + 3)));
+                        let a0  = vld1q_f64(col0.add(2 * (i + 0)));
+                        let a1  = vld1q_f64(col0.add(2 * (i + 1)));
+                        let a2  = vld1q_f64(col0.add(2 * (i + 2)));
+                        let a3  = vld1q_f64(col0.add(2 * (i + 3)));
                         let ar0 = vuzp1q_f64(a0, a1); let ai0 = vuzp2q_f64(a0, a1);
                         let ar1 = vuzp1q_f64(a2, a3); let ai1 = vuzp2q_f64(a2, a3);
 
