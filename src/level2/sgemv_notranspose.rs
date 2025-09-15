@@ -1,3 +1,45 @@
+//! Performs a single precision general matrix–vector multiply (GEMV) in the form:
+//! 
+//!     y := alpha * A * x + beta * y
+//!
+//! where `A` is an `n_rows` × `n_cols` column-major matrix, `x` is a vector of
+//! length `n_cols`, and `y` is a vector of length `n_rows`.  
+//!
+//! This function implements the BLAS [`crate::level2::sgemv`] routine for the
+//! **no-transpose** case, optimized for AArch64 NEON architectures with blocking and 
+//! panel packing.
+//!
+//! # Arguments
+//! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
+//! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
+//! - `alpha`  (f32)        : Scalar multiplier applied to the product `A * x`.
+//! - `matrix` (&[f32])     : Input slice containing the matrix `A`, stored in column-major
+//!                         | order with leading dimension `lda`.
+//! - `lda`    (usize)      : Leading dimension of `A` (stride between successive columns).
+//! - `x`      (&[f32])     : Input vector of length `n_cols`, with stride `incx`.
+//! - `incx`   (usize)      : Stride between consecutive elements of `x`.
+//! - `beta`   (f32)        : Scalar multiplier applied to `y` prior to accumulation.
+//! - `y`      (&mut [f32]) : Input/output vector of length `n_rows`, with stride `incy`.
+//! - `incy`   (usize)      : Stride between consecutive elements of `y`.
+//!
+//! # Returns
+//! - Nothing. The contents of `y` are updated in place to contain the result
+//!   `alpha * A * x + beta * y`.
+//!
+//! # Notes
+//! - If `n_rows == 0` or `n_cols == 0`, the function returns immediately.
+//! - If `alpha == 0.0 && beta == 1.0`, the function returns immediately (no change).
+//! - When `lda == n_rows`, the matrix is stored contiguously, and a **fast path**
+//!   is taken using a single fused [`saxpyf`] call.
+//! - Otherwise, the routine falls back to a **blocked algorithm**, iterating over
+//!   panels of size `MC x NC` with contiguous packing into temporary buffers.
+//! - The vectors `x` and `y` are internally packed into contiguous buffers if
+//!   `incx != 1` or `incy != 1`, with results written back at the end.
+//! - Debug assertions verify that slice lengths are consistent with BLAS semantics.
+//!
+//! # Author
+//! Deval Deliwala
+
 use core::slice; 
 use crate::level1::sscal::sscal;  
 use crate::level1_special::saxpyf::saxpyf;
