@@ -9,7 +9,7 @@ pub enum CoralTriangular {
     LowerTriangular 
 }   
 
-pub enum CoralDiag {
-    UnitDiag, 
-    NonUnitDiag
+pub enum CoralDiagonal {
+    UnitDiagonal, 
+    NonUnitDiagonal
 }

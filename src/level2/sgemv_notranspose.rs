@@ -134,7 +134,7 @@ pub(crate) fn sgemv_notranspose(
             let mb_eff = core::cmp::min(MC, n_rows - row_idx);
 
             // contiguous y sub-slice for this row block 
-            let y_sub: &mut [f32] = &mut y_slice[row_idx .. row_idx + mb_eff];
+            let y_sub: &mut [f32] = &mut y_slice[row_idx..row_idx + mb_eff];
 
             // base slice starting at row_idx to end of matrix view
             let a_row_base = unsafe {
@@ -166,7 +166,7 @@ pub(crate) fn sgemv_notranspose(
                 saxpyf(
                     mb_eff,                                   
                     nb_eff,                                   
-                    &xbuffer[col_idx .. col_idx + nb_eff],    
+                    &xbuffer[col_idx..col_idx + nb_eff],    
                     1,
                     &apack,                                   
                     mb_eff,                                   

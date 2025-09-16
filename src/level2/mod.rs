@@ -7,3 +7,10 @@ pub mod sgemv;
 pub mod sgemv_notranspose;
 pub mod sgemv_transpose;
 
+pub mod trmv_kernels;
+pub mod strmv; 
+pub mod strumv; 
+pub mod strlmv; 
+
+
+
