@@ -20,8 +20,8 @@ fn backward_substitution(
 ) {
     if nb == 0 { return; } 
 
-    // contiguous backwards substitution 
     // nb x nb 
+    // contiguous backwards substitution 
     unsafe { 
         for i in (0..nb).rev() { 
             let mut sum = 0.0;  
