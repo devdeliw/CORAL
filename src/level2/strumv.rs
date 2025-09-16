@@ -1,5 +1,38 @@
+//! Performs a single precision triangular matrix–vector multiply (TRMV) with 
+//! an upper triangular matrix.
+//!
+//! This function implements the BLAS [`strmv`] routine for **upper triangular** matrices,
+//! computing the in-place product `x := op(A) * x`, where `op(A)` is either `A` or `A^T`
+//!
+//! [`strumv`] function is crate visible and is implemented via [`crate::level2::strmv`] routine. 
+//!
+//! # Arguments
+//! - `n`          (usize)           : Order (dimension) of the square matrix `A`.
+//! - `diagonal`   (CoralDiagonal)   : Indicates if the diagonal is unit (all 1s) or non-unit.
+//! - `transpose`  (CoralTranspose)  : Specifies whether to use `A` or `A^T`.
+//! - `matrix`     (&[f32])          : Input slice containing the upper triangular matrix `A` in
+//!                                  | column-major layout.
+//! - `lda`        (usize)           : Leading dimension (stride between columns) of `A`.
+//! - `x`          (&mut [f32])      : Input/output slice containing the vector `x`, updated in place.
+//! - `incx`       (usize)           : Stride between consecutive elements of `x`.
+//!
+//! # Returns
+//! - Nothing. The contents of `x` are updated in place as `x := op(A) * x`.
+//!
+//! # Notes
+//! - The implementation uses block decomposition with a block size of `NB = 64`.
+//! - Fused level-1 routines ([`saxpyf`] and [`sdotf`]) are used for panel updates to improve 
+//!   performance.
+//! - The kernel is optimized for AArch64 NEON targets and assumes column-major memory layout.
+//!
+//! # Visibility 
+//! - pub(crate)
+//!
+//! # Author
+//! Deval Deliwala
+
 use core::slice;
-use crate::level2::enums::{CoralTranspose, CoralDiag};  
+use crate::level2::enums::{CoralTranspose, CoralDiagonal};  
 
 // fused level 1 
 use crate::level1_special::{saxpyf::saxpyf, sdotf::sdotf};
@@ -13,6 +46,19 @@ use crate::level2::trmv_kernels::single_add_and_scale;
 
 const NB: usize = 64; 
 
+/// Computes the product of an upper `buf_len x buf_len` diagonal block (no transpose)
+/// with a contiguous `x_block`, writing the result to `y_block`.
+///
+/// This handles the top-left square block `A[idx..idx+buf_len, idx..idx+buf_len]`
+/// during the `NoTranspose` traversal.
+///
+/// # Arguments
+/// - `buf_len` (usize)        : Size of the block to process.
+/// - `unit_diag` (bool)       : Whether to assume implicit 1s on the diagonal.
+/// - `mat_block` (*const f32) : Pointer to the first element of the block.
+/// - `lda` (usize)            : Leading dimension of the full matrix.
+/// - `x_block` (*const f32)   : Pointer to the input `x` subvector.
+/// - `y_block` (*mut f32)     : Pointer to the output subvector (overwrites `x_block` contents).
 #[inline(always)]
 fn compute_upper_block_notranspose( 
     buf_len     : usize,
@@ -55,6 +101,19 @@ fn compute_upper_block_notranspose(
     }
 }
 
+/// Computes the product of an upper `buf_len x buf_len` diagonal block (transpose)
+/// with a contiguous `x_block`, writing the result to `y_block`.
+///
+/// This handles the top-left square block `A[idx..idx+buf_len, idx..idx+buf_len]`
+/// during the `Transpose` traversal.
+///
+/// # Arguments
+/// - `buf_len` (usize)        : Size of the block to process.
+/// - `unit_diag` (bool)       : Whether to assume implicit 1s on the diagonal.
+/// - `mat_block` (*const f32) : Pointer to the first element of the block.
+/// - `lda` (usize)            : Leading dimension of the full matrix.
+/// - `x_block` (*const f32)   : Pointer to the input `x` subvector.
+/// - `y_block` (*mut f32)     : Pointer to the output subvector (overwrites `x_block` contents).
 #[inline(always)]
 fn compute_upper_block_transpose( 
     buf_len     : usize,
@@ -113,6 +172,7 @@ fn compute_upper_block_transpose(
     }
 }
 
+/// Returns raw pointer to `A[i, j]` 
 #[inline(always)]
 fn a_ij(
     matrix  : *const f32, 
@@ -126,6 +186,9 @@ fn a_ij(
     }
 }
 
+/// Scalar fallback kernel for a small upper triangular tail block (no transpose).
+///
+/// Used when fewer than `NB` rows remain, or for non-unit stride.
 #[inline(always)]
 fn compute_upper_block_tail_notranspose( 
     n           : usize, 
@@ -158,6 +221,9 @@ fn compute_upper_block_tail_notranspose(
     }
 }
 
+/// Scalar fallback kernel for a small upper triangular tail block (transpose).
+///
+/// Used when fewer than `NB` rows remain, or for non-unit stride.
 #[inline(always)]
 fn compute_upper_block_tail_transpose( 
     n           : usize, 
@@ -190,7 +256,7 @@ fn compute_upper_block_tail_transpose(
     }
 }
 
-
+/// [`CoralTranspose::NoTranspose`] variant 
 #[inline]
 fn strumv_notranspose( 
     n           : usize, 
@@ -287,6 +353,7 @@ fn strumv_notranspose(
     }
 }
 
+/// [`CoralTranspose::Transpose`] variant
 #[inline] 
 fn strumv_transpose( 
     n           : usize,
@@ -387,7 +454,7 @@ fn strumv_transpose(
 #[cfg(target_arch = "aarch64")] 
 pub(crate) fn strumv( 
     n           : usize, 
-    diagonal    : CoralDiag, 
+    diagonal    : CoralDiagonal, 
     transpose   : CoralTranspose, 
     matrix      : &[f32], 
     lda         : usize, 
@@ -396,8 +463,8 @@ pub(crate) fn strumv(
 ) { 
 
     let unit_diag = match diagonal { 
-        CoralDiag::UnitDiag     => true, 
-        CoralDiag::NonUnitDiag  => false, 
+        CoralDiagonal::UnitDiagonal     => true, 
+        CoralDiagonal::NonUnitDiagonal  => false, 
     };
 
     match transpose { 
