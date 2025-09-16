@@ -1,8 +1,10 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion}; 
+
 use coral::level2::{
     enums::CoralTranspose, 
     sgemv::sgemv, 
 }; 
+
 use cblas_sys::{
     CBLAS_LAYOUT, 
     CBLAS_TRANSPOSE, 
