@@ -61,7 +61,6 @@ pub fn saxpyf(
         "matrix not large enough given n_rows, n_cols, and lda col stride"
     );
 
-
     // fast path
     if incx == 1 && incy == 1 {
         unsafe {
