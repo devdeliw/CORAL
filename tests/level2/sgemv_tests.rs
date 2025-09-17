@@ -174,7 +174,7 @@ fn notranspose() {
 }
 
 #[test]
-fn __transpose() {
+fn transpose() {
     let m = 6usize;
     let n = 8usize;
     let lda = m; 
@@ -221,7 +221,7 @@ fn __transpose() {
 }
 
 #[test]
-fn ____strided() {
+fn strided() {
     let m = 9usize;
     let n = 4usize;
     let lda = m;

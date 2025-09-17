@@ -149,7 +149,7 @@ fn upper_notranspose() {
 }
 
 #[test]
-fn __upper_transpose() {
+fn upper_transpose() {
     let n   = 7usize;
     let lda = n;
     let a   = make_upper_col_major(n, lda);
@@ -217,7 +217,7 @@ fn lower_notranspose() {
 }
 
 #[test]
-fn __lower_transpose() {
+fn lower_transpose() {
     let n   = 6usize;
     let lda = n;
     let a   = make_lower_col_major(n, lda);
@@ -251,7 +251,7 @@ fn __lower_transpose() {
 }
 
 #[test]
-fn __________strided() {
+fn strided() {
     let n   = 8usize;
     let lda = n;
     let a   = make_upper_col_major(n, lda);
@@ -289,7 +289,7 @@ fn __________strided() {
 }
 
 #[test]
-fn ___unitdiag_upper() {
+fn unitdiag_upper() {
     let n   = 6usize;
     let lda = n;
     let a   = make_upper_col_major(n, lda);
@@ -325,7 +325,7 @@ fn ___unitdiag_upper() {
 }
 
 #[test]
-fn ________paddedlda() {
+fn paddedlda() {
     let n   = 5usize;
     let lda = n + 3; // padded leading dimension
     let a   = make_padded_col_major(n, lda);

@@ -4,5 +4,7 @@ mod sgemv_tests;
 mod strmv_tests;
 #[path = "level2/strsv_tests.rs"] 
 mod strsv_tests; 
+#[path = "level2/sger_tests.rs" ] 
+mod sger_tests; 
 
 

@@ -135,6 +135,42 @@ fn upper_notranspose() {
 }
 
 #[test]
+fn upper_transpose() {
+    let n   = 6usize;
+    let lda = n;
+    let a   = make_upper_col_major(n, lda);
+    let x0  = (0..n).map(|k| 0.1 + 0.2 * k as f32).collect::<Vec<_>>();
+
+    // coral
+    let mut x_coral = x0.clone();
+    strsv(
+        CoralTriangular::UpperTriangular,
+        CoralTranspose::Transpose,
+        CoralDiagonal::NonUnitDiagonal,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
+    );
+
+    // cblas reference
+    let mut x_ref = x0.clone();
+    cblas_trsv(
+        CBLAS_UPLO::CblasUpper,
+        CBLAS_TRANSPOSE::CblasTrans,
+        CBLAS_DIAG::CblasNonUnit,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
+    );
+
+    assert_allclose(&x_coral, &x_ref, 1e-4);
+}
+
+#[test]
 fn lower_notranspose() {
     let n   = 7usize;
     let lda = n;
@@ -171,7 +207,43 @@ fn lower_notranspose() {
 }
 
 #[test]
-fn __________strided() {
+fn lower_transpose() {
+    let n   = 7usize;
+    let lda = n;
+    let a   = make_lower_col_major(n, lda);
+    let x0  = (0..n).map(|k| -0.15 + 0.08 * k as f32).collect::<Vec<_>>();
+
+    // coral
+    let mut x_coral = x0.clone();
+    strsv(
+        CoralTriangular::LowerTriangular,
+        CoralTranspose::Transpose,
+        CoralDiagonal::NonUnitDiagonal,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
+    );
+
+    // cblas reference
+    let mut x_ref = x0.clone();
+    cblas_trsv(
+        CBLAS_UPLO::CblasLower,
+        CBLAS_TRANSPOSE::CblasTrans,
+        CBLAS_DIAG::CblasNonUnit,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
+    );
+
+    assert_allclose(&x_coral, &x_ref, 1e-4);
+}
+
+#[test]
+fn strided() {
     let n   = 8usize;
     let lda = n;
     let a   = make_upper_col_major(n, lda);
