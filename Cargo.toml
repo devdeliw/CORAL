@@ -1,45 +1,23 @@
 [package]
-name    = "rusty-blas"
+name    = "coral"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-wide        = "0.7"
 cblas-sys   = "0.1"
-num-traits  = "0.2"
-num-complex = "0.4" 
 
 [dev-dependencies]
 criterion = "0.5"
 
 [[bench]] 
-name    = "level1_asum" 
+name    = "level2_sgemv" 
 harness = false 
-
 [[bench]] 
-name    = "level1_nrm2" 
+name    = "level2_strmv" 
 harness = false
-
 [[bench]] 
-name    = "level1_iamax" 
+name    = "level2_strsv" 
 harness = false 
-
-[[bench]] 
-name    = "level1_scal" 
+[[bench]]
+name    = "level2_sger" 
 harness = false
-
-[[bench]] 
-name    = "level1_copy" 
-harness = false 
-
-[[bench]] 
-name    = "level1_swap" 
-harness = false 
-
-[[bench]] 
-name    = "level1_axpy"
-harness = false 
-
-[[bench]] 
-name    = "level2_gemv" 
-harness = false 
