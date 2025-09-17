@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
+use criterion::{criterion_group, criterion_main, BatchSize, Criterion, black_box};
 
 use coral::level2::{
     enums::{CoralTriangular, CoralTranspose, CoralDiagonal},
@@ -34,14 +34,14 @@ pub fn bench_strmv(c: &mut Criterion) {
             || x_init.clone(),
             |x| {
                 strmv(
-                    CoralTriangular::UpperTriangular,
-                    CoralTranspose::NoTranspose,
-                    CoralDiagonal::NonUnitDiagonal,
-                    n,
-                    &matrix,
-                    lda,
-                    x.as_mut_slice(),
-                    1,
+                    black_box(CoralTriangular::UpperTriangular),
+                    black_box(CoralTranspose::NoTranspose),
+                    black_box(CoralDiagonal::NonUnitDiagonal),
+                    black_box(n),
+                    black_box(&matrix),
+                    black_box(lda),
+                    black_box(x.as_mut_slice()),
+                    black_box(1),
                 );
             },
             BatchSize::SmallInput,
@@ -53,15 +53,15 @@ pub fn bench_strmv(c: &mut Criterion) {
             || x_init.clone(),
             |x| unsafe {
                 cblas_strmv(
-                    CBLAS_LAYOUT::CblasColMajor,
-                    CBLAS_UPLO::CblasUpper,
-                    CBLAS_TRANSPOSE::CblasNoTrans,
-                    CBLAS_DIAG::CblasNonUnit,
-                    n as i32,
-                    matrix.as_ptr(),
-                    lda as i32,
-                    x.as_mut_ptr(),
-                    1,
+                    black_box(CBLAS_LAYOUT::CblasColMajor),
+                    black_box(CBLAS_UPLO::CblasUpper),
+                    black_box(CBLAS_TRANSPOSE::CblasNoTrans),
+                    black_box(CBLAS_DIAG::CblasNonUnit),
+                    black_box(n as i32),
+                    black_box(matrix.as_ptr()),
+                    black_box(lda as i32),
+                    black_box(x.as_mut_ptr()),
+                    black_box(1),
                 );
             },
             BatchSize::SmallInput,
@@ -73,14 +73,14 @@ pub fn bench_strmv(c: &mut Criterion) {
             || x_init.clone(),
             |x| {
                 strmv(
-                    CoralTriangular::UpperTriangular,
-                    CoralTranspose::Transpose,
-                    CoralDiagonal::NonUnitDiagonal,
-                    n,
-                    &matrix,
-                    lda,
-                    x.as_mut_slice(),
-                    1,
+                    black_box(CoralTriangular::UpperTriangular),
+                    black_box(CoralTranspose::Transpose),
+                    black_box(CoralDiagonal::NonUnitDiagonal),
+                    black_box(n),
+                    black_box(&matrix),
+                    black_box(lda),
+                    black_box(x.as_mut_slice()),
+                    black_box(1),
                 );
             },
             BatchSize::SmallInput,
@@ -92,15 +92,15 @@ pub fn bench_strmv(c: &mut Criterion) {
             || x_init.clone(),
             |x| unsafe {
                 cblas_strmv(
-                    CBLAS_LAYOUT::CblasColMajor,
-                    CBLAS_UPLO::CblasUpper,
-                    CBLAS_TRANSPOSE::CblasTrans,
-                    CBLAS_DIAG::CblasNonUnit,
-                    n as i32,
-                    matrix.as_ptr(),
-                    lda as i32,
-                    x.as_mut_ptr(),
-                    1,
+                    black_box(CBLAS_LAYOUT::CblasColMajor),
+                    black_box(CBLAS_UPLO::CblasUpper),
+                    black_box(CBLAS_TRANSPOSE::CblasTrans),
+                    black_box(CBLAS_DIAG::CblasNonUnit),
+                    black_box(n as i32),
+                    black_box(matrix.as_ptr()),
+                    black_box(lda as i32),
+                    black_box(x.as_mut_ptr()),
+                    black_box(1),
                 );
             },
             BatchSize::SmallInput,
@@ -110,3 +110,4 @@ pub fn bench_strmv(c: &mut Criterion) {
 
 criterion_group!(benches, bench_strmv);
 criterion_main!(benches);
+
