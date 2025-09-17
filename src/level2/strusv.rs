@@ -76,7 +76,7 @@ fn backward_substitution(
                 let mut xi = *x_block.add(i * incx) - sum; 
 
                 if !unit_diag { 
-                    // divide by diagonal elements 
+                    // divide by diagonal element 
                     let matrix_ii = *mat_block.add(i + i * lda); 
                     xi /= matrix_ii 
                 } 
@@ -129,7 +129,7 @@ fn forward_substitution(
 
                 let mut xi = *x_block.add(i * step) - sum; 
                 if !unit_diag { 
-                    // divide by diagonal elements 
+                    // divide by diagonal element
                     xi /= *mat_block.add(i + i * lda) 
                 }
 
@@ -140,7 +140,7 @@ fn forward_substitution(
 } 
 
 /// for transpose variant; after solving diagonal block, 
-/// updates the unsolved entires of `x` below it. 
+/// updates the unsolved entries of `x` below it. 
 #[inline(always)] 
 fn update_tail_transpose( 
     rows_below  : usize, 
