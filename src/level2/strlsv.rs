@@ -8,7 +8,7 @@ use crate::level1_special::{saxpyf::saxpyf, sdotf::sdotf};
 use crate::level1::assert_length_helpers::required_len_ok;
 use crate::level2::assert_length_helpers::required_len_ok_matrix;
 
-const NB: usize = 64;
+const NB: usize = 8;
 
 /// for no transpose variant
 #[inline(always)]
