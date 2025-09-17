@@ -1,3 +1,39 @@
+//! Performs a single precision triangular solve (TRSV) with a lower triangular matrix.
+//!
+//! This function implements the BLAS [`strsv`] routine for **lower triangular** matrices,
+//! solving the system `op(L) * x = b` in place for `x`, where `op(L)` is either `L` or `L^T`.
+//!
+//! The [`strlsv`] function is crate-visible and is implemented via 
+//! [`crate::level2::strsv`] using block forward/back substitution kernels.
+//!
+//! # Arguments
+//! - `n`          (usize)           : Order (dimension) of the square matrix `L`.
+//! - `transpose`  (CoralTranspose)  : Specifies whether to use `L` or `L^T`.
+//! - `diagonal`   (CoralDiagonal)   : Indicates if the diagonal is unit (all 1s) or non-unit.
+//! - `matrix`     (&[f32])          : Input slice containing the lower triangular matrix `L` in
+//!                                  | column-major layout.
+//! - `lda`        (usize)           : Leading dimension (stride between columns) of `L`.
+//! - `x`          (&mut [f32])      : Input/output slice containing the right-hand side vector `x`,
+//!                                  | which is overwritten with the solution.
+//! - `incx`       (usize)           : Stride between consecutive elements of `x`.
+//!
+//! # Returns
+//! - Nothing. The contents of `x` are updated in place as the solution to `op(L) * x = b`.
+//!
+//! # Notes
+//! - The implementation uses block decomposition with a block size of `NB = 8`.
+//! - For the no-transpose case, diagonal blocks are solved using a **forward substitution** kernel,
+//!   and remaining elements are updated with a fused [`saxpyf`] panel update.
+//! - For the transpose case, diagonal blocks are solved using a **backward substitution** kernel,
+//!   and previously solved elements are propagated with a fused [`sdotf`] update.
+//! - The kernel is optimized for AArch64 NEON targets and assumes column-major memory layout.
+//!
+//! # Visibility
+//! - pub(crate)
+//!
+//! # Author
+//! Deval Deliwala
+
 use core::slice;
 use crate::level2::enums::{CoralTranspose, CoralDiagonal};
 
@@ -8,9 +44,21 @@ use crate::level1_special::{saxpyf::saxpyf, sdotf::sdotf};
 use crate::level1::assert_length_helpers::required_len_ok;
 use crate::level2::assert_length_helpers::required_len_ok_matrix;
 
+// TUNED
 const NB: usize = 8;
 
-/// for no transpose variant
+/// Solves a small `nb x nb` lower triangular diagonal block using
+/// **forward substitution**; for no transpose only 
+///
+/// Used as the core kernel for the `NoTranspose` path.
+///
+/// # Arguments
+/// - `nb` (usize)             : Size of the block to solve.
+/// - `unit_diag` (bool)       : Whether to assume implicit 1s on the diagonal.
+/// - `mat_block` (*const f32) : Pointer to the block `A[i.., i..]`.
+/// - `lda` (usize)            : Leading dimension of the full matrix.
+/// - `x_block` (*mut f32)     : Pointer to the subvector `x[i..]` to solve in place.
+/// - `incx` (usize)           : Stride between consecutive elements of `x_block`.
 #[inline(always)]
 fn forward_substitution(
     nb:       usize,
@@ -88,7 +136,19 @@ fn forward_substitution(
     }
 }
 
-/// for transpose variant
+/// Solves a small `nb x nb` lower triangular diagonal block using
+/// **backward substitution**; for transpose only 
+///
+/// Used as the core kernel for the `Transpose` path.
+///
+/// # Arguments
+/// - `nb` (usize)            : Size of the block to solve.
+/// - `unit_diag` (bool)      : Whether to assume implicit 1s on the diagonal.
+/// - `mat_block` (*const f32): Pointer to the block `A[i.., i..]`.
+/// - `lda` (usize)            : Leading dimension of the full matrix.
+/// - `x_block` (*mut f32)     : Pointer to the subvector `x[i..]` to solve in place.
+/// - `incx` (usize)           : Stride between consecutive elements of `x_block`.
+#[inline(always)]
 #[inline(always)]
 fn backward_substitution(
     nb:       usize,
@@ -161,8 +221,10 @@ fn backward_substitution(
     }
 }
 
-/// for no-transpose variant; after solving diagonal block,
-/// updates the unsolved entries of `x` below it.
+/// Applies the contribution of a solved diagonal block to the remaining
+/// entries of `x` below it; no transpose only
+///
+/// Implements `x_tail := x_tail - A_view * x_block` using a fused axpy kernel.
 #[inline(always)]
 fn update_tail_notranspose(
     rows_below: usize,
@@ -193,8 +255,10 @@ fn update_tail_notranspose(
     }
 }
 
-/// for transpose variant; after solving diagonal block,
-/// updates the unsolved entries of `x` above it.
+/// Applies the contribution of a solved diagonal block to the remaining
+/// entries of `x` above it; transpose only 
+///
+/// Implements `x_head := x_head - A_view^T * x_block` using a fused dot kernel.
 #[inline(always)]
 fn update_head_transpose(
     head_len: usize,
