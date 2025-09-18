@@ -34,7 +34,7 @@ use crate::level1::assert_length_helpers::required_len_ok;
 use crate::level2::assert_length_helpers::required_len_ok_matrix;
 use crate::level1::daxpy::daxpy;
 
-const MC: usize = 128;
+const MR: usize = 128;
 const NR: usize = 8;
 
 #[inline(always)]
@@ -64,7 +64,7 @@ pub fn daxpyf(
     // fast path
     if incx == 1 && incy == 1 {
         unsafe {
-            let row_block = MC;
+            let row_block = MR;
             let mut row_idx = 0;
 
             while row_idx < n_rows {

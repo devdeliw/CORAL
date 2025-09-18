@@ -39,6 +39,7 @@ use crate::level2::{
 }; 
 
 #[inline] 
+#[cfg(target_arch = "aarch64")]
 pub fn strsv( 
     uplo        : CoralTriangular, 
     transpose   : CoralTranspose, 

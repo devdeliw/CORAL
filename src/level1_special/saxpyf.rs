@@ -34,8 +34,9 @@ use crate::level1::assert_length_helpers::required_len_ok;
 use crate::level2::assert_length_helpers::required_len_ok_matrix;
 use crate::level1::saxpy::saxpy;
 
-const MC: usize = 128; // rows at a time 
-const NR: usize = 8;   // cols at a time 
+// TUNED 
+const MR: usize = 128; // rows at a time 
+const NR: usize = 128;   // cols at a time 
 
 #[inline(always)]
 #[cfg(target_arch = "aarch64")]
@@ -64,7 +65,7 @@ pub fn saxpyf(
     // fast path
     if incx == 1 && incy == 1 {
         unsafe {
-            let row_block = MC;
+            let row_block = MR;
             let mut row_idx = 0;
 
             while row_idx < n_rows {

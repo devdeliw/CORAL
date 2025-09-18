@@ -149,7 +149,6 @@ fn forward_substitution(
 /// - `x_block` (*mut f32)     : Pointer to the subvector `x[i..]` to solve in place.
 /// - `incx` (usize)           : Stride between consecutive elements of `x_block`.
 #[inline(always)]
-#[inline(always)]
 fn backward_substitution(
     nb:       usize,
     unit_diag: bool,

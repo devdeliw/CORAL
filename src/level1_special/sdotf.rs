@@ -25,8 +25,9 @@ use crate::level1::assert_length_helpers::required_len_ok;
 use crate::level2::assert_length_helpers::required_len_ok_matrix;
 use crate::level1::sdot::sdot; 
 
+// TUNED 
 const MC: usize = 128;
-const NR: usize = 8;
+const NR: usize = 128;
 
 #[inline(always)]
 #[cfg(target_arch = "aarch64")]

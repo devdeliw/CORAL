@@ -43,6 +43,7 @@ use crate::level2::assert_length_helpers::required_len_ok_matrix;
 
 // mini kernels 
 use crate::level2::trmv_kernels::single_add_and_scale; 
+use crate::level2::matrix_ij::a_ij_immutable_f32; 
 
 const NB: usize = 64; 
 
@@ -53,12 +54,12 @@ const NB: usize = 64;
 /// during the `NoTranspose` traversal.
 ///
 /// # Arguments
-/// - `buf_len` (usize)        : Size of the block to process.
-/// - `unit_diag` (bool)       : Whether to assume implicit 1s on the diagonal.
-/// - `mat_block` (*const f32) : Pointer to the first element of the block.
-/// - `lda` (usize)            : Leading dimension of the full matrix.
-/// - `x_block` (*const f32)   : Pointer to the input `x` subvector.
-/// - `y_block` (*mut f32)     : Pointer to the output subvector (overwrites `x_block` contents).
+/// - `buf_len`     (usize)      : Size of the block to process.
+/// - `unit_diag`   (bool)       : Whether to assume implicit 1s on the diagonal.
+/// - `mat_block`   (*const f32) : Pointer to the first element of the block.
+/// - `lda`         (usize)      : Leading dimension of the full matrix.
+/// - `x_block`     (*const f32) : Pointer to the input `x` subvector.
+/// - `y_block`     (*mut f32)   : Pointer to the output subvector (overwrites `x_block` contents).
 #[inline(always)]
 fn compute_upper_block_notranspose( 
     buf_len     : usize,
@@ -108,12 +109,12 @@ fn compute_upper_block_notranspose(
 /// during the `Transpose` traversal.
 ///
 /// # Arguments
-/// - `buf_len` (usize)        : Size of the block to process.
-/// - `unit_diag` (bool)       : Whether to assume implicit 1s on the diagonal.
-/// - `mat_block` (*const f32) : Pointer to the first element of the block.
-/// - `lda` (usize)            : Leading dimension of the full matrix.
-/// - `x_block` (*const f32)   : Pointer to the input `x` subvector.
-/// - `y_block` (*mut f32)     : Pointer to the output subvector (overwrites `x_block` contents).
+/// - `buf_len`     (usize)      : Size of the block to process.
+/// - `unit_diag`   (bool)       : Whether to assume implicit 1s on the diagonal.
+/// - `mat_block`   (*const f32) : Pointer to the first element of the block.
+/// - `lda`         (usize)      : Leading dimension of the full matrix.
+/// - `x_block`     (*const f32) : Pointer to the input `x` subvector.
+/// - `y_block`     (*mut f32)   : Pointer to the output subvector (overwrites `x_block` contents).
 #[inline(always)]
 fn compute_upper_block_transpose( 
     buf_len     : usize,
@@ -172,20 +173,6 @@ fn compute_upper_block_transpose(
     }
 }
 
-/// Returns raw pointer to `A[i, j]` 
-#[inline(always)]
-fn a_ij(
-    matrix  : *const f32, 
-    i       : usize, 
-    j       : usize, 
-    inc_row : usize, 
-    inc_col : usize, 
-) -> *const f32 { 
-    unsafe { 
-        matrix.add(i * inc_row + j * inc_col) 
-    }
-}
-
 /// Scalar fallback kernel for a small upper triangular tail block (no transpose).
 ///
 /// Used when fewer than `NB` rows remain, or for non-unit stride.
@@ -208,12 +195,12 @@ fn compute_upper_block_tail_notranspose(
             let mut sum = if unit_diag { 
                 *x0.add(ii * incx) 
             } else { 
-                *a_ij(mat_block, ii, ii, 1, lda) * *x0.add(ii * incx)
+                *a_ij_immutable_f32(mat_block, ii, ii, 1, lda) * *x0.add(ii * incx)
             }; 
 
             for j in (i + 1)..n { 
                 let jj = j; 
-                sum += *a_ij(mat_block, ii, jj, 1, lda) * *x0.add(jj * incx); 
+                sum += *a_ij_immutable_f32(mat_block, ii, jj, 1, lda) * *x0.add(jj * incx); 
             }
 
             *x0.add(ii * incx) = sum;
@@ -243,12 +230,12 @@ fn compute_upper_block_tail_transpose(
             let mut sum = if unit_diag { 
                 *x0.add(ii * incx) 
             } else { 
-                *a_ij(mat_block, ii, ii, 1, lda) * *x0.add(ii * incx) 
+                *a_ij_immutable_f32(mat_block, ii, ii, 1, lda) * *x0.add(ii * incx) 
             }; 
 
             for j in 0..i { 
                 let jj = j; 
-                sum += *a_ij(mat_block, jj, ii, 1, lda) * *x0.add(jj * incx); 
+                sum += *a_ij_immutable_f32(mat_block, jj, ii, 1, lda) * *x0.add(jj * incx); 
             }
 
             *x0.add(ii * incx) = sum; 
@@ -256,7 +243,6 @@ fn compute_upper_block_tail_transpose(
     }
 }
 
-/// [`CoralTranspose::NoTranspose`] variant 
 #[inline]
 fn strumv_notranspose( 
     n           : usize, 
@@ -353,7 +339,6 @@ fn strumv_notranspose(
     }
 }
 
-/// [`CoralTranspose::Transpose`] variant
 #[inline] 
 fn strumv_transpose( 
     n           : usize,
