@@ -35,9 +35,6 @@
 //!   is taken using a single fused [`sdotf`] call.
 //! - Otherwise, the routine falls back to a **blocked algorithm**, iterating over
 //!   panels of size `MC x NC` with contiguous packing into temporary buffers.
-//! - The vectors `x` and `y` are internally packed into contiguous buffers if
-//!   `incx != 1` or `incy != 1`, with results written back at the end.
-//! - Debug assertions verify that slice lengths are consistent with BLAS semantics.
 //!
 //! # Author
 //! Deval Deliwala

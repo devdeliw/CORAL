@@ -35,9 +35,6 @@
 //!   is taken using a single fused [`saxpyf`] call.
 //! - Otherwise, the routine falls back to a **blocked algorithm**, iterating over
 //!   panels of size `MC x NC` with contiguous packing into temporary buffers.
-//! - The vectors `x` and `y` are internally packed into contiguous buffers if
-//!   `incx != 1` or `incy != 1`, with results written back at the end.
-//! - Debug assertions verify that slice lengths are consistent with BLAS semantics.
 //!
 //! # Author
 //! Deval Deliwala
@@ -60,9 +57,9 @@ use crate::level2::{
     panel_packing::pack_panel, 
 };
 
-// NOT TUNED, just heuristic 
+// TUNED 
 const MC: usize = 64; 
-const NC: usize = 128;  
+const NC: usize = 64;  
 
 #[inline] 
 #[cfg(target_arch = "aarch64")] 
