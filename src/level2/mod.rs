@@ -8,6 +8,8 @@ pub mod sgemv;
 pub mod sgemv_notranspose;
 pub mod sgemv_transpose;
 
+pub mod ssymv; 
+
 pub mod trmv_kernels;
 pub mod strmv; 
 pub mod strumv; 
@@ -18,6 +20,7 @@ pub mod strusv;
 pub mod strlsv; 
 
 pub mod sger;
+
 
 
 

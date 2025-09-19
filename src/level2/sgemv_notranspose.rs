@@ -57,9 +57,8 @@ use crate::level2::{
     panel_packing::pack_panel, 
 };
 
-// TUNED 
 const MC: usize = 64; 
-const NC: usize = 64;  
+const NC: usize = 128;  
 
 #[inline] 
 #[cfg(target_arch = "aarch64")] 

@@ -21,7 +21,7 @@ pub fn bench_sgemv(c: &mut Criterion) {
     let matrix     = vec![1.0f32; lda * n]; 
 
     let x_notrans  = vec![1.0f32; n]; 
-    let x_trans    = vec![1.0f32; m]; 
+    let x_trans    = vec![1.0f32; m];  
 
     c.bench_function("coral_sgemv_notrans", |b| { 
         let y0 = vec![2.0f32; m]; 

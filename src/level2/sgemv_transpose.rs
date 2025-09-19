@@ -7,7 +7,7 @@
 //! where `A` is an `n_rows` × `n_cols` column-major matrix, `x` is a vector of
 //! length `n_rows`, and `y` is a vector of length `n_cols`.  
 //!
-//! This function implements the BLAS [`crate::level2::_sgemv`] routine for the
+//! This function implements the BLAS [`crate::level2::sgemv`] routine for the
 //! **transpose** case, optimized for AArch64 NEON architectures with blocking and 
 //! panel packing.
 //!
@@ -57,9 +57,9 @@ use crate::level2::{
     panel_packing::pack_panel,
 };
 
-// NOT TUNED, just heuristic
+// TUNED
 const MC: usize = 64;
-const NC: usize = 128;
+const NC: usize = 64;
 
 #[inline]
 #[cfg(target_arch = "aarch64")]
