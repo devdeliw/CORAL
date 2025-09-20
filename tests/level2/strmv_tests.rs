@@ -507,7 +507,7 @@ fn paddedlda_lower_transpose() {
 }
 
 #[test]
-fn zero_n_quick_return() {
+fn n_zero_quick_return() {
     let n   = 0usize;
     let lda = 1usize; // useless
 

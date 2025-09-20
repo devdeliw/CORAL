@@ -44,7 +44,7 @@ fn cblas_trsv(
 
 // helpers
 
-fn make_upper_col_major(
+fn make_upper(
     n   : usize,
     lda : usize,
 ) -> Vec<f32> {
@@ -54,14 +54,14 @@ fn make_upper_col_major(
             let d     = (j - i) as f32;
             let diag  = 1.0f32 + 0.02f32 * (i as f32);
             let off   = 0.01f32 / (1.0f32 + d); // gently decays away from the diagonal
-                                                // prevent single precision errors 
+                                                // prevent errors from single precision 
             a[i + j * lda] = if i == j { diag } else { off };
         }
     }
     a
 }
 
-fn make_lower_col_major(
+fn make_lower(
     n   : usize,
     lda : usize,
 ) -> Vec<f32> {
@@ -71,14 +71,14 @@ fn make_lower_col_major(
             let d     = (i - j) as f32;
             let diag  = 1.0f32 + 0.02f32 * (i as f32);
             let off   = 0.01f32 / (1.0f32 + d); // gently decays away from the diagonal
-                                                // prevent single precision errors 
+                                                // prevent errors from single precision 
             a[i + j * lda] = if i == j { diag } else { off };
         }
     }
     a
 }
 
-fn make_padded_col_major(
+fn make_padded(
     n   : usize,
     lda : usize,
 ) -> Vec<f32> {
@@ -104,7 +104,7 @@ fn make_padded_col_major(
 // well-conditioned upper for UNIT-DIAG tests
 // strong unit diagonal;
 // strictly-upper decays with distance from diag
-fn make_upper_unit_wellcond_col_major(n: usize, lda: usize) -> Vec<f32> {
+fn make_upper_unit(n: usize, lda: usize) -> Vec<f32> {
     let mut a = vec![0.0f32; lda * n];
     for j in 0..n {
         for i in 0..=j {
@@ -123,7 +123,7 @@ fn make_upper_unit_wellcond_col_major(n: usize, lda: usize) -> Vec<f32> {
 // well-conditioned lower for UNIT-DIAG tests
 // strong unit diagonal; 
 // strictly-lower decays with distance from diag
-fn make_lower_unit_wellcond_col_major(n: usize, lda: usize) -> Vec<f32> {
+fn make_lower_unit(n: usize, lda: usize) -> Vec<f32> {
     let mut a = vec![0.0f32; lda * n];
     for j in 0..n {
         for i in j..n {
@@ -185,7 +185,7 @@ const ATOL: f32 = 1e-5;
 fn upper_notranspose_small() {
     let n   = 6usize;
     let lda = n;
-    let a   = make_upper_col_major(n, lda);
+    let a   = make_upper(n, lda);
     let x0  = (0..n).map(|k| 0.1 + 0.2 * (k as f32)).collect::<Vec<_>>();
 
     let mut x_coral = x0.clone();
@@ -211,7 +211,7 @@ fn upper_notranspose_small() {
 fn upper_transpose_small() {
     let n   = 7usize;
     let lda = n;
-    let a   = make_upper_col_major(n, lda);
+    let a   = make_upper(n, lda);
     let x0  = (0..n).map(|k| 0.3 - 0.05 * (k as f32)).collect::<Vec<_>>();
 
     let mut x_coral = x0.clone();
@@ -237,7 +237,7 @@ fn upper_transpose_small() {
 fn lower_notranspose_small() {
     let n   = 5usize;
     let lda = n;
-    let a   = make_lower_col_major(n, lda);
+    let a   = make_lower(n, lda);
     let x0  = (0..n).map(|k| -0.2 + 0.1 * (k as f32)).collect::<Vec<_>>();
 
     let mut x_coral = x0.clone();
@@ -263,7 +263,7 @@ fn lower_notranspose_small() {
 fn lower_transpose_small() {
     let n   = 6usize;
     let lda = n;
-    let a   = make_lower_col_major(n, lda);
+    let a   = make_lower(n, lda);
     let x0  = (0..n).map(|k| 0.15 * (k as f32)).collect::<Vec<_>>();
 
     let mut x_coral = x0.clone();
@@ -289,7 +289,7 @@ fn lower_transpose_small() {
 fn upper_notranspose_large() {
     let n   = 1024usize;
     let lda = n;
-    let a   = make_upper_col_major(n, lda);
+    let a   = make_upper(n, lda);
     let x0  = (0..n).map(|k| 0.02 + 0.003 * (k as f32)).collect::<Vec<_>>();
 
     let mut x_coral = x0.clone();
@@ -315,7 +315,7 @@ fn upper_notranspose_large() {
 fn upper_transpose_large() {
     let n   = 768usize;
     let lda = n;
-    let a   = make_upper_col_major(n, lda);
+    let a   = make_upper(n, lda);
     let x0  = (0..n).map(|k| 0.04 - 0.0002 * (k as f32)).collect::<Vec<_>>();
 
     let mut x_coral = x0.clone();
@@ -341,7 +341,7 @@ fn upper_transpose_large() {
 fn lower_notranspose_large() {
     let n   = 640usize;
     let lda = n;
-    let a   = make_lower_col_major(n, lda);
+    let a   = make_lower(n, lda);
     let x0  = (0..n).map(|k| -0.03 + 0.0007 * (k as f32)).collect::<Vec<_>>();
 
     let mut x_coral = x0.clone();
@@ -368,7 +368,7 @@ fn paddedlda_lower_transpose() {
     let n   = 127usize;
     let lda = n + 5; // padded lda
 
-    let a   = make_padded_col_major(n, lda);
+    let a   = make_padded(n, lda);
     let x0  = (0..n).map(|k| 0.3 - 0.006 * (k as f32)).collect::<Vec<_>>();
 
     let mut x_coral = x0.clone();
@@ -394,7 +394,7 @@ fn paddedlda_lower_transpose() {
 fn strided_upper_notranspose() {
     let n    = 640usize;
     let lda  = n;
-    let a    = make_upper_col_major(n, lda);
+    let a    = make_upper(n, lda);
 
     let incx = 3usize;
     let x    = make_strided_vec(n, incx, |k| 0.05 + 0.01 * (k as f32));
@@ -424,7 +424,7 @@ fn strided_upper_notranspose() {
 fn strided_upper_transpose() {
     let n    = 384usize;
     let lda  = n;
-    let a    = make_upper_col_major(n, lda);
+    let a    = make_upper(n, lda);
 
     let incx = 2usize;
     let x    = make_strided_vec(n, incx, |k| 0.04 - 0.002 * (k as f32));
@@ -454,7 +454,7 @@ fn strided_upper_transpose() {
 fn strided_lower_notranspose() {
     let n    = 320usize;
     let lda  = n;
-    let a    = make_lower_col_major(n, lda);
+    let a    = make_lower(n, lda);
 
     let incx = 4usize;
     let x    = make_strided_vec(n, incx, |k| -0.03 + 0.001 * (k as f32));
@@ -484,7 +484,7 @@ fn strided_lower_notranspose() {
 fn strided_lower_transpose() {
     let n    = 512usize;
     let lda  = n;
-    let a    = make_lower_col_major(n, lda);
+    let a    = make_lower(n, lda);
 
     let incx = 2usize;
     let x    = make_strided_vec(n, incx, |k| -0.02 + 0.004 * (k as f32));
@@ -515,7 +515,7 @@ fn unitdiag_upper_notranspose() {
     let n   = 40usize;
     let lda = n;
 
-    let mut a = make_upper_unit_wellcond_col_major(n, lda);
+    let mut a = make_upper_unit(n, lda);
     // "funky" diagonal ignored by unit diag
     for i in 0..n {
         a[i + i * lda] = 7.5 + (i as f32) * 0.1;
@@ -547,7 +547,7 @@ fn unitdiag_lower_transpose() {
     let n   = 48usize;
     let lda = n;
 
-    let mut a = make_lower_unit_wellcond_col_major(n, lda);
+    let mut a = make_lower_unit(n, lda);
     // "funky" diagonal but is ignored from unit diag 
     for i in 0..n {
         a[i + i * lda] = -9.0 + (i as f32) * 0.05;
@@ -575,7 +575,7 @@ fn unitdiag_lower_transpose() {
 }
 
 #[test]
-fn zero_n_quick_return() {
+fn n_zero_quick_return() {
     let n   = 0usize;
     let lda = 1usize; // arbitrary when n == 0
 
