@@ -4,10 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-cblas-sys   = "0.1"
+cblas-sys = "0.1" 
+blas-src  = { version = "0.12", default-features = false } 
+
+[features] 
+accelerate = ["blas-src/accelerate"] 
+openblas   = ["blas-src/openblas"] 
+default    = ["openblas"] 
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.5"       
 
 [[bench]] 
 name    = "level2_sgemv" 
