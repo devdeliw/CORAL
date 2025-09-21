@@ -57,7 +57,7 @@ use crate::level2::{
     panel_packing::pack_panel, 
 };
 
-const MC: usize = 64; 
+const MC: usize = 128; 
 const NC: usize = 128;  
 
 #[inline] 

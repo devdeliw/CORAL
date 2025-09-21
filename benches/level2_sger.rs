@@ -1,3 +1,4 @@
+use blas_src as _; 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion, black_box};
 
 use coral::level2::sger::sger;

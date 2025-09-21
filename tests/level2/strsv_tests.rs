@@ -1,3 +1,4 @@
+use blas_src as _; 
 use cblas_sys::{
     CBLAS_LAYOUT,
     CBLAS_TRANSPOSE,

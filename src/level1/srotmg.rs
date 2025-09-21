@@ -5,7 +5,7 @@
 //! The transformation zeros the second component of the 2-vector 
 //! `(sqrt(sd1)*sx1, sqrt(sd2)*sy1)^T`.  
 //!
-//! The resulting 2×2 matrix `H` is encoded compactly in `param` with a flag:
+//! The resulting 2x2 matrix `H` is encoded compactly in `param` with a flag:
 //! - `param[0] = -2.0` : Identity (no operation).
 //! - `param[0] = -1.0` : General form with `h11, h12, h21, h22` stored in `param[1..4]`.
 //! - `param[0] = 0.0`  : Simplified form with implicit ones on the diagonal.

@@ -5,7 +5,7 @@
 //! parameter array `param`. The transformation form depends on `param[0]` (`flag`):
 //! 
 //! - `-2.0` : Identity (no operation).
-//! - `-1.0` : General 2×2 matrix with parameters `h11, h12, h21, h22`.
+//! - `-1.0` : General 2x2 matrix with parameters `h11, h12, h21, h22`.
 //! - ` 0.0` : Simplified form with implicit ones on the diagonal.
 //! - `+1.0` : Alternate simplified form with fixed off-diagonal structure.
 //!

@@ -1,3 +1,4 @@
+use blas_src as _; 
 use coral::level1::{
     sswap::sswap,
     dswap::dswap,
