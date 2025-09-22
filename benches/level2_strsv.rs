@@ -63,7 +63,7 @@ pub fn bench_strsv(c: &mut Criterion) {
     });
 
     // upper; cblas
-    c.bench_function("cblas_strsv_upper_notrans", |b| {
+    c.bench_function("blas_strsv_upper_notrans", |b| {
         b.iter_batched_ref(
             || x_init.clone(),
             |x| unsafe {
@@ -104,7 +104,7 @@ pub fn bench_strsv(c: &mut Criterion) {
     });
 
     // lower: cblas
-    c.bench_function("cblas_strsv_lower_notrans", |b| {
+    c.bench_function("blas_strsv_lower_notrans", |b| {
         b.iter_batched_ref(
             || x_init.clone(),
             |x| unsafe {

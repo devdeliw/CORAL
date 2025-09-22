@@ -47,7 +47,7 @@ pub fn bench_sgemv(c: &mut Criterion) {
         );
     });
 
-    c.bench_function("cblas_sgemv_notrans", |b| {
+    c.bench_function("blas_sgemv_notrans", |b| {
         let y0 = vec![2.0f32; m];
         b.iter_batched_ref(
             || y0.clone(),
@@ -94,7 +94,7 @@ pub fn bench_sgemv(c: &mut Criterion) {
         );
     });
 
-    c.bench_function("cblas_sgemv_trans", |b| {
+    c.bench_function("blas_sgemv_trans", |b| {
         let y0 = vec![2.0f32; n];
         b.iter_batched_ref(
             || y0.clone(),

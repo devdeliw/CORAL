@@ -42,7 +42,7 @@ pub fn bench_sger(c: &mut Criterion) {
         );
     });
 
-    c.bench_function("cblas_sger", |b| {
+    c.bench_function("blas_sger", |b| {
         b.iter_batched_ref(
             || a0.clone(),
             |a| unsafe {

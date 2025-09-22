@@ -49,7 +49,7 @@ pub fn bench_strmv(c: &mut Criterion) {
         );
     });
 
-    c.bench_function("cblas_strmv_upper_notrans", |b| {
+    c.bench_function("blas_strmv_upper_notrans", |b| {
         b.iter_batched_ref(
             || x_init.clone(),
             |x| unsafe {
@@ -88,7 +88,7 @@ pub fn bench_strmv(c: &mut Criterion) {
         );
     });
 
-    c.bench_function("cblas_strmv_upper_trans", |b| {
+    c.bench_function("blas_strmv_upper_trans", |b| {
         b.iter_batched_ref(
             || x_init.clone(),
             |x| unsafe {
