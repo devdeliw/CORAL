@@ -30,6 +30,8 @@ mod sger_tests;
 mod ssymv_tests;
 #[path = "level2/ssyr_tests.rs"] 
 mod ssyr_tests; 
+#[path = "level2/ssyr2_tests.rs"] 
+mod ssyr2_tests;
 
 
 

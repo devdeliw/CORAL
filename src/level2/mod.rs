@@ -21,6 +21,7 @@ pub mod strlsv;
 
 pub mod sger;
 pub mod ssyr; 
+pub mod ssyr2; 
 
 
 

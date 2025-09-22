@@ -24,7 +24,7 @@
 //! - `lda`    (usize)           : Leading dimension (stride between columns) of `A`.
 //!
 //! # Returns
-//! - Nothing. The contents of `matrix` are updated in place as `A := alpha * x * x^T + A`
+//! - Nothing. The contents of `matrix` are updated in place.
 //!   within the specified triangle.
 //!
 //! # Notes
