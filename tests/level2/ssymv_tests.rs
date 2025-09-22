@@ -354,7 +354,7 @@ fn lower_large() {
 }
 
 #[test]
-fn padded_upper() {
+fn upper_padded() {
     let n   = 256usize;
     let lda = n + 7;
 
@@ -396,7 +396,7 @@ fn padded_upper() {
 }
 
 #[test]
-fn padded_lower() {
+fn lower_padded() {
     let n   = 300usize;
     let lda = n + 5;
 

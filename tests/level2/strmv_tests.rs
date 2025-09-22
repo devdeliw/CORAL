@@ -16,8 +16,7 @@ use coral::level2::{
     strmv::strmv,
 };
 
-// cblas wrapper
-fn cblas_trmv(
+fn cblas_strmv_wrapper(
     uplo  : CBLAS_UPLO,
     trans : CBLAS_TRANSPOSE,
     diag  : CBLAS_DIAG,
@@ -162,7 +161,7 @@ fn upper_notranspose_small() {
 
     // cblas
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
@@ -197,7 +196,7 @@ fn upper_transpose_small() {
     );
 
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
@@ -232,7 +231,7 @@ fn lower_notranspose_small() {
     );
 
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
@@ -267,7 +266,7 @@ fn lower_transpose_small() {
     );
 
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
@@ -302,7 +301,7 @@ fn upper_notranspose_large() {
     );
 
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
@@ -338,7 +337,7 @@ fn strided_upper_notranspose() {
     );
 
     let mut x_ref = x.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
@@ -376,7 +375,7 @@ fn strided_lower_transpose() {
     );
 
     let mut x_ref = x.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
@@ -417,7 +416,7 @@ fn unitdiag_upper_notranspose() {
     );
 
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasUnit,
@@ -456,7 +455,7 @@ fn unitdiag_lower_transpose() {
     );
 
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasUnit,
@@ -493,7 +492,7 @@ fn paddedlda_lower_transpose() {
 
     // cblas
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
@@ -528,7 +527,7 @@ fn n_zero_quick_return() {
     );
 
     let mut x_ref = x0.clone();
-    cblas_trmv(
+    cblas_strmv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,

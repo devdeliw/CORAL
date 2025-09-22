@@ -5,8 +5,7 @@ use cblas_sys::{
 };
 use coral::level2::sger::sger;
 
-// cblas wrapper
-fn cblas_sger_colmajor(
+fn cblas_sger_wrapper(
     m     : i32,
     n     : i32,
     alpha : f32,
@@ -86,7 +85,7 @@ const ATOL: f32 = 1e-5;
 // tests
 
 #[test]
-fn unit_strides_small() {
+fn contiguous_small() {
     let m   = 7usize;
     let n   = 5usize;
     let lda = m;
@@ -113,7 +112,7 @@ fn unit_strides_small() {
 
     // cblas
     let mut a_ref = a0.clone();
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha,
@@ -129,7 +128,7 @@ fn unit_strides_small() {
 }
 
 #[test]
-fn unit_strides_large_tall() {
+fn contiguous_large_tall() {
     let m   = 1024usize;
     let n   = 768usize;
     let lda = m;
@@ -154,7 +153,7 @@ fn unit_strides_large_tall() {
     );
 
     let mut a_ref = a0.clone();
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha,
@@ -170,7 +169,7 @@ fn unit_strides_large_tall() {
 }
 
 #[test]
-fn unit_strides_large_wide() {
+fn contiguous_large_wide() {
     let m   = 512usize;
     let n   = 1024usize;
     let lda = m;
@@ -195,7 +194,7 @@ fn unit_strides_large_wide() {
     );
 
     let mut a_ref = a0.clone();
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha,
@@ -211,7 +210,7 @@ fn unit_strides_large_wide() {
 }
 
 #[test]
-fn strided_padded_lda() {
+fn strided_padded() {
     let m   = 9usize;
     let n   = 4usize;
     let lda = m + 3; // padded lda
@@ -243,7 +242,7 @@ fn strided_padded_lda() {
 
     // cblas
     let mut a_ref = a0.clone();
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha,
@@ -284,7 +283,7 @@ fn alpha_zero_keeps_a() {
     );
 
     let mut a_ref = a0.clone();
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha,
@@ -341,7 +340,7 @@ fn accumulate_twice() {
 
     // cblas: two updates
     let mut a_ref = a0.clone();
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha1,
@@ -352,7 +351,7 @@ fn accumulate_twice() {
         a_ref.as_mut_ptr(),
         lda as i32,
     );
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha2,
@@ -393,7 +392,7 @@ fn m_zero_quick_return() {
     );
 
     let mut a_ref = a0.clone();
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha,
@@ -434,7 +433,7 @@ fn n_zero_quick_return() {
     );
 
     let mut a_ref = a0.clone();
-    cblas_sger_colmajor(
+    cblas_sger_wrapper(
         m as i32,
         n as i32,
         alpha,

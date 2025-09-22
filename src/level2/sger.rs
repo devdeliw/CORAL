@@ -76,13 +76,21 @@ pub fn sger(
         for col_idx in 0..n_cols { 
             let coeff = alpha * unsafe { *y.get_unchecked(col_idx) }; 
             if coeff != 0.0 { 
-                saxpy(n_rows, coeff, x, 1, &mut matrix[col_idx * lda..col_idx * lda + n_rows], 1); 
+                saxpy(
+                    n_rows, 
+                    coeff,
+                    x,
+                    1,
+                    &mut matrix[col_idx * lda..col_idx * lda + n_rows],
+                    1
+                ); 
             }
         }
 
         return; 
     }
 
+    // general path 
     let mat_ptr = matrix.as_mut_ptr(); 
     let x_ptr   = x.as_ptr(); 
     let y_ptr   = y.as_ptr(); 

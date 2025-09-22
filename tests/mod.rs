@@ -28,6 +28,8 @@ mod strsv_tests;
 mod sger_tests; 
 #[path = "level2/ssymv_tests.rs"] 
 mod ssymv_tests;
+#[path = "level2/ssyr_tests.rs"] 
+mod ssyr_tests; 
 
 
 

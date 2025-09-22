@@ -110,7 +110,7 @@ const ATOL_F64: f64 = 1e-12;
 
 // SAXPY //
 #[test]
-fn saxpy_unit_stride() {
+fn saxpy_contiguous() {
     let n = 1024usize;
     let alpha = 3.1415926f32;
 
@@ -221,7 +221,7 @@ fn saxpy_n_zero() {
 
 // DAXPY //
 #[test]
-fn daxpy_unit_stride() {
+fn daxpy_contiguous() {
     let n = 1536usize;
     let alpha = -2.5f64;
 
@@ -332,7 +332,7 @@ fn daxpy_n_zero() {
 
 // CAXPY // 
 #[test]
-fn caxpy_unit_stride() {
+fn caxpy_contiguous() {
     let n = 800usize;
     let alpha = [0.75f32, -0.20f32]; 
 
@@ -445,7 +445,7 @@ fn caxpy_pure_imag_alpha() {
 
 // ZAXPY // 
 #[test]
-fn zaxpy_unit_stride() {
+fn zaxpy_contiguous() {
     let n = 640usize;
     let alpha = [1.25f64, -0.75f64]; 
 

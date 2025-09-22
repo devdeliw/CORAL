@@ -20,6 +20,8 @@ pub mod strusv;
 pub mod strlsv; 
 
 pub mod sger;
+pub mod ssyr; 
+
 
 
 

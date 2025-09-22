@@ -109,7 +109,7 @@ const ATOL_F64: f64 = 1e-12;
 
 // SNRM2 // 
 #[test]
-fn snrm2_unit_stride() {
+fn snrm2_contiguous() {
     let n = 1024usize;
 
     let x = make_strided_vec_f32(n, 1, |k| 0.05 + 0.03 * (k as f32));
@@ -164,7 +164,7 @@ fn snrm2_n_zero() {
 }
 
 #[test]
-fn snrm2_len_one_strided() {
+fn snrm2_len1_strided() {
     let n    = 1usize;
     let incx = 5usize;
 
@@ -185,7 +185,7 @@ fn snrm2_len_one_strided() {
 
 // DNRM2 // 
 #[test]
-fn dnrm2_unit_stride() {
+fn dnrm2_contiguous() {
     let n = 1536usize;
 
     let x = make_strided_vec_f64(n, 1, |k| 0.25 + 0.125 * (k as f64));
@@ -240,7 +240,7 @@ fn dnrm2_n_zero() {
 }
 
 #[test]
-fn dnrm2_len_one_strided() {
+fn dnrm2_len1_strided() {
     let n    = 1usize;
     let incx = 6usize;
 
@@ -261,7 +261,7 @@ fn dnrm2_len_one_strided() {
 
 // SCNRM2 // 
 #[test]
-fn scnrm2_unit_stride() {
+fn scnrm2_contiguous() {
     let n = 800usize;
 
     let x = make_strided_cvec_f32(n, 1, |k| {
@@ -324,7 +324,7 @@ fn scnrm2_n_zero() {
 }
 
 #[test]
-fn scnrm2_len_one_strided() {
+fn scnrm2_len1_strided() {
     let n    = 1usize;
     let incx = 7usize;
 
@@ -345,7 +345,7 @@ fn scnrm2_len_one_strided() {
 
 // DZNRM2 // 
 #[test]
-fn dznrm2_unit_stride() {
+fn dznrm2_contiguous() {
     let n = 640usize;
 
     let x = make_strided_cvec_f64(n, 1, |k| {
@@ -408,7 +408,7 @@ fn dznrm2_n_zero() {
 }
 
 #[test]
-fn dznrm2_len_one_strided() {
+fn dznrm2_len1_strided() {
     let n    = 1usize;
     let incx = 9usize;
 

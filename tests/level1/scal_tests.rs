@@ -107,8 +107,10 @@ const ATOL_F32: f32 = 1e-5;
 const RTOL_F64: f64 = 1e-12;
 const ATOL_F64: f64 = 1e-12;
 
+
+// SSCAL //  
 #[test]
-fn sscal_unit_stride() {
+fn sscal_contiguous() {
     let n     = 1024usize;
     let alpha = 3.1415926f32;
 
@@ -132,7 +134,6 @@ fn sscal_unit_stride() {
 }
 
 
-// SSCAL //  
 #[test]
 fn sscal_strided() {
     let n     = 777usize;
@@ -231,7 +232,7 @@ fn sscal_n_zero() {
 
 // DSCAL // 
 #[test]
-fn dscal_unit_stride() {
+fn dscal_contiguous() {
     let n     = 1536usize;
     let alpha = -2.5f64;
 
@@ -353,7 +354,7 @@ fn dscal_n_zero() {
 
 // CSCAL // 
 #[test]
-fn cscal_unit_stride() {
+fn cscal_contiguous() {
     let n     = 800usize;
     let alpha = [0.75f32, -0.20f32]; 
 
@@ -499,7 +500,7 @@ fn cscal_n_zero() {
 
 // ZSCAL // 
 #[test]
-fn zscal_unit_stride() {
+fn zscal_contiguous() {
     let n     = 640usize;
     let alpha = [1.25f64, -0.75f64];
 

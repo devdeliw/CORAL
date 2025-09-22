@@ -16,9 +16,7 @@ use coral::level2::{
     strsv::strsv,
 };
 
-// cblas wrapper
-
-fn cblas_trsv(
+fn cblas_strsv_wrapper(
     uplo  : CBLAS_UPLO,
     trans : CBLAS_TRANSPOSE,
     diag  : CBLAS_DIAG,
@@ -44,7 +42,6 @@ fn cblas_trsv(
 }
 
 // helpers
-
 fn make_upper(
     n   : usize,
     lda : usize,
@@ -181,7 +178,6 @@ const RTOL: f32 = 1e-6;
 const ATOL: f32 = 1e-5;
 
 // tests
-
 #[test]
 fn upper_notranspose_small() {
     let n   = 6usize;
@@ -194,15 +190,23 @@ fn upper_notranspose_small() {
         CoralTriangular::UpperTriangular,
         CoralTranspose::NoTranspose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -220,15 +224,23 @@ fn upper_transpose_small() {
         CoralTriangular::UpperTriangular,
         CoralTranspose::Transpose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -246,15 +258,23 @@ fn lower_notranspose_small() {
         CoralTriangular::LowerTriangular,
         CoralTranspose::NoTranspose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -272,15 +292,23 @@ fn lower_transpose_small() {
         CoralTriangular::LowerTriangular,
         CoralTranspose::Transpose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -298,15 +326,23 @@ fn upper_notranspose_large() {
         CoralTriangular::UpperTriangular,
         CoralTranspose::NoTranspose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -324,15 +360,23 @@ fn upper_transpose_large() {
         CoralTriangular::UpperTriangular,
         CoralTranspose::Transpose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -350,22 +394,30 @@ fn lower_notranspose_large() {
         CoralTriangular::LowerTriangular,
         CoralTranspose::NoTranspose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
 }
 
 #[test]
-fn paddedlda_lower_transpose() {
+fn lower_transpose_padded() {
     let n   = 127usize;
     let lda = n + 5; // padded lda
 
@@ -377,15 +429,23 @@ fn paddedlda_lower_transpose() {
         CoralTriangular::LowerTriangular,
         CoralTranspose::Transpose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -405,15 +465,23 @@ fn strided_upper_notranspose() {
         CoralTriangular::UpperTriangular,
         CoralTranspose::NoTranspose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, incx,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        incx,
     );
 
     let mut x_ref = x.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), incx as i32,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        incx as i32,
     );
 
     let x_coral_logical = copy_logical_strided(&x_coral, incx, n);
@@ -435,15 +503,23 @@ fn strided_upper_transpose() {
         CoralTriangular::UpperTriangular,
         CoralTranspose::Transpose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, incx,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        incx,
     );
 
     let mut x_ref = x.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), incx as i32,
+        n as i32,
+        a.as_ptr(),
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        incx as i32,
     );
 
     let x_coral_logical = copy_logical_strided(&x_coral, incx, n);
@@ -465,15 +541,23 @@ fn strided_lower_notranspose() {
         CoralTriangular::LowerTriangular,
         CoralTranspose::NoTranspose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, incx,
+        n, 
+        &a, 
+        lda,
+        &mut x_coral,
+        incx,
     );
 
     let mut x_ref = x.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), incx as i32,
+        n as i32, 
+        a.as_ptr(), 
+        lda as i32, 
+        x_ref.as_mut_ptr(),
+        incx as i32,
     );
 
     let x_coral_logical = copy_logical_strided(&x_coral, incx, n);
@@ -495,15 +579,23 @@ fn strided_lower_transpose() {
         CoralTriangular::LowerTriangular,
         CoralTranspose::Transpose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, incx,
+        n,
+        &a,
+        lda,
+        &mut x_coral,
+        incx,
     );
 
     let mut x_ref = x.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), incx as i32,
+        n as i32,
+        a.as_ptr(), 
+        lda as i32,
+        x_ref.as_mut_ptr(), 
+        incx as i32,
     );
 
     let x_coral_logical = copy_logical_strided(&x_coral, incx, n);
@@ -529,15 +621,24 @@ fn unitdiag_upper_notranspose() {
         CoralTriangular::UpperTriangular,
         CoralTranspose::NoTranspose,
         CoralDiagonal::UnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a, 
+        lda,
+        &mut 
+        x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(), 
+        lda as i32,
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -561,15 +662,24 @@ fn unitdiag_lower_transpose() {
         CoralTriangular::LowerTriangular,
         CoralTranspose::Transpose,
         CoralDiagonal::UnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut 
+        x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasLower,
         CBLAS_TRANSPOSE::CblasTrans,
         CBLAS_DIAG::CblasUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(), 
+        lda as i32, 
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);
@@ -588,15 +698,24 @@ fn n_zero_quick_return() {
         CoralTriangular::UpperTriangular,
         CoralTranspose::NoTranspose,
         CoralDiagonal::NonUnitDiagonal,
-        n, &a, lda, &mut x_coral, 1,
+        n,
+        &a,
+        lda,
+        &mut 
+        x_coral,
+        1,
     );
 
     let mut x_ref = x0.clone();
-    cblas_trsv(
+    cblas_strsv_wrapper(
         CBLAS_UPLO::CblasUpper,
         CBLAS_TRANSPOSE::CblasNoTrans,
         CBLAS_DIAG::CblasNonUnit,
-        n as i32, a.as_ptr(), lda as i32, x_ref.as_mut_ptr(), 1,
+        n as i32,
+        a.as_ptr(),
+        lda as i32, 
+        x_ref.as_mut_ptr(),
+        1,
     );
 
     assert_allclose(&x_coral, &x_ref, RTOL, ATOL);

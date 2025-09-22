@@ -102,7 +102,6 @@ pub(crate) fn sgemv_notranspose(
         pack_f32(n_rows, y, incy, &mut ybuffer); 
 
         // slice lives as long as y_buffer 
-        // entire scope 
         ybuffer.as_mut_slice() 
     };
         

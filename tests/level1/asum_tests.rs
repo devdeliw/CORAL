@@ -109,7 +109,7 @@ const ATOL_F64: f64 = 1e-12;
 
 // SASUM // 
 #[test]
-fn sasum_unit_stride() {
+fn sasum_contiguous() {
     let n = 1024usize;
 
     let x = make_strided_vec_f32(n, 1, |k| ((-1i32).pow((k % 2) as u32) as f32) * (0.05 + 0.03 * (k as f32)));
@@ -164,7 +164,7 @@ fn sasum_n_zero() {
 }
 
 #[test]
-fn sasum_len_one_strided() {
+fn sasum_len1_strided() {
     let n    = 1usize;
     let incx = 5usize;
 
@@ -185,7 +185,7 @@ fn sasum_len_one_strided() {
 
 // DASUM // 
 #[test]
-fn dasum_unit_stride() {
+fn dasum_contiguous() {
     let n = 1536usize;
 
     let x = make_strided_vec_f64(n, 1, |k| ((-1i32).pow((k % 2) as u32) as f64) * (0.25 + 0.125 * (k as f64)));
@@ -240,7 +240,7 @@ fn dasum_n_zero() {
 }
 
 #[test]
-fn dasum_len_one_strided() {
+fn dasum_len1_strided() {
     let n    = 1usize;
     let incx = 6usize;
 
@@ -261,7 +261,7 @@ fn dasum_len_one_strided() {
 
 // SCASUM // 
 #[test]
-fn scasum_unit_stride() {
+fn scasum_contiguous() {
     let n = 800usize;
 
     let x = make_strided_cvec_f32(n, 1, |k| {
@@ -324,7 +324,7 @@ fn scasum_n_zero() {
 }
 
 #[test]
-fn scasum_len_one_strided() {
+fn scasum_len1_strided() {
     let n    = 1usize;
     let incx = 7usize;
 
@@ -345,7 +345,7 @@ fn scasum_len_one_strided() {
 
 // DZASUM // 
 #[test]
-fn dzasum_unit_stride() {
+fn dzasum_contiguous() {
     let n = 640usize;
 
     let x = make_strided_cvec_f64(n, 1, |k| {
@@ -408,7 +408,7 @@ fn dzasum_n_zero() {
 }
 
 #[test]
-fn dzasum_len_one_strided() {
+fn dzasum_len1_strided() {
     let n    = 1usize;
     let incx = 9usize;
 

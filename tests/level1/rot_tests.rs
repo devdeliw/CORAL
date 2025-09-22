@@ -82,7 +82,7 @@ const ATOL_F64: f64 = 1e-12;
 
 // SROT //
 #[test]
-fn srot_unit_stride() {
+fn srot_contiguous() {
     let n = 1024usize;
     let theta = 0.375f32;
     let c = theta.cos();
@@ -182,7 +182,7 @@ fn srot_n_zero() {
 }
 
 #[test]
-fn srot_len_one_strided() {
+fn srot_len1_strided() {
     let n    = 1usize;
     let incx = 5usize;
     let incy = 7usize;
@@ -336,7 +336,7 @@ fn srotg_mixed_signs() {
 
 // SROTM //
 #[test]
-fn srotm_flag_neg2_identity_unit_stride() {
+fn srotm_contiguous_fm2() {
     let n = 256usize;
     let param = [-2.0f32, 0.0, 0.0, 0.0, 0.0];
 
@@ -366,7 +366,7 @@ fn srotm_flag_neg2_identity_unit_stride() {
 }
 
 #[test]
-fn srotm_flag_neg1_general_unit_stride() {
+fn srotm_contiguous_fm1() {
     let n = 320usize;
     let param = [-1.0f32, 1.1, -0.4, 0.7, 0.9];
 
@@ -396,7 +396,7 @@ fn srotm_flag_neg1_general_unit_stride() {
 }
 
 #[test]
-fn srotm_flag_zero_unit_stride() {
+fn srotm_contiguous_f0() {
     let n = 300usize;
     let param = [0.0f32, 0.0, -0.6, 0.8, 0.0];
 
@@ -426,7 +426,7 @@ fn srotm_flag_zero_unit_stride() {
 }
 
 #[test]
-fn srotm_flag_pos1_unit_stride() {
+fn srotm_contiguous_fp1() {
     let n = 300usize;
     let param = [1.0f32, 1.2, 0.0, 0.0, -0.75];
 
@@ -456,7 +456,7 @@ fn srotm_flag_pos1_unit_stride() {
 }
 
 #[test]
-fn srotm_neg1_strided() {
+fn srotm_strided_fm1() {
     let n    = 257usize;
     let incx = 2usize;
     let incy = 3usize;
@@ -522,7 +522,7 @@ fn srotmg_general() {
 }
 
 #[test]
-fn srotmg_scaled_inputs() {
+fn srotmg_scaled() {
     let mut sd1_coral = 1e-3f32;
     let mut sd2_coral = 3e+2f32;
     let mut sx1_coral = -4.5f32;
@@ -556,7 +556,7 @@ fn srotmg_scaled_inputs() {
 
 // DROT //
 #[test]
-fn drot_unit_stride() {
+fn drot_contiguous() {
     let n = 1536usize;
     let theta = 0.22f64;
     let c = theta.cos();
@@ -656,7 +656,7 @@ fn drot_n_zero() {
 }
 
 #[test]
-fn drot_len_one_strided() {
+fn drot_len1_strided() {
     let n    = 1usize;
     let incx = 6usize;
     let incy = 5usize;
@@ -810,7 +810,7 @@ fn drotg_mixed_signs() {
 
 // DROTM //
 #[test]
-fn drotm_flag_neg2_identity_unit_stride() {
+fn drotm_contiguous_fm2() {
     let n = 256usize;
     let param = [-2.0f64, 0.0, 0.0, 0.0, 0.0];
 
@@ -840,7 +840,7 @@ fn drotm_flag_neg2_identity_unit_stride() {
 }
 
 #[test]
-fn drotm_flag_neg1_general_unit_stride() {
+fn drotm_contiguous_fm1() {
     let n = 320usize;
     let param = [-1.0f64, 1.05, -0.6, 0.8, 0.95];
 
@@ -870,7 +870,7 @@ fn drotm_flag_neg1_general_unit_stride() {
 }
 
 #[test]
-fn drotm_flag_zero_unit_stride() {
+fn drotm_contiguous_f0() {
     let n = 300usize;
     let param = [0.0f64, 0.0, -0.25, 0.33, 0.0];
 
@@ -900,7 +900,7 @@ fn drotm_flag_zero_unit_stride() {
 }
 
 #[test]
-fn drotm_flag_pos1_unit_stride() {
+fn drotm_contiguous_fp1() {
     let n = 300usize;
     let param = [1.0f64, 0.75, 0.0, 0.0, -1.2];
 
@@ -930,7 +930,7 @@ fn drotm_flag_pos1_unit_stride() {
 }
 
 #[test]
-fn drotm_neg1_strided() {
+fn drotm_strided_fm1() {
     let n    = 257usize;
     let incx = 2usize;
     let incy = 3usize;
@@ -996,7 +996,7 @@ fn drotmg_general() {
 }
 
 #[test]
-fn drotmg_scaled_inputs() {
+fn drotmg_scaled() {
     let mut sd1_coral = 1e+4f64;
     let mut sd2_coral = 1e-5f64;
     let mut sx1_coral = 8.0f64;

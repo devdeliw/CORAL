@@ -110,7 +110,7 @@ const ATOL_F64: f64 = 0.0;
 
 // SCOPY // 
 #[test]
-fn scopy_unit_stride() {
+fn scopy_contiguous() {
     let n = 1024usize;
 
     let x = make_strided_vec_f32(n, 1, |k| 0.05 + 0.03 * (k as f32));
@@ -187,7 +187,7 @@ fn scopy_n_zero() {
 }
 
 #[test]
-fn scopy_len_one_strided() {
+fn scopy_len1_strided() {
     let n    = 1usize;
     let incx = 5usize;
     let incy = 7usize;
@@ -216,7 +216,7 @@ fn scopy_len_one_strided() {
 
 // DCOPY // 
 #[test]
-fn dcopy_unit_stride() {
+fn dcopy_contiguous() {
     let n = 1536usize;
 
     let x = make_strided_vec_f64(n, 1, |k| 0.25 + 0.125 * (k as f64));
@@ -293,7 +293,7 @@ fn dcopy_n_zero() {
 }
 
 #[test]
-fn dcopy_len_one_strided() {
+fn dcopy_len1_strided() {
     let n    = 1usize;
     let incx = 6usize;
     let incy = 5usize;
@@ -322,7 +322,7 @@ fn dcopy_len_one_strided() {
 
 // CCOPY // 
 #[test]
-fn ccopy_unit_stride() {
+fn ccopy_contiguous() {
     let n = 800usize;
 
     let x = make_strided_cvec_f32(n, 1, |k| (0.1 + 0.01 * k as f32, -0.05 + 0.002 * k as f32));
@@ -399,7 +399,7 @@ fn ccopy_n_zero() {
 }
 
 #[test]
-fn ccopy_len_one_strided() {
+fn ccopy_len1_strided() {
     let n    = 1usize;
     let incx = 7usize;
     let incy = 5usize;
@@ -425,10 +425,9 @@ fn ccopy_len_one_strided() {
     assert_allclose_f32(&y_coral, &y_ref, RTOL_F32, ATOL_F32);
 }
 
-
 // ZCOPY // 
 #[test]
-fn zcopy_unit_stride() {
+fn zcopy_contiguous() {
     let n = 640usize;
 
     let x = make_strided_cvec_f64(n, 1, |k| (0.05 + 0.002 * k as f64, 0.1 - 0.001 * k as f64));
@@ -505,7 +504,7 @@ fn zcopy_n_zero() {
 }
 
 #[test]
-fn zcopy_len_one_strided() {
+fn zcopy_len1_strided() {
     let n    = 1usize;
     let incx = 9usize;
     let incy = 4usize;

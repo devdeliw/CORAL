@@ -111,7 +111,7 @@ const ATOL_F64: f64 = 0.0;
 
 // SSWAP // 
 #[test]
-fn sswap_unit_stride() {
+fn sswap_contiguous() {
     let n = 1024usize;
 
     let x = make_strided_vec_f32(n, 1, |k| 0.05 + 0.03 * (k as f32));
@@ -197,7 +197,7 @@ fn sswap_n_zero() {
 }
 
 #[test]
-fn sswap_len_one_strided() {
+fn sswap_len1_strided() {
     let n    = 1usize;
     let incx = 5usize;
     let incy = 7usize;
@@ -229,7 +229,7 @@ fn sswap_len_one_strided() {
 
 // DSWAP // 
 #[test]
-fn dswap_unit_stride() {
+fn dswap_contiguous() {
     let n = 1536usize;
 
     let x = make_strided_vec_f64(n, 1, |k| 0.25 + 0.125 * (k as f64));
@@ -315,7 +315,7 @@ fn dswap_n_zero() {
 }
 
 #[test]
-fn dswap_len_one_strided() {
+fn dswap_len1_strided() {
     let n    = 1usize;
     let incx = 6usize;
     let incy = 5usize;
@@ -347,7 +347,7 @@ fn dswap_len_one_strided() {
 
 // CSWAP // 
 #[test]
-fn cswap_unit_stride() {
+fn cswap_contiguous() {
     let n = 800usize;
 
     let x = make_strided_cvec_f32(n, 1, |k| (0.1 + 0.01 * k as f32, -0.05 + 0.002 * k as f32));
@@ -433,7 +433,7 @@ fn cswap_n_zero() {
 }
 
 #[test]
-fn cswap_len_one_strided() {
+fn cswap_len1_strided() {
     let n    = 1usize;
     let incx = 7usize;
     let incy = 5usize;
@@ -465,7 +465,7 @@ fn cswap_len_one_strided() {
 
 // ZSWAP // 
 #[test]
-fn zswap_unit_stride() {
+fn zswap_contiguous() {
     let n = 640usize;
 
     let x = make_strided_cvec_f64(n, 1, |k| (0.05 + 0.002 * k as f64, 0.1 - 0.001 * k as f64));
@@ -551,7 +551,7 @@ fn zswap_n_zero() {
 }
 
 #[test]
-fn zswap_len_one_strided() {
+fn zswap_len1_strided() {
     let n    = 1usize;
     let incx = 9usize;
     let incy = 4usize;

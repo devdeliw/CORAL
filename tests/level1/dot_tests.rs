@@ -150,7 +150,7 @@ const ATOL_F64: f64 = 1e-12;
 
 // SDOT //
 #[test]
-fn sdot_unit_stride() {
+fn sdot_contiguous() {
     let n = 1024usize;
 
     let x = make_strided_vec_f32(n, 1, |k| 0.05 + 0.03 * (k as f32));
@@ -215,7 +215,7 @@ fn sdot_n_zero() {
 }
 
 #[test]
-fn sdot_len_one_strided() {
+fn sdot_len1_strided() {
     let n    = 1usize;
     let incx = 5usize;
     let incy = 7usize;
@@ -239,7 +239,7 @@ fn sdot_len_one_strided() {
 
 // DDOT //
 #[test]
-fn ddot_unit_stride() {
+fn ddot_contiguous() {
     let n = 1536usize;
 
     let x = make_strided_vec_f64(n, 1, |k| 0.25 + 0.125 * (k as f64));
@@ -304,7 +304,7 @@ fn ddot_n_zero() {
 }
 
 #[test]
-fn ddot_len_one_strided() {
+fn ddot_len1_strided() {
     let n    = 1usize;
     let incx = 6usize;
     let incy = 5usize;
@@ -328,7 +328,7 @@ fn ddot_len_one_strided() {
 
 // CDOTC //
 #[test]
-fn cdotc_unit_stride() {
+fn cdotc_contiguous() {
     let n = 800usize;
 
     let x = make_strided_cvec_f32(n, 1, |k| (0.1 + 0.01 * k as f32, -0.05 + 0.002 * k as f32));
@@ -402,7 +402,7 @@ fn cdotc_n_zero() {
 }
 
 #[test]
-fn cdotc_len_one_strided() {
+fn cdotc_len1_strided() {
     let n    = 1usize;
     let incx = 7usize;
     let incy = 5usize;
@@ -429,7 +429,7 @@ fn cdotc_len_one_strided() {
 
 // CDOTU //
 #[test]
-fn cdotu_unit_stride() {
+fn cdotu_contiguous() {
     let n = 800usize;
 
     let x = make_strided_cvec_f32(n, 1, |k| (0.1 + 0.01 * k as f32, -0.05 + 0.002 * k as f32));
@@ -503,7 +503,7 @@ fn cdotu_n_zero() {
 }
 
 #[test]
-fn cdotu_len_one_strided() {
+fn cdotu_len1_strided() {
     let n    = 1usize;
     let incx = 7usize;
     let incy = 5usize;
@@ -530,7 +530,7 @@ fn cdotu_len_one_strided() {
 
 // ZDOTC //
 #[test]
-fn zdotc_unit_stride() {
+fn zdotc_contiguous() {
     let n = 640usize;
 
     let x = make_strided_cvec_f64(n, 1, |k| (0.05 + 0.002 * k as f64, 0.1 - 0.001 * k as f64));
@@ -604,7 +604,7 @@ fn zdotc_n_zero() {
 }
 
 #[test]
-fn zdotc_len_one_strided() {
+fn zdotc_len1_strided() {
     let n    = 1usize;
     let incx = 9usize;
     let incy = 4usize;
@@ -631,7 +631,7 @@ fn zdotc_len_one_strided() {
 
 // ZDOTU //
 #[test]
-fn zdotu_unit_stride() {
+fn zdotu_contiguous() {
     let n = 640usize;
 
     let x = make_strided_cvec_f64(n, 1, |k| (0.05 + 0.002 * k as f64, 0.1 - 0.001 * k as f64));
@@ -705,7 +705,7 @@ fn zdotu_n_zero() {
 }
 
 #[test]
-fn zdotu_len_one_strided() {
+fn zdotu_len1_strided() {
     let n    = 1usize;
     let incx = 9usize;
     let incy = 4usize;
