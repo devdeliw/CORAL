@@ -1,23 +1,27 @@
 pub mod enums; 
-pub mod panel_packing; 
-pub mod vector_packing;
-pub mod matrix_ij;
-pub mod assert_length_helpers;
+pub(crate) mod panel_packing; 
+pub(crate) mod vector_packing;
+pub(crate) mod matrix_ij;
+pub(crate) mod assert_length_helpers;
 
-pub mod sgemv;
-pub mod sgemv_notranspose;
-pub mod sgemv_transpose;
+pub mod sgemv; 
+pub(crate) mod sgemv_notranspose;
+pub(crate) mod sgemv_transpose;
+
+pub mod dgemv;
+pub(crate) mod dgemv_notranspose;
+pub(crate) mod dgemv_transpose; 
 
 pub mod ssymv; 
 
-pub mod trmv_kernels;
 pub mod strmv; 
-pub mod strumv; 
-pub mod strlmv; 
+pub(crate) mod trmv_kernels;
+pub(crate) mod strumv; 
+pub(crate) mod strlmv; 
 
 pub mod strsv; 
-pub mod strusv; 
-pub mod strlsv; 
+pub(crate) mod strusv; 
+pub(crate) mod strlsv; 
 
 pub mod sger;
 pub mod ssyr; 

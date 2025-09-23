@@ -1,4 +1,4 @@
-//! Performs a single precision general matrix–vector multiply (GEMV) in the form:
+//! Performs a double precision general matrix–vector multiply (GEMV) in the form:
 //!
 //!```text
 //!     y := alpha * A^T * x + beta * y
@@ -7,21 +7,21 @@
 //! where `A` is an `n_rows` x `n_cols` column-major matrix, `x` is a vector of
 //! length `n_rows`, and `y` is a vector of length `n_cols`.  
 //!
-//! This function implements the BLAS [`crate::level2::sgemv`] routine for the
+//! This function implements the BLAS [`crate::level2::dgemv`] routine for the
 //! **transpose** case, optimized for AArch64 NEON architectures with blocking and 
 //! panel packing.
 //!
 //! # Arguments
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
-//! - `alpha`  (f32)        : Scalar multiplier applied to the product `A^T * x`.
-//! - `matrix` (&[f32])     : Input slice containing the matrix `A`, stored in column-major
+//! - `alpha`  (f64)        : Scalar multiplier applied to the product `A^T * x`.
+//! - `matrix` (&[f64])     : Input slice containing the matrix `A`, stored in column-major
 //!                         | order with leading dimension `lda`.
 //! - `lda`    (usize)      : Leading dimension of `A` (stride between successive columns).
-//! - `x`      (&[f32])     : Input vector of length `n_rows`, with stride `incx`.
+//! - `x`      (&[f64])     : Input vector of length `n_rows`, with stride `incx`.
 //! - `incx`   (usize)      : Stride between consecutive elements of `x`.
-//! - `beta`   (f32)        : Scalar multiplier applied to `y` prior to accumulation.
-//! - `y`      (&mut [f32]) : Input/output vector of length `n_cols`, with stride `incy`.
+//! - `beta`   (f64)        : Scalar multiplier applied to `y` prior to accumulation.
+//! - `y`      (&mut [f64]) : Input/output vector of length `n_cols`, with stride `incy`.
 //! - `incy`   (usize)      : Stride between consecutive elements of `y`.
 //!
 //! # Returns
@@ -32,7 +32,7 @@
 //! - If `n_rows == 0` or `n_cols == 0`, the function returns immediately.
 //! - If `alpha == 0.0 && beta == 1.0`, the function returns immediately (no change).
 //! - When `lda == n_rows`, the matrix is stored contiguously, and a **fast path**
-//!   is taken using a single fused [`sdotf`] call.
+//!   is taken using a single fused [`ddotf`] call.
 //! - Otherwise, the routine falls back to a **blocked algorithm**, iterating over
 //!   panels of size `MC x NC` with contiguous packing into temporary buffers.
 //!
@@ -40,8 +40,8 @@
 //! Deval Deliwala
 
 use core::slice;
-use crate::level1::sscal::sscal;
-use crate::level1_special::sdotf::sdotf;
+use crate::level1::dscal::dscal;
+use crate::level1_special::ddotf::ddotf;
 
 // assert length helpers
 use crate::level1::assert_length_helpers::required_len_ok;
@@ -50,11 +50,11 @@ use crate::level2::assert_length_helpers::required_len_ok_matrix;
 // contiguous packing helpers
 use crate::level2::{
     vector_packing::{
-        pack_f32, 
-        pack_and_scale_f32, 
-        write_back_f32,
+        pack_f64, 
+        pack_and_scale_f64, 
+        write_back_f64,
     },
-    panel_packing::pack_panel_f32,
+    panel_packing::pack_panel_f64,
 };
 
 // TUNED
@@ -63,16 +63,16 @@ const NC: usize = 64;
 
 #[inline]
 #[cfg(target_arch = "aarch64")]
-pub(crate) fn sgemv_transpose(
+pub(crate) fn dgemv_transpose(
     n_rows  : usize, 
     n_cols  : usize, 
-    alpha   : f32,
-    matrix  : &[f32],
+    alpha   : f64,
+    matrix  : &[f64],
     lda     : usize, 
-    x       : &[f32], 
+    x       : &[f64], 
     incx    : usize,
-    beta    : f32,
-    y       : &mut [f32], 
+    beta    : f64,
+    y       : &mut [f64], 
     incy    : usize,
 ) {
     // quick return
@@ -89,18 +89,18 @@ pub(crate) fn sgemv_transpose(
     );
 
     // y := beta * y
-    if beta != 1.0  { sscal(n_cols, beta, y, incy); }
+    if beta != 1.0  { dscal(n_cols, beta, y, incy); }
     if alpha == 0.0 { return; }
 
     // pack x into contiguous buffer and scale by alpha
-    let mut xbuffer: Vec<f32> = Vec::new();
-    pack_and_scale_f32(n_rows, alpha, x, incx, &mut xbuffer);
+    let mut xbuffer: Vec<f64> = Vec::new();
+    pack_and_scale_f64(n_rows, alpha, x, incx, &mut xbuffer);
 
     // pack y into contiguous buffer if incy != 1
-    let (mut ybuffer, mut packed_y): (Vec<f32>, bool) = (Vec::new(), false);
-    let y_slice: &mut [f32] = if incy == 1 { y } else {
+    let (mut ybuffer, mut packed_y): (Vec<f64>, bool) = (Vec::new(), false);
+    let y_slice: &mut [f64] = if incy == 1 { y } else {
         packed_y = true;
-        pack_f32(n_cols, y, incy, &mut ybuffer);
+        pack_f64(n_cols, y, incy, &mut ybuffer);
 
         // slice lives as long as y_buffer 
         // entire scope 
@@ -116,7 +116,7 @@ pub(crate) fn sgemv_transpose(
 
             // y_slice[0..n_cols] += A^T xbuffer
             // for each column j, y[j] += dot(A[:, j], x)
-            sdotf(n_rows, n_cols, matrix_view, lda, &xbuffer, 1, y_slice);
+            ddotf(n_rows, n_cols, matrix_view, lda, &xbuffer, 1, y_slice);
         }
     } else {
         // general case
@@ -124,7 +124,7 @@ pub(crate) fn sgemv_transpose(
         //  for each row_panel of height MC
         //      for each col_panel of width NC
         //          update the NC slice of y using the x rows in this panel
-        let mut apack: Vec<f32> = Vec::new();
+        let mut apack: Vec<f64> = Vec::new();
 
         let mut row_idx = 0;
         while row_idx < n_rows {
@@ -132,7 +132,7 @@ pub(crate) fn sgemv_transpose(
             let mb_eff = core::cmp::min(MC, n_rows - row_idx);
 
             // slice of x corresponding to this row panel
-            let x_sub: &[f32] = &xbuffer[row_idx .. row_idx + mb_eff];
+            let x_sub: &[f64] = &xbuffer[row_idx .. row_idx + mb_eff];
 
             // base slice starting at row_idx to end of matrix view
             let a_row_base = unsafe {
@@ -148,7 +148,7 @@ pub(crate) fn sgemv_transpose(
                 let nb_eff = core::cmp::min(NC, n_cols - col_idx);
 
                 // contiguous pack A[row_idx..row_idx+mb_eff, col_idx..col_idx+nb_eff]
-                pack_panel_f32(
+                pack_panel_f64(
                     &mut apack,
                     a_row_base,
                     mb_eff,
@@ -159,9 +159,9 @@ pub(crate) fn sgemv_transpose(
                 );
 
                 // contiguous y slice for this column block
-                let y_sub: &mut [f32] = &mut y_slice[col_idx .. col_idx + nb_eff];
+                let y_sub: &mut [f64] = &mut y_slice[col_idx .. col_idx + nb_eff];
 
-                sdotf(
+                ddotf(
                     mb_eff, 
                     nb_eff, 
                     &apack, 
@@ -179,7 +179,7 @@ pub(crate) fn sgemv_transpose(
     }
 
     if packed_y {
-        write_back_f32(n_cols, &ybuffer, y, incy);
+        write_back_f64(n_cols, &ybuffer, y, incy);
     }
 }
 

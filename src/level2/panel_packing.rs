@@ -1,26 +1,30 @@
-/// Packs a rectangular panel of columns from a strided matrix into a contiguous
-/// column-major buffer.
-///
-/// - `matrix`      : Source matrix stored in strided format.
-/// - `panel`       : Destination buffer, resized to `n_rows * n_cols`.
-/// - `n_rows`      : Number of rows in the panel.
-/// - `col_idx`     : Starting column index in the source matrix.
-/// - `n_cols`      : Number of columns in the panel.
-/// - `row_stride`  : Stride between consecutive elements within a column.
-/// - `col_stride`  : Stride between consecutive columns.
+//! Packs a rectangular panel of columns from a strided matrix into a contiguous
+//! column-major buffer.
+//!
+//! - `matrix`      : Source matrix stored in strided format.
+//! - `matrix`      : Source matrix stored in strided format.
+//! - `panel`       : Destination buffer, resized to `n_rows * n_cols`.
+//! - `n_rows`      : Number of rows in the panel.
+//! - `col_idx`     : Starting column index in the source matrix.
+//! - `n_cols`      : Number of columns in the panel.
+//! - `row_stride`  : Stride between consecutive elements within a column.
+//! - `col_stride`  : Stride between consecutive columns.
 #[inline(always)] 
-pub(crate) fn pack_panel( 
-    panel       : &mut Vec<f32>, 
-    matrix      : &[f32],
+fn pack_panel<T: Copy>( 
+    panel       : &mut Vec<T>, 
+    matrix      : &[T],
     n_rows      : usize, 
     col_idx     : usize, 
     n_cols      : usize, 
     row_stride  : usize, 
     col_stride  : usize, 
-) { unsafe { 
+) { 
+    unsafe { 
         // initialize empty buffer 
-        panel.clear(); 
-        panel.resize(n_rows * n_cols, 0.0);
+        let total = n_rows * n_cols; 
+        panel.clear();
+        panel.reserve_exact(total); 
+        panel.set_len(total);
         
         for col in 0..n_cols { 
             // start pointer to top of col
@@ -45,3 +49,30 @@ pub(crate) fn pack_panel(
         }
     }
 }
+
+#[inline(always)]
+pub(crate) fn pack_panel_f32(
+    panel   : &mut Vec<f32>, 
+    matrix  : &[f32], 
+    n_rows  : usize, 
+    col_idx : usize,
+    n_cols  : usize, 
+    row_stride: usize, 
+    col_stride: usize,
+) {
+    pack_panel::<f32>(panel, matrix, n_rows, col_idx, n_cols, row_stride, col_stride);
+}
+
+#[inline(always)]
+pub(crate) fn pack_panel_f64(
+    panel   : &mut Vec<f64>, 
+    matrix  : &[f64], 
+    n_rows  : usize,
+    col_idx : usize,
+    n_cols  : usize, 
+    row_stride: usize,
+    col_stride: usize,
+) {
+    pack_panel::<f64>(panel, matrix, n_rows, col_idx, n_cols, row_stride, col_stride);
+}
+

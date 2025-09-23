@@ -20,6 +20,8 @@ mod iamax_tests;
 
 
 // level 2 
+//
+// single precision 
 #[path = "level2/sgemv_tests.rs"]
 mod sgemv_tests;
 #[path = "level2/strmv_tests.rs"] 
@@ -34,6 +36,10 @@ mod ssymv_tests;
 mod ssyr_tests; 
 #[path = "level2/ssyr2_tests.rs"] 
 mod ssyr2_tests;
+//
+// double precision
+#[path = "level2/dgemv_tests.rs"] 
+mod dgemv_tests; 
 
 
 

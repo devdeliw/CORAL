@@ -62,7 +62,7 @@ use crate::level2::{
         pack_and_scale_f32,
         write_back_f32,
     },
-    panel_packing::pack_panel,
+    panel_packing::pack_panel_f32,
 
     // uplo enum 
     enums::CoralTriangular,
@@ -233,7 +233,7 @@ pub fn ssymv(
                     let nb_eff = core::cmp::min(NC, n - col_idx);
 
                     // pack A[row_idx..row_idx+mb_eff, col_idx..col_idx+nb_eff]
-                    pack_panel(
+                    pack_panel_f32(
                         &mut apack,
                         a_row_base,
                         mb_eff,
@@ -285,7 +285,7 @@ pub fn ssymv(
                     let nb_eff = core::cmp::min(NC, row_idx - col_idx);
 
                     // pack A[row_idx..row_idx+mb_eff, col_idx..col_idx+nb_eff]
-                    pack_panel(
+                    pack_panel_f32(
                         &mut apack,
                         a_row_base,
                         mb_eff,
