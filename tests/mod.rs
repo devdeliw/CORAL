@@ -15,6 +15,8 @@ mod nrm2_tests;
 mod dot_tests; 
 #[path = "level1/rot_tests.rs"] 
 mod rot_tests;
+#[path = "level1/iamax_tests.rs"] 
+mod iamax_tests;
 
 
 // level 2 

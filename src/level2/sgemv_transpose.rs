@@ -161,9 +161,6 @@ pub(crate) fn sgemv_transpose(
                 // contiguous y slice for this column block
                 let y_sub: &mut [f32] = &mut y_slice[col_idx .. col_idx + nb_eff];
 
-                // one fused sdotf call per block 
-                // sdotf implements its own MR/NR microblocking 
-                // y_sub += (A_panel^T) * x_sub  ==> column-wise dot over mb_eff
                 sdotf(
                     mb_eff, 
                     nb_eff, 

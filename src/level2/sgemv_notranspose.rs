@@ -155,9 +155,6 @@ pub(crate) fn sgemv_notranspose(
                     lda,
                 );
 
-                // one fused saxpy call per block 
-                // saxpyf implements its own MR/NR microblocking 
-                // y_sub[0..mb_eff] += apack(mb_eff x nb_eff) x[col_idx..col_idx+nb_eff]
                 saxpyf(
                     mb_eff,                                   
                     nb_eff,                                   

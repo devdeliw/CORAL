@@ -154,6 +154,6 @@ pub fn idamax(
             }
         }
 
-        best_idx + 1
+        best_idx
     }
 }
