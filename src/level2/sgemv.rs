@@ -13,7 +13,6 @@ use crate::level2::{
     sgemv_notranspose::sgemv_notranspose, 
 }; 
 
-
 #[inline]
 #[cfg(target_arch = "aarch64")]
 pub fn sgemv( 
