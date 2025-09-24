@@ -1,6 +1,6 @@
-//! Performs a single precision symmetric rank-1 update (SYR).
+//! Performs a double precision symmetric rank-1 update (SYR).
 //!
-//! This function implements the BLAS [`ssyr`] routine, computing
+//! This function implements the BLAS [`dsyr`] routine, computing
 //!
 //! ```text
 //!     A := alpha * x * x^T + A
@@ -10,16 +10,16 @@
 //! indicated by `uplo` is referenced/updated. `x` is a vector of length `n`.
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1`)
-//! that applies a triangular [`saxpy`] into each column, and falls back to a general
+//! that applies a triangular [`daxpy`] into each column, and falls back to a general
 //! pointer-walk loop with fused multiply-add (FMA) for arbitrary strides.
 //!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
 //! - `n`      (usize)           : Dimension of the matrix `A`.
-//! - `alpha`  (f32)             : Scalar multiplier applied to the outer product `x * x^T`.
-//! - `x`      (&[f32])          : Input slice containing the vector `x`.
+//! - `alpha`  (f64)             : Scalar multiplier applied to the outer product `x * x^T`.
+//! - `x`      (&[f64])          : Input slice containing the vector `x`.
 //! - `incx`   (usize)           : Stride between consecutive elements of `x`.
-//! - `matrix` (&mut [f32])      : Input/output slice containing the matrix `A` in column-major layout;
+//! - `matrix` (&mut [f64])      : Input/output slice containing the matrix `A` in column-major layout;
 //!                              | updated in place (only the specified triangle is touched).
 //! - `lda`    (usize)           : Leading dimension (stride between columns) of `A`.
 //!
@@ -28,7 +28,7 @@
 //!   within the specified triangle.
 //!
 //! # Notes
-//! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`saxpy`] kernel.
+//! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`daxpy`] kernel.
 //! - Assumes column-major memory layout.
 //!
 //! # Visibility
@@ -37,7 +37,7 @@
 //! # Author
 //! Deval Deliwala
 
-use crate::level1::saxpy::saxpy;
+use crate::level1::daxpy::daxpy;
 // assert length helpers
 use crate::level1::assert_length_helpers::required_len_ok;
 use crate::level2::assert_length_helpers::required_len_ok_matrix;
@@ -45,13 +45,13 @@ use crate::level2::enums::CoralTriangular;
 
 #[inline]
 #[cfg(target_arch = "aarch64")]
-pub fn ssyr(
+pub fn dsyr(
     uplo    : CoralTriangular,
     n       : usize,
-    alpha   : f32,
-    x       : &[f32],
+    alpha   : f64,
+    x       : &[f64],
     incx    : usize,
-    matrix  : &mut [f32],
+    matrix  : &mut [f64],
     lda     : usize,
 ) {
     // quick returns
@@ -79,7 +79,7 @@ pub fn ssyr(
                         // length = j+1
                         let col_start = j * lda;
 
-                        saxpy(
+                        daxpy(
                             j + 1,
                             aj,
                             &x[..],
@@ -100,7 +100,7 @@ pub fn ssyr(
                         // row j 
                         let col_start = j * lda + j; 
 
-                        saxpy(
+                        daxpy(
                             n - j,
                             aj,
                             &x[j..n],

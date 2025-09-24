@@ -1,4 +1,4 @@
-//! Performs a single precision symmetric matrix–vector multiply (SYMV) in the form:
+//! Performs a double precision symmetric matrix–vector multiply (SYMV) in the form:
 //!
 //! ```text
 //!     y := alpha * A * x + beta * y
@@ -8,24 +8,24 @@
 //! indicated by `uplo` is referenced. `x` is a vector of length `n`, and `y` is a
 //! vector of length `n`.
 //!
-//! This function implements the BLAS [`crate::level2::ssymv`] routine, optimized for
+//! This function implements the BLAS [`crate::level2::dsymv`] routine, optimized for
 //! AArch64 NEON architectures with blocking and panel packing. For off-diagonal work
-//! it fuses a column-wise [`saxpyf`] stream with column-dots so each `A` element is read
+//! it fuses a column-wise [`daxpyf`] stream with column-dots so each `A` element is read
 //! exactly once while producing both the `A x` and `A^T x` contributions implied by
 //! symmetry.
 //!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored (`Upper` or `Lower`).
 //! - `n`      (usize)           : Dimension of the matrix `A`.
-//! - `alpha`  (f32)             : Scalar multiplier applied to `A * x`.
-//! - `matrix` (&[f32])          : Input slice containing the matrix `A`, stored in column-major
+//! - `alpha`  (f64)             : Scalar multiplier applied to `A * x`.
+//! - `matrix` (&[f64])          : Input slice containing the matrix `A`, stored in column-major
 //!                              | order with leading dimension `lda`. Only the specified triangle
 //!                              | is referenced; the other triangle is ignored.
 //! - `lda`    (usize)           : Leading dimension of `A` (stride between successive columns).
-//! - `x`      (&[f32])          : Input vector of length `n`, with stride `incx`.
+//! - `x`      (&[f64])          : Input vector of length `n`, with stride `incx`.
 //! - `incx`   (usize)           : Stride between consecutive elements of `x`.
-//! - `beta`   (f32)             : Scalar multiplier applied to `y` prior to accumulation.
-//! - `y`      (&mut [f32])      : Input/output vector of length `n`, with stride `incy`.
+//! - `beta`   (f64)             : Scalar multiplier applied to `y` prior to accumulation.
+//! - `y`      (&mut [f64])      : Input/output vector of length `n`, with stride `incy`.
 //! - `incy`   (usize)           : Stride between consecutive elements of `y`.
 //!
 //! # Returns
@@ -39,7 +39,7 @@
 //!   that touches each stored `A` element once without packing.
 //! - Otherwise, a **blocked algorithm** iterates over row panels of height `MC` and
 //!   column panels of width `NC`. Off-diagonal panels are handled with a fused
-//!   [`saxpyf`]/[`sdotf`] kernel on packed rectangles that lie entirely within the stored
+//!   [`daxpyf`]/[`ddotf`] kernel on packed rectangles that lie entirely within the stored
 //!   triangle; diagonal blocks are handled by a triangular microkernel.
 //!
 //! # Author
@@ -47,9 +47,9 @@
 
 use core::slice;
 
-use crate::level1::sscal::sscal;
-use crate::level1_special::saxpyf::saxpyf;
-use crate::level1_special::sdotf::sdotf;
+use crate::level1::dscal::dscal;
+use crate::level1_special::daxpyf::daxpyf;
+use crate::level1_special::ddotf::ddotf;
 
 // assert length helpers
 use crate::level1::assert_length_helpers::required_len_ok;
@@ -58,11 +58,11 @@ use crate::level2::assert_length_helpers::required_len_ok_matrix;
 // contiguous packing helpers
 use crate::level2::{
     vector_packing::{
-        pack_f32,
-        pack_and_scale_f32,
-        write_back_f32,
+        pack_f64,
+        pack_and_scale_f64,
+        write_back_f64,
     },
-    panel_packing::pack_panel_f32,
+    panel_packing::pack_panel_f64,
     enums::CoralTriangular,
 };
 
@@ -71,16 +71,16 @@ const NC: usize = 128;
 
 #[inline]
 #[cfg(target_arch = "aarch64")]
-pub fn ssymv(
+pub fn dsymv(
     uplo    : CoralTriangular,
     n       : usize,
-    alpha   : f32,
-    matrix  : &[f32],
+    alpha   : f64,
+    matrix  : &[f64],
     lda     : usize,
-    x       : &[f32],
+    x       : &[f64],
     incx    : usize,
-    beta    : f32,
-    y       : &mut [f32],
+    beta    : f64,
+    y       : &mut [f64],
     incy    : usize,
 ) {
     // quick return
@@ -97,14 +97,14 @@ pub fn ssymv(
     );
 
     // pack x into contiguous buff and scale by alpha 
-    let mut xbuffer: Vec<f32> = Vec::new(); 
-    pack_and_scale_f32(n, alpha, x, incx, &mut xbuffer); 
+    let mut xbuffer: Vec<f64> = Vec::new(); 
+    pack_and_scale_f64(n, alpha, x, incx, &mut xbuffer); 
 
     // pack y into contiguous buffer iff incy != 1 
-    let (mut ybuffer, mut packed_y): (Vec<f32>, bool) = (Vec::new(), false); 
-    let y_slice: &mut [f32] = if incy == 1 { y } else { 
+    let (mut ybuffer, mut packed_y): (Vec<f64>, bool) = (Vec::new(), false); 
+    let y_slice: &mut [f64] = if incy == 1 { y } else { 
         packed_y = true; 
-        pack_f32(n, y, incy, &mut ybuffer);
+        pack_f64(n, y, incy, &mut ybuffer);
         ybuffer.as_mut_slice()
     }; 
 
@@ -112,7 +112,7 @@ pub fn ssymv(
     if beta == 0.0 {
         y_slice.fill(0.0);
     } else if beta != 1.0 {
-        sscal(n, beta, y_slice, 1);
+        dscal(n, beta, y_slice, 1);
     }
 
     // fast path 
@@ -181,12 +181,12 @@ pub fn ssymv(
             }
         }
 
-        if packed_y { write_back_f32(n, &ybuffer, y, incy); }
+        if packed_y { write_back_f64(n, &ybuffer, y, incy); }
         return; 
     } 
 
     // general case: blocked via panel packing 
-    let mut apack: Vec<f32> = Vec::new(); 
+    let mut apack: Vec<f64> = Vec::new(); 
     
     let mut row_idx = 0; 
     while row_idx < n { 
@@ -206,7 +206,7 @@ pub fn ssymv(
                 // fuse y_head[0..j] saxpy with doc accumulation for y_head[j]. 
                 { 
                     let x_head = &xbuffer[row_idx..row_idx + mb_eff];
-                    let y_head: &mut [f32] = &mut y_slice[row_idx..row_idx + mb_eff]; 
+                    let y_head: &mut [f64] = &mut y_slice[row_idx..row_idx + mb_eff]; 
                     for j in 0..mb_eff { 
                         let col_abs = row_idx + j; 
                         let col_ptr = unsafe { a_row_base.as_ptr().add(col_abs * lda) }; 
@@ -234,7 +234,7 @@ pub fn ssymv(
                     let nb_eff = core::cmp::min(NC, n - col_idx);
 
                     // pack A[row_idx..row_idx+mb_eff, col_idx..col_idx+nb_eff]
-                    pack_panel_f32(
+                    pack_panel_f64(
                         &mut apack,
                         a_row_base,
                         mb_eff,
@@ -246,13 +246,13 @@ pub fn ssymv(
 
                     // disjoint borrows; [0..row_idx+mb_eff) | [row_idx+mb_eff..n)
                     let (y_pre, y_post)     = y_slice.split_at_mut(row_idx + mb_eff);
-                    let y_head: &mut [f32]  = &mut y_pre[row_idx..]; 
+                    let y_head: &mut [f64]  = &mut y_pre[row_idx..]; 
                     let start_tail          = col_idx - (row_idx + mb_eff);
-                    let y_tail: &mut [f32]  = &mut y_post[start_tail .. start_tail + nb_eff];
+                    let y_tail: &mut [f64]  = &mut y_post[start_tail .. start_tail + nb_eff];
 
                     // y_head += apack * x_tail
                     let x_tail = &xbuffer[col_idx .. col_idx + nb_eff];
-                    saxpyf(
+                    daxpyf(
                         mb_eff,
                         nb_eff,
                         x_tail,
@@ -265,7 +265,7 @@ pub fn ssymv(
 
                     // y_tail += apack^T * x_head
                     let x_head = &xbuffer[row_idx .. row_idx + mb_eff];
-                    sdotf(
+                    ddotf(
                         mb_eff,
                         nb_eff,
                         &apack,
@@ -286,7 +286,7 @@ pub fn ssymv(
                     let nb_eff = core::cmp::min(NC, row_idx - col_idx);
 
                     // pack A[row_idx..row_idx+mb_eff, col_idx..col_idx+nb_eff]
-                    pack_panel_f32(
+                    pack_panel_f64(
                         &mut apack,
                         a_row_base,
                         mb_eff,
@@ -298,12 +298,12 @@ pub fn ssymv(
 
                     // disjoint borrows; [0..row_idx) | [row_idx..n)
                     let (y_left_region, y_head_region) = y_slice.split_at_mut(row_idx);
-                    let y_left: &mut [f32] = &mut y_left_region[col_idx .. col_idx + nb_eff];
-                    let y_head: &mut [f32] = &mut y_head_region[..mb_eff];
+                    let y_left: &mut [f64] = &mut y_left_region[col_idx .. col_idx + nb_eff];
+                    let y_head: &mut [f64] = &mut y_head_region[..mb_eff];
 
                     // y_head += apack * x_left
                     let x_left = &xbuffer[col_idx .. col_idx + nb_eff];
-                    saxpyf(
+                    daxpyf(
                         mb_eff,
                         nb_eff,
                         x_left,
@@ -316,7 +316,7 @@ pub fn ssymv(
 
                     // y_left += apack^T * x_head
                     let x_head = &xbuffer[row_idx .. row_idx + mb_eff];
-                    sdotf(
+                    ddotf(
                         mb_eff,
                         nb_eff,
                         &apack,
@@ -332,7 +332,7 @@ pub fn ssymv(
                 // diagonal block; triangular microkernel 
                 { 
                     let x_head = &xbuffer[row_idx..row_idx + mb_eff];
-                    let y_head: &mut [f32] = &mut y_slice[row_idx..row_idx + mb_eff]; 
+                    let y_head: &mut [f64] = &mut y_slice[row_idx..row_idx + mb_eff]; 
                     for j in 0..mb_eff { 
                         let col_abs = row_idx + j; 
                         let col_ptr = unsafe { a_row_base.as_ptr().add(col_abs * lda) }; 
@@ -364,6 +364,7 @@ pub fn ssymv(
     }
 
     if packed_y { 
-        write_back_f32(n, &ybuffer, y, incy); 
+        write_back_f64(n, &ybuffer, y, incy); 
     }
 }
+

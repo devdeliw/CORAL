@@ -1,7 +1,7 @@
 //! Performs a single precision triangular matrix–vector multiply (TRMV) with 
 //! an upper triangular matrix.
 //!
-//! This function implements the BLAS [`strmv`] routine for **upper triangular** matrices,
+//! This function implements the BLAS [`crate::level2::strmv`] routine for **upper triangular** matrices,
 //! computing the in-place product `x := op(A) * x`, where `op(A)` is either `A` or `A^T`
 //!
 //! [`strumv`] function is crate visible and is implemented via [`crate::level2::strmv`] routine. 
@@ -42,7 +42,7 @@ use crate::level1::assert_length_helpers::required_len_ok;
 use crate::level2::assert_length_helpers::required_len_ok_matrix; 
 
 // mini kernels 
-use crate::level2::trmv_kernels::single_add_and_scale; 
+use crate::level2::trmv_kernels::single_add_and_scale_f32; 
 use crate::level2::matrix_ij::a_ij_immutable_f32; 
 
 const NB: usize = 64; 
@@ -86,7 +86,7 @@ fn compute_upper_block_notranspose(
             let scale  = xbuffer[k]; 
             let column = mat_block.add(k * lda); 
 
-            single_add_and_scale(buffer.as_mut_ptr(), column, k, scale); 
+            single_add_and_scale_f32(buffer.as_mut_ptr(), column, k, scale); 
             if unit_diag { 
                 *buffer.get_unchecked_mut(k) += scale; 
             } else { 

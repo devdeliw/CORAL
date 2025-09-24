@@ -1,19 +1,19 @@
-//! Performs a single precision triangular solve (TRSV) with a lower triangular matrix.
+//! Performs a double precision triangular solve (TRSV) with a lower triangular matrix.
 //!
-//! This function implements the BLAS [`crate::level2::strsv`] routine for **lower triangular** matrices,
+//! This function implements the BLAS [`crate::level2::dtrsv`] routine for **lower triangular** matrices,
 //! solving the system `op(L) * x = b` in place for `x`, where `op(L)` is either `L` or `L^T`.
 //!
-//! The [`strlsv`] function is crate-visible and is implemented via 
-//! [`crate::level2::strsv`] using block forward/back substitution kernels.
+//! The [`dtrlsv`] function is crate-visible and is implemented via 
+//! [`crate::level2::dtrsv`] using block forward/back substitution kernels.
 //!
 //! # Arguments
 //! - `n`          (usize)           : Order (dimension) of the square matrix `L`.
 //! - `transpose`  (CoralTranspose)  : Specifies whether to use `L` or `L^T`.
 //! - `diagonal`   (CoralDiagonal)   : Indicates if the diagonal is unit (all 1s) or non-unit.
-//! - `matrix`     (&[f32])          : Input slice containing the lower triangular matrix `L` in
+//! - `matrix`     (&[f64])          : Input slice containing the lower triangular matrix `L` in
 //!                                  | column-major layout.
 //! - `lda`        (usize)           : Leading dimension (stride between columns) of `L`.
-//! - `x`          (&mut [f32])      : Input/output slice containing the right-hand side vector `x`,
+//! - `x`          (&mut [f64])      : Input/output slice containing the right-hand side vector `x`,
 //!                                  | which is overwritten with the solution.
 //! - `incx`       (usize)           : Stride between consecutive elements of `x`.
 //!
@@ -23,9 +23,9 @@
 //! # Notes
 //! - The implementation uses block decomposition with a block size of `NB = 8`.
 //! - For the no-transpose case, diagonal blocks are solved using a **forward substitution** kernel,
-//!   and remaining elements are updated with a fused [`saxpyf`] panel update.
+//!   and remaining elements are updated with a fused [`daxpyf`] panel update.
 //! - For the transpose case, diagonal blocks are solved using a **backward substitution** kernel,
-//!   and previously solved elements are propagated with a fused [`sdotf`] update.
+//!   and previously solved elements are propagated with a fused [`ddotf`] update.
 //! - The kernel is optimized for AArch64 NEON targets and assumes column-major memory layout.
 //!
 //! # Visibility
@@ -38,7 +38,7 @@ use core::slice;
 use crate::level2::enums::{CoralTranspose, CoralDiagonal};
 
 // fused level1
-use crate::level1_special::{saxpyf::saxpyf, sdotf::sdotf};
+use crate::level1_special::{daxpyf::daxpyf, ddotf::ddotf};
 
 // assert length helpers
 use crate::level1::assert_length_helpers::required_len_ok;
@@ -54,17 +54,17 @@ const NB: usize = 8;
 /// # Arguments
 /// - `nb`          (usize)      : Size of the block to solve.
 /// - `unit_diag`   (bool)       : Whether to assume implicit 1s on the diagonal.
-/// - `mat_block`   (*const f32) : Pointer to the block `A[i.., i..]`.
+/// - `mat_block`   (*const f64) : Pointer to the block `A[i.., i..]`.
 /// - `lda`         (usize)      : Leading dimension of the full matrix.
-/// - `x_block`     (*mut f32)   : Pointer to the subvector `x[i..]` to solve in place.
+/// - `x_block`     (*mut f64)   : Pointer to the subvector `x[i..]` to solve in place.
 /// - `incx`        (usize)      : Stride between consecutive elements of `x_block`.
 #[inline(always)]
 fn forward_substitution(
     nb:       usize,
     unit_diag: bool,
-    mat_block: *const f32,
+    mat_block: *const f64,
     lda:      usize,
-    x_block:  *mut f32,
+    x_block:  *mut f64,
     incx:     usize,
 ) {
     if nb == 0 { return; }
@@ -143,17 +143,17 @@ fn forward_substitution(
 /// # Arguments
 /// - `nb`          (usize)      : Size of the block to solve.
 /// - `unit_diag`   (bool)       : Whether to assume implicit 1s on the diagonal.
-/// - `mat_block`   (*const f32) : Pointer to the block `A[i.., i..]`.
+/// - `mat_block`   (*const f64) : Pointer to the block `A[i.., i..]`.
 /// - `lda`         (usize)      : Leading dimension of the full matrix.
-/// - `x_block`     (*mut f32)   : Pointer to the subvector `x[i..]` to solve in place.
+/// - `x_block`     (*mut f64)   : Pointer to the subvector `x[i..]` to solve in place.
 /// - `incx`        (usize)      : Stride between consecutive elements of `x_block`.
 #[inline(always)]
 fn backward_substitution(
     nb:       usize,
     unit_diag: bool,
-    mat_block: *const f32,
+    mat_block: *const f64,
     lda:      usize,
-    x_block:  *mut f32,
+    x_block:  *mut f64,
     incx:     usize,
 ) {
     if nb == 0 { return; }
@@ -227,10 +227,10 @@ fn backward_substitution(
 fn update_tail_notranspose(
     rows_below: usize,
     nb:         usize,
-    base:       *const f32,
+    base:       *const f64,
     lda:        usize,
-    x_block:    *const f32,
-    x_tail:     *mut f32,
+    x_block:    *const f64,
+    x_tail:     *mut f64,
 ) {
     if rows_below == 0 || nb == 0 { return; }
 
@@ -241,15 +241,15 @@ fn update_tail_notranspose(
         let mat_view     = slice::from_raw_parts(base, mat_view_len);
 
         // x_tail := x_tail - A_view * x_block
-        // implemented via fused saxpyf given negative x_block
-        let mut x_block_neg = [0.0; NB];
+        // implemented via fused daxpyf given negative x_block
+        let mut x_block_neg = [0.0f64; NB];
         core::ptr::copy_nonoverlapping(x_block, x_block_neg.as_mut_ptr(), nb);
         for k in 0..nb { x_block_neg[k] = -x_block_neg[k]; }
 
         let x_tail_slice = slice::from_raw_parts_mut(x_tail, rows_below);
 
         // fused axpyf
-        saxpyf(rows_below, nb, &x_block_neg, 1, mat_view, lda, x_tail_slice, 1);
+        daxpyf(rows_below, nb, &x_block_neg, 1, mat_view, lda, x_tail_slice, 1);
     }
 }
 
@@ -261,10 +261,10 @@ fn update_tail_notranspose(
 fn update_head_transpose(
     head_len: usize,
     nb:       usize,
-    base:     *const f32,
+    base:     *const f64,
     lda:      usize,
-    x_block:  *const f32,
-    x_head:   *mut f32,
+    x_block:  *const f64,
+    x_head:   *mut f64,
 ) {
     if head_len == 0 || nb == 0 { return; }
 
@@ -273,25 +273,25 @@ fn update_head_transpose(
         let mat_view     = slice::from_raw_parts(base, mat_view_len);
 
         // x_head := x_head - A_left^T * x_block
-        // implemented via fused sdotf given negative x_block
-        let mut x_block_neg = [0.0; NB];
+        // implemented via fused ddotf given negative x_block
+        let mut x_block_neg = [0.0f64; NB];
         core::ptr::copy_nonoverlapping(x_block, x_block_neg.as_mut_ptr(), nb);
         for k in 0..nb { x_block_neg[k] = -x_block_neg[k]; }
 
         let x_head_slice = slice::from_raw_parts_mut(x_head, head_len);
 
         // fused dot
-        sdotf(nb, head_len, mat_view, lda, &x_block_neg[..nb], 1, x_head_slice);
+        ddotf(nb, head_len, mat_view, lda, &x_block_neg[..nb], 1, x_head_slice);
     }
 }
 
 #[inline]
-fn strlsv_notranspose(
+fn dtrlsv_notranspose(
     n:         usize,
     unit_diag: bool,
-    matrix:    &[f32],
+    matrix:    &[f64],
     lda:       usize,
-    x:         &mut [f32],
+    x:         &mut [f64],
     incx:      usize,
 ) {
     if n == 0 { return; }
@@ -350,12 +350,12 @@ fn strlsv_notranspose(
 }
 
 #[inline]
-fn strlsv_transpose(
+fn dtrlsv_transpose(
     n:         usize,
     unit_diag: bool,
-    matrix:    &[f32],
+    matrix:    &[f64],
     lda:       usize,
-    x:         &mut [f32],
+    x:         &mut [f64],
     incx:      usize,
 ) {
     if n == 0 { return; }
@@ -410,13 +410,13 @@ fn strlsv_transpose(
 }
 
 #[inline]
-pub(crate) fn strlsv(
+pub(crate) fn dtrlsv(
     n:         usize,
     transpose: CoralTranspose,
     diagonal:  CoralDiagonal,
-    matrix:    &[f32],
+    matrix:    &[f64],
     lda:       usize,
-    x:         &mut [f32],
+    x:         &mut [f64],
     incx:      usize,
 ) {
     let unit_diag = match diagonal {
@@ -425,9 +425,9 @@ pub(crate) fn strlsv(
     };
 
     match transpose {
-        CoralTranspose::NoTranspose        => strlsv_notranspose(n, unit_diag, matrix, lda, x, incx),
-        CoralTranspose::Transpose          => strlsv_transpose  (n, unit_diag, matrix, lda, x, incx),
-        CoralTranspose::ConjugateTranspose => strlsv_transpose  (n, unit_diag, matrix, lda, x, incx),
+        CoralTranspose::NoTranspose        => dtrlsv_notranspose(n, unit_diag, matrix, lda, x, incx),
+        CoralTranspose::Transpose          => dtrlsv_transpose  (n, unit_diag, matrix, lda, x, incx),
+        CoralTranspose::ConjugateTranspose => dtrlsv_transpose  (n, unit_diag, matrix, lda, x, incx),
     }
 }
 

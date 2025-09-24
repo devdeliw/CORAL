@@ -11,9 +11,9 @@ mod swap_tests;
 mod asum_tests;
 #[path = "level1/nrm2_tests.rs"] 
 mod nrm2_tests; 
-#[path = "level1/dot_tests.rs"] 
+#[path = "level1/dot_tests.rs" ] 
 mod dot_tests; 
-#[path = "level1/rot_tests.rs"] 
+#[path = "level1/rot_tests.rs" ] 
 mod rot_tests;
 #[path = "level1/iamax_tests.rs"] 
 mod iamax_tests;
@@ -32,7 +32,7 @@ mod strsv_tests;
 mod sger_tests; 
 #[path = "level2/ssymv_tests.rs"] 
 mod ssymv_tests;
-#[path = "level2/ssyr_tests.rs"] 
+#[path = "level2/ssyr_tests.rs" ] 
 mod ssyr_tests; 
 #[path = "level2/ssyr2_tests.rs"] 
 mod ssyr2_tests;
@@ -40,6 +40,17 @@ mod ssyr2_tests;
 // double precision
 #[path = "level2/dgemv_tests.rs"] 
 mod dgemv_tests; 
-
+#[path = "level2/dtrmv_tests.rs"] 
+mod dtrmv_tests;
+#[path = "level2/dtrsv_tests.rs"] 
+mod dtrsv_tests; 
+#[path = "level2/dger_tests.rs" ] 
+mod dger_tests; 
+#[path = "level2/dsymv_tests.rs"] 
+mod dsymv_tests;
+#[path = "level2/dsyr_tests.rs" ] 
+mod dsyr_tests; 
+#[path = "level2/dsyr2_tests.rs"] 
+mod dsyr2_tests;
 
 

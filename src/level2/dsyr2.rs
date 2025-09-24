@@ -1,6 +1,6 @@
-//! Performs a single precision symmetric rank-2 update (SYR2).
+//! Performs a double precision symmetric rank-2 update (SYR2).
 //!
-//! BLAS [`ssyr2`] computes
+//! BLAS [`dsyr2`] computes
 //!
 //! ```text
 //!     A := alpha * (x * y^T + y * x^T) + A
@@ -9,18 +9,18 @@
 //! where `A` is an `n x n` **symmetric** column-major matrix and only the triangle
 //! indicated by `uplo` is referenced/updated.
 //!
-//! Fast path for unit strides uses two triangular [`saxpy`] streams per column.
+//! Fast path for unit strides uses two triangular [`daxpy`] streams per column.
 //! General path uses a pointer-walk with FMA for arbitrary strides.
 //!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
 //! - `n`      (usize)           : Dimension of the matrix `A`.
-//! - `alpha`  (f32)             : Scalar multiplier.
-//! - `x`      (&[f32])          : Vector `x`.
+//! - `alpha`  (f64)             : Scalar multiplier.
+//! - `x`      (&[f64])          : Vector `x`.
 //! - `incx`   (usize)           : Stride for `x`.
-//! - `y`      (&[f32])          : Vector `y`.
+//! - `y`      (&[f64])          : Vector `y`.
 //! - `incy`   (usize)           : Stride for `y`.
-//! - `matrix` (&mut [f32])      : Column-major storage for `A` (updated in place).
+//! - `matrix` (&mut [f64])      : Column-major storage for `A` (updated in place).
 //! - `lda`    (usize)           : Leading dimension of `A`.
 //!
 //! # Returns
@@ -28,7 +28,7 @@
 //!   within the specified triangle.
 //!
 //! # Notes
-//! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`saxpy`] kernel.
+//! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`daxpy`] kernel.
 //! - Assumes column-major memory layout.
 //!
 //! # Visibility
@@ -37,22 +37,22 @@
 //! # Author
 //! Deval Deliwala
 
-use crate::level1::saxpy::saxpy;
+use crate::level1::daxpy::daxpy;
 use crate::level1::assert_length_helpers::required_len_ok;
 use crate::level2::assert_length_helpers::required_len_ok_matrix;
 use crate::level2::enums::CoralTriangular;
 
 #[inline]
 #[cfg(target_arch = "aarch64")]
-pub fn ssyr2(
+pub fn dsyr2(
     uplo    : CoralTriangular,
     n       : usize,
-    alpha   : f32,
-    x       : &[f32],
+    alpha   : f64,
+    x       : &[f64],
     incx    : usize,
-    y       : &[f32],
+    y       : &[f64],
     incy    : usize,
-    matrix  : &mut [f32],
+    matrix  : &mut [f64],
     lda     : usize,
 ) {
     if n == 0 || alpha == 0.0 {
@@ -77,7 +77,7 @@ pub fn ssyr2(
                     let aj_x = alpha * unsafe { *x.get_unchecked(j) };
                     if aj_y != 0.0 {
                         let col_start = j * lda;
-                        saxpy(
+                        daxpy(
                             j + 1,
                             aj_y,
                             &x[..],
@@ -88,7 +88,7 @@ pub fn ssyr2(
                     }
                     if aj_x != 0.0 {
                         let col_start = j * lda;
-                        saxpy(
+                        daxpy(
                             j + 1,
                             aj_x,
                             &y[..],
@@ -105,7 +105,7 @@ pub fn ssyr2(
                     let aj_x = alpha * unsafe { *x.get_unchecked(j) };
                     if aj_y != 0.0 {
                         let col_start = j * lda + j;
-                        saxpy(
+                        daxpy(
                             n - j,
                             aj_y,
                             &x[j..n],
@@ -116,7 +116,7 @@ pub fn ssyr2(
                     }
                     if aj_x != 0.0 {
                         let col_start = j * lda + j;
-                        saxpy(
+                        daxpy(
                             n - j,
                             aj_x,
                             &y[j..n],

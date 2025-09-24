@@ -135,8 +135,8 @@ fn assert_allclose(
     }
 }
 
-const RTOL: f64 = 1e-6;
-const ATOL: f64 = 1e-5;
+const RTOL: f64 = 1e-15;
+const ATOL: f64 = 1e-15;
 
 #[test]
 fn notranspose_small() {

@@ -1,6 +1,6 @@
-//! Performs a single precision rank-1 matrix update (GER).
+//! Performs a double precision rank-1 matrix update (GER).
 //!
-//! This function implements the BLAS [`sger`] routine, computing the outer-product update
+//! This function implements the BLAS [`dger`] routine, computing the outer-product update
 //!
 //! ```text
 //!     A := alpha * x * y^T + A
@@ -10,18 +10,18 @@
 //! `n_rows`, and `y` is a vector of length `n_cols`.  
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1` and `incy == 1`)
-//! that applies a scaled [`saxpy`] into each column, and falls back to a general pointer-walk
+//! that applies a scaled [`daxpy`] into each column, and falls back to a general pointer-walk
 //! loop with fused multiply-add (FMA) for arbitrary strides.
 //!
 //! # Arguments
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
-//! - `alpha`  (f32)        : Scalar multiplier applied to the outer product `x * y^T`.
-//! - `x`      (&[f32])     : Input slice containing the vector `x`.
+//! - `alpha`  (f64)        : Scalar multiplier applied to the outer product `x * y^T`.
+//! - `x`      (&[f64])     : Input slice containing the vector `x`.
 //! - `incx`   (usize)      : Stride between consecutive elements of `x`.
-//! - `y`      (&[f32])     : Input slice containing the vector `y`.
+//! - `y`      (&[f64])     : Input slice containing the vector `y`.
 //! - `incy`   (usize)      : Stride between consecutive elements of `y`.
-//! - `matrix` (&mut [f32]) : Input/output slice containing the matrix `A` in column-major layout,
+//! - `matrix` (&mut [f64]) : Input/output slice containing the matrix `A` in column-major layout,
 //!                         | updated in place.
 //! - `lda`    (usize)      : Leading dimension (stride between columns) of `A`.
 //!
@@ -38,8 +38,7 @@
 //! # Author
 //! Deval Deliwala
 
-
-use crate::level1::saxpy::saxpy;
+use crate::level1::daxpy::daxpy;
 
 // assert length helpers 
 use crate::level1::assert_length_helpers::required_len_ok; 
@@ -47,15 +46,15 @@ use crate::level2::assert_length_helpers::required_len_ok_matrix;
 
 #[inline] 
 #[cfg(target_arch = "aarch64")]
-pub fn sger( 
+pub fn dger( 
     n_rows  : usize, 
     n_cols  : usize, 
-    alpha   : f32, 
-    x       : &[f32], 
+    alpha   : f64, 
+    x       : &[f64], 
     incx    : usize, 
-    y       : &[f32], 
+    y       : &[f64], 
     incy    : usize, 
-    matrix  : &mut [f32], 
+    matrix  : &mut [f64], 
     lda     : usize, 
 ) { 
     // quick return 
@@ -76,7 +75,7 @@ pub fn sger(
         for col_idx in 0..n_cols { 
             let coeff = alpha * unsafe { *y.get_unchecked(col_idx) }; 
             if coeff != 0.0 { 
-                saxpy(
+                daxpy(
                     n_rows, 
                     coeff,
                     x,
@@ -112,5 +111,4 @@ pub fn sger(
         }
     }
 }
-
 
