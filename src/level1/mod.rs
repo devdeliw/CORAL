@@ -1,4 +1,5 @@
-pub mod assert_length_helpers;
+pub(crate) mod assert_length_helpers;
+pub(crate) mod nrm2_helpers;
 
 pub mod sasum;
 pub mod dasum; 
@@ -10,7 +11,6 @@ pub mod idamax;
 pub mod icamax; 
 pub mod izamax; 
 
-pub mod nrm2_helpers;
 pub mod snrm2; 
 pub mod dnrm2; 
 pub mod scnrm2; 
