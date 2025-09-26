@@ -52,5 +52,9 @@ mod dsymv_tests;
 mod dsyr_tests; 
 #[path = "level2/dsyr2_tests.rs"] 
 mod dsyr2_tests;
+// 
+// complex single precision 
+#[path = "level2/cgemv_tests.rs"]
+mod cgemv_tests;
 
 

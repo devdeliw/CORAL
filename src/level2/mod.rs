@@ -8,9 +8,17 @@ pub mod enums;
 pub(crate) mod sgemv_notranspose;
 pub(crate) mod sgemv_transpose;
 pub(crate) mod dgemv_notranspose;
-pub(crate) mod dgemv_transpose; 
+pub(crate) mod dgemv_transpose;
+pub(crate) mod cgemv_notranspose; 
+pub(crate) mod cgemv_transpose; 
+pub(crate) mod cgemv_conjtranspose;
+pub(crate) mod zgemv_notranspose; 
+pub(crate) mod zgemv_transpose; 
+pub(crate) mod zgemv_conjtranspose;
 pub mod sgemv; 
 pub mod dgemv;
+pub mod cgemv; 
+pub mod zgemv; 
 
 pub(crate) mod strumv; 
 pub(crate) mod strlmv; 

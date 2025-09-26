@@ -5,7 +5,7 @@
 //! Transpose/ConjTrans => y = alpha * A^T * x + beta * y
 //! ```
 //!
-//! Dispatches to [`sgemv_notranspose`] or [`sgemv_transpose`].
+//! Dispatches to [`dgemv_notranspose`] or [`dgemv_transpose`].
 
 use crate::level2::{ 
     enums::CoralTranspose, 
