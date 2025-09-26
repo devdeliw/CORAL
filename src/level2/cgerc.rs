@@ -6,12 +6,12 @@
 //!     A := alpha * x * y^H + A
 //! ```
 //!
-//! where `A` is an `n_rows x n_cols` column-major matrix, `x` is a vector of length
-//! `n_rows`, and `y` is a vector of length `n_cols`.  
+//! where `A` is an `n_rows x n_cols` interleaved column-major matrix, `[re, im, ...]`
+//! `x` is a vector of length `n_rows`, and `y` is a vector of length `n_cols`.  
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1` and `incy == 1`)
 //! that applies a scaled [`caxpy`] into each column, and falls back to a general pointer-walk
-//! loop with fused multiply-add (FMA) for arbitrary strides.
+//! loop for arbitrary strides.
 //!
 //! # Arguments
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
@@ -20,9 +20,10 @@
 //! - `x`      (&[f32])     : Input slice containing interleaved complex vector `x` elements.
 //! - `incx`   (usize)      : Stride between consecutive complex elements of `x`.
 //! - `y`      (&[f32])     : Input slice containing interleaved complex vector `y` elements.
-//! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.
-//! - `matrix` (&mut [f32]) : Input slice containing interleaved complex matrix `A`; updated in place.
-//! - `lda`    (usize)      : Leading dimension of `A`.
+//! - `incy`   (usize)      : Stride between consecutive complex elements of `y`. 
+//! - `matrix` (&mut [f32]) : Input slice containing interleaved complex matrix `A`;
+//!                         | updated in place.
+//! - `lda`    (usize)      : Leading dimension of `A`; complex units. 
 //!
 //! # Returns
 //! - Nothing. The contents of `matrix` are updated in place as `A := alpha * x * y^H + A`.

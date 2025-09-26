@@ -6,9 +6,9 @@
 //!     A := alpha * x * x^H + A
 //! ```
 //!
-//! where `A` is an `n x n` **Hermitian** column-major matrix and only the triangle
-//! indicated by `uplo` is referenced/updated. `x` is a complex vector of length `n`
-//! stored as interleaved `[re, im, re, im, ...]`.
+//! where `A` is an `n x n` **Hermitian** interleaved column-major matrix `[re, im, ...]` 
+//! and only the triangle indicated by `uplo` is referenced/updated. `x` is an interleaved 
+//! complex vector of length `n`
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1`)
 //! that applies a triangular [`caxpy`] into each column, and falls back to a general
@@ -18,11 +18,11 @@
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
 //! - `n`      (usize)           : Dimension of the matrix `A`.
 //! - `alpha`  (f32)             : Real scalar multiplier applied to the outer product `x * x^H`.
-//! - `x`      (&[f32])          : Input slice containing the complex vector `x`; interleaved.
+//! - `x`      (&[f32])          : Input slice containing the complex vector `x`
 //! - `incx`   (usize)           : Stride between consecutive complex elements of `x`.
-//! - `matrix` (&mut [f32])      : Input/output slice containing the matrix `A` in column-major layout
+//! - `matrix` (&mut [f32])      : Input/output slice containing the matrix `A`.
 //!                              | as interleaved complex scalars; specified triangle updated in place.
-//! - `lda`    (usize)           : Leading dimension in complex units of `A`.
+//! - `lda`    (usize)           : Leading dimension of `A`.
 //!
 //! # Returns
 //! - Nothing. The contents of `matrix` are updated in place

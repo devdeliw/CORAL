@@ -15,18 +15,16 @@
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
 //! - `alpha`  ([f32; 2])   : Complex scalar multiplier applied to the product `A * x`.
-//! - `matrix` (&[f32])     : Input slice containing the matrix `A` (interleaved complex), stored in column-major
-//!                         | order with leading dimension `lda`.
-//! - `lda`    (usize)      : Leading dimension of `A` (stride between successive columns, in complex elements).
-//! - `x`      (&[f32])     : Input complex vector of length `n_cols`, with stride `incx`.
-//! - `incx`   (usize)      : Stride between consecutive complex elements of `x`.
+//! - `matrix` (&[f32])     : Input slice containing the interleaved matrix `A`.
+//! - `lda`    (usize)      : Leading dimension of `A`. 
+//! - `x`      (&[f32])     : Input complex vector of length `n_cols`.
+//! - `incx`   (usize)      : Stride between consecutive complex elements of `x`. 
 //! - `beta`   ([f32; 2])   : Complex scalar multiplier applied to `y` prior to accumulation.
-//! - `y`      (&mut [f32]) : Input/output complex vector of length `n_rows`, with stride `incy`.
-//! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.
+//! - `y`      (&mut [f32]) : Input/output complex vector of length `n_rows`.
+//! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.  
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place to contain the result
-//!   `alpha * A * x + beta * y`.
+//! - Nothing. The contents of `y` are updated in place.
 //!
 //! # Notes
 //! - If `n_rows == 0` or `n_cols == 0`, the function returns immediately.

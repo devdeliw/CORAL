@@ -10,22 +10,23 @@
 //! indicated by `uplo` is referenced/updated.
 //!
 //! Fast path for unit strides uses two triangular [`daxpy`] streams per column.
-//! General path uses a pointer-walk with FMA for arbitrary strides.
+//! General path uses a pointer-walk for arbitrary strides.
 //!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
 //! - `n`      (usize)           : Dimension of the matrix `A`.
-//! - `alpha`  (f64)             : Scalar multiplier.
-//! - `x`      (&[f64])          : Vector `x`.
-//! - `incx`   (usize)           : Stride for `x`.
-//! - `y`      (&[f64])          : Vector `y`.
-//! - `incy`   (usize)           : Stride for `y`.
-//! - `matrix` (&mut [f64])      : Column-major storage for `A` (updated in place).
+//! - `alpha`  (f64)             : Scalar multiplier applied to the outer product `x * x^T`.
+//! - `x`      (&[f64])          : Input slice containing the vector `x`.
+//! - `incx`   (usize)           : Stride between consecutive elements of `x`.
+//! - `y`      (&[f64])          : Input slice containing the vector `y`
+//! - `incy`   (usize)           : Stride between consecutive elements of `y`.
+//! - `matrix` (&mut [f64])      : Input/output slice containing the matrix `A`.
+//!                              | updated in place. 
 //! - `lda`    (usize)           : Leading dimension of `A`.
+//
 //!
 //! # Returns
-//! - Nothing. The contents of `matrix` are updated in place.
-//!   within the specified triangle.
+//! - Nothing. The contents of `matrix` are updated in place within the specified triangle.
 //!
 //! # Notes
 //! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`daxpy`] kernel.

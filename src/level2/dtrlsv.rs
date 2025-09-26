@@ -10,15 +10,14 @@
 //! - `n`          (usize)           : Order (dimension) of the square matrix `L`.
 //! - `transpose`  (CoralTranspose)  : Specifies whether to use `L` or `L^T`.
 //! - `diagonal`   (CoralDiagonal)   : Indicates if the diagonal is unit (all 1s) or non-unit.
-//! - `matrix`     (&[f64])          : Input slice containing the lower triangular matrix `L` in
-//!                                  | column-major layout.
-//! - `lda`        (usize)           : Leading dimension (stride between columns) of `L`.
-//! - `x`          (&mut [f64])      : Input/output slice containing the right-hand side vector `x`,
-//!                                  | which is overwritten with the solution.
+//! - `matrix`     (&[f64])          : Input slice containing the lower triangular matrix `L`.
+//! - `lda`        (usize)           : Leading dimension of `L`.
+//! - `x`          (&mut [f64])      : Input/output slice containing the right-hand side vector `x`
+//!                                  | updated in place. 
 //! - `incx`       (usize)           : Stride between consecutive elements of `x`.
 //!
 //! # Returns
-//! - Nothing. The contents of `x` are updated in place as the solution to `op(L) * x = b`.
+//! - Nothing. The contents of `x` are updated in place. 
 //!
 //! # Notes
 //! - The implementation uses block decomposition with a block size of `NB = 8`.

@@ -15,26 +15,25 @@
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
 //! - `alpha`  (f32)        : Scalar multiplier applied to the product `A^T * x`.
-//! - `matrix` (&[f32])     : Input slice containing the matrix `A`, stored in column-major
-//!                         | order with leading dimension `lda`.
-//! - `lda`    (usize)      : Leading dimension of `A` (stride between successive columns).
-//! - `x`      (&[f32])     : Input vector of length `n_rows`, with stride `incx`.
+//! - `matrix` (&[f32])     : Input slice containing the matrix `A`.
+//! - `lda`    (usize)      : Leading dimension of `A`..
+//! - `x`      (&[f32])     : Input vector of length `n_rows`. 
 //! - `incx`   (usize)      : Stride between consecutive elements of `x`.
 //! - `beta`   (f32)        : Scalar multiplier applied to `y` prior to accumulation.
-//! - `y`      (&mut [f32]) : Input/output vector of length `n_cols`, with stride `incy`.
+//! - `y`      (&mut [f32]) : Input/output vector of length `n_cols`.
 //! - `incy`   (usize)      : Stride between consecutive elements of `y`.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place to contain the result
-//!   `alpha * A^T * x + beta * y`.
+//! - Nothing. The contents of `y` are updated in place. 
 //!
 //! # Notes
 //! - If `n_rows == 0` or `n_cols == 0`, the function returns immediately.
-//! - If `alpha == 0.0 && beta == 1.0`, the function returns immediately (no change).
+//! - If `alpha == 0.0 && beta == 1.0`,  the function returns immediately.
 //! - When `lda == n_rows`, the matrix is stored contiguously, and a **fast path**
 //!   is taken using a single fused [`sdotf`] call.
 //! - Otherwise, the routine falls back to a **blocked algorithm**, iterating over
 //!   panels of size `MC x NC` with contiguous packing into temporary buffers.
+//! - Assumes column-major layout. 
 //!
 //! # Author
 //! Deval Deliwala

@@ -15,17 +15,16 @@
 //!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
-//! - `n`      (usize)           : Dimension of the matrix `A`.
+//! - `n`      (usize)           : Order of the matrix `A`.
 //! - `alpha`  (f32)             : Scalar multiplier applied to the outer product `x * x^T`.
 //! - `x`      (&[f32])          : Input slice containing the vector `x`.
 //! - `incx`   (usize)           : Stride between consecutive elements of `x`.
-//! - `matrix` (&mut [f32])      : Input/output slice containing the matrix `A` in column-major layout;
-//!                              | updated in place (only the specified triangle is touched).
-//! - `lda`    (usize)           : Leading dimension (stride between columns) of `A`.
+//! - `matrix` (&mut [f32])      : Input/output slice containing the matrix `A`. 
+//!                              | Only the specified triangle is touched.
+//! - `lda`    (usize)           : Leading dimension of `A`.
 //!
 //! # Returns
-//! - Nothing. The contents of `matrix` are updated in place.
-//!   within the specified triangle.
+//! - Nothing. The contents of `matrix` are updated in place within the specified triangle.
 //!
 //! # Notes
 //! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`saxpy`] kernel.

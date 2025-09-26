@@ -1,7 +1,5 @@
 //! Performs a single precision symmetric rank-2 update (SYR2).
 //!
-//! BLAS [`ssyr2`] computes
-//!
 //! ```text
 //!     A := alpha * (x * y^T + y * x^T) + A
 //! ```
@@ -9,18 +7,16 @@
 //! where `A` is an `n x n` **symmetric** column-major matrix and only the triangle
 //! indicated by `uplo` is referenced/updated.
 //!
-//! Fast path for unit strides uses two triangular [`saxpy`] streams per column.
-//! General path uses a pointer-walk with FMA for arbitrary strides.
-//!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
-//! - `n`      (usize)           : Dimension of the matrix `A`.
-//! - `alpha`  (f32)             : Scalar multiplier.
-//! - `x`      (&[f32])          : Vector `x`.
-//! - `incx`   (usize)           : Stride for `x`.
-//! - `y`      (&[f32])          : Vector `y`.
-//! - `incy`   (usize)           : Stride for `y`.
-//! - `matrix` (&mut [f32])      : Column-major storage for `A` (updated in place).
+//! - `n`      (usize)           : Order of the matrix `A`.
+//! - `alpha`  (f32)             : Scalar multiplier applied to the outer product `x * x^T`.
+//! - `x`      (&[f32])          : Input slice containing the vector `x`.
+//! - `incx`   (usize)           : Stride between consecutive elements of `x`.
+//! - `y`      (&[f32])          : Input slice containing the vector `y`.
+//! - `incy`   (usize)           : Stride between consecutive elements of `y`.
+//! - `matrix` (&mut [f32])      : Input/output slice containing the matrix `A`. 
+//!                              | Only the specified triangle is touched.
 //! - `lda`    (usize)           : Leading dimension of `A`.
 //!
 //! # Returns
@@ -28,6 +24,7 @@
 //!   within the specified triangle.
 //!
 //! # Notes
+//! - Fast path for unit strides uses two triangular [`saxpy`] streams per column.
 //! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`saxpy`] kernel.
 //! - Assumes column-major memory layout.
 //!

@@ -7,18 +7,16 @@
 //! [`crate::level2::strsv`] using block back/forward substitution kernels.
 //!
 //! # Arguments
-//! - `n`          (usize)           : Order (dimension) of the square matrix `A`.
+//! - `n`          (usize)           : Order of the square matrix `A`.
 //! - `transpose`  (CoralTranspose)  : Specifies whether to use `A` or `A^T`.
 //! - `diagonal`   (CoralDiagonal)   : Indicates if the diagonal is unit (all 1s) or non-unit.
-//! - `matrix`     (&[f32])          : Input slice containing the upper triangular matrix `A` in
-//!                                  | column-major layout.
-//! - `lda`        (usize)           : Leading dimension (stride between columns) of `A`.
-//! - `x`          (&mut [f32])      : Input/output slice containing the right-hand side vector `x`,
-//!                                  | which is overwritten with the solution.
+//! - `matrix`     (&[f32])          : Input slice containing the upper triangular matrix `A`. 
+//! - `lda`        (usize)           : Leading dimension of `A`.
+//! - `x`          (&mut [f32])      : Input/output slice containing the right-hand side vector `x`.
 //! - `incx`       (usize)           : Stride between consecutive elements of `x`.
 //!
 //! # Returns
-//! - Nothing. The contents of `x` are updated in place as the solution to `op(A) * x = b`.
+//! - Nothing. `x` is updated in place with the solution. 
 //!
 //! # Notes
 //! - The implementation uses block decomposition with a block size of `NB`.
@@ -26,7 +24,8 @@
 //!   and previously solved elements are propagated with a fused [`saxpyf`] update.
 //! - For the transpose case, diagonal blocks are solved using a **forward substitution** kernel,
 //!   and remaining elements are updated via fused [`sdotf`] dot-product panels.
-//! - The kernel is optimized for AArch64 NEON targets and assumes column-major memory layout.
+//! - The kernel is optimized for AArch64 NEON targets 
+//! - Assumes column-major memory layout.
 //!
 //! # Visibility
 //! - pub(crate)

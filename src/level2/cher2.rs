@@ -6,9 +6,9 @@
 //!     A := alpha * (x * y^H) + conj(alpha) * (y * x^H) + A
 //! ```
 //!
-//! where `A` is an `n x n` **Hermitian** column-major matrix and only the triangle
-//! indicated by `uplo` is referenced/updated. `x` and `y` are complex vectors of length `n`
-//! stored as interleaved `[re, im, re, im, ...]`.
+//! where `A` is an `n x n` **Hermitian** interleaved column-major matrix `[re, im, ...]`
+//! and only the triangle indicated by `uplo` is referenced/updated. `x` and `y` are complex 
+//! vectors of length `n`
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1 && incy == 1`)
 //! that applies two triangular [`caxpy`] streams per column, and falls back to a general
@@ -17,13 +17,13 @@
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
 //! - `n`      (usize)           : Dimension of the matrix `A`.
-//! - `alpha`  ([f32; 2])        : Complex scalar multiplier.
-//! - `x`      (&[f32])          : Vector `x` (interleaved complex).
-//! - `incx`   (usize)           : Stride for `x` (in complex elements).
-//! - `y`      (&[f32])          : Vector `y` (interleaved complex).
-//! - `incy`   (usize)           : Stride for `y` (in complex elements).
-//! - `matrix` (&mut [f32])      : Column-major storage for `A` as interleaved complex scalars
-//!                              | (updated in place; only the specified triangle is touched).
+//! - `alpha`  ([f32; 2])        : Complex scalar multiplier ([real, imag]).
+//! - `x`      (&[f32])          : Input slice containing complex vector `x`.
+//! - `incx`   (usize)           : Stride between consecutive elements of `x.
+//! - `y`      (&[f32])          : Input slice containing complex vector `y`.
+//! - `incy`   (usize)           : Stride between consecutive elements of `y`.
+//! - `matrix` (&mut [f32])      : Input/output slice containing the matrix `A`.
+//!                              | as interleaved complex scalars; specified triangle updated in place.
 //! - `lda`    (usize)           : Leading dimension of `A`. 
 //!
 //! # Returns

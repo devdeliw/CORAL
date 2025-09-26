@@ -4,8 +4,8 @@
 //!     y := alpha * A^T * x + beta * y
 //! ```
 //!
-//! where `A` is an `n_rows` x `n_cols` column-major matrix, `x` is a vector of
-//! length `n_rows`, and `y` is a vector of length `n_cols`.  
+//! where `A` is an `n_rows` x `n_cols` interleaved column-major matrix,
+//! `x` is a vector of length `n_rows`, and `y` is a vector of length `n_cols`.  
 //!
 //! This function implements the BLAS [`crate::level2::dgemv`] routine for the
 //! **transpose** case, optimized for AArch64 NEON architectures with blocking and 
@@ -15,22 +15,20 @@
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
 //! - `alpha`  (f64)        : Scalar multiplier applied to the product `A^T * x`.
-//! - `matrix` (&[f64])     : Input slice containing the matrix `A`, stored in column-major
-//!                         | order with leading dimension `lda`.
-//! - `lda`    (usize)      : Leading dimension of `A` (stride between successive columns).
-//! - `x`      (&[f64])     : Input vector of length `n_rows`, with stride `incx`.
+//! - `matrix` (&[f64])     : Input slice containing the matrix `A`. 
+//! - `lda`    (usize)      : Leading dimension of `A`. 
+//! - `x`      (&[f64])     : Input vector of length `n_rows`.
 //! - `incx`   (usize)      : Stride between consecutive elements of `x`.
 //! - `beta`   (f64)        : Scalar multiplier applied to `y` prior to accumulation.
-//! - `y`      (&mut [f64]) : Input/output vector of length `n_cols`, with stride `incy`.
+//! - `y`      (&mut [f64]) : Input/output vector of length `n_cols`.
 //! - `incy`   (usize)      : Stride between consecutive elements of `y`.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place to contain the result
-//!   `alpha * A^T * x + beta * y`.
+//! - Nothing. The contents of `y` are updated in place.
 //!
 //! # Notes
 //! - If `n_rows == 0` or `n_cols == 0`, the function returns immediately.
-//! - If `alpha == 0.0 && beta == 1.0`, the function returns immediately (no change).
+//! - If `alpha == 0.0 && beta == 1.0`,  the function returns immediately.
 //! - When `lda == n_rows`, the matrix is stored contiguously, and a **fast path**
 //!   is taken using a single fused [`ddotf`] call.
 //! - Otherwise, the routine falls back to a **blocked algorithm**, iterating over

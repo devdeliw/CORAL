@@ -15,26 +15,24 @@
 //! symmetry.
 //!
 //! # Arguments
-//! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored (`Upper` or `Lower`).
+//! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
 //! - `n`      (usize)           : Dimension of the matrix `A`.
 //! - `alpha`  (f32)             : Scalar multiplier applied to `A * x`.
 //! - `matrix` (&[f32])          : Input slice containing the matrix `A`, stored in column-major
-//!                              | order with leading dimension `lda`. Only the specified triangle
-//!                              | is referenced; the other triangle is ignored.
-//! - `lda`    (usize)           : Leading dimension of `A` (stride between successive columns).
-//! - `x`      (&[f32])          : Input vector of length `n`, with stride `incx`.
+//!                              | Only the specified triangle referenced; other triangle ignored. 
+//! - `lda`    (usize)           : Leading dimension of `A`. 
+//! - `x`      (&[f32])          : Input vector of length `n`.
 //! - `incx`   (usize)           : Stride between consecutive elements of `x`.
 //! - `beta`   (f32)             : Scalar multiplier applied to `y` prior to accumulation.
-//! - `y`      (&mut [f32])      : Input/output vector of length `n`, with stride `incy`.
+//! - `y`      (&mut [f32])      : Input/output vector of length `n`.
 //! - `incy`   (usize)           : Stride between consecutive elements of `y`.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place to contain the result
-//!   `alpha * A * x + beta * y`.
+//! - Nothing. The contents of `y` are updated in place. 
 //!
 //! # Notes
-//! - If `n == 0`, the function returns immediately.
-//! - If `alpha == 0.0 && beta == 1.0`, the function returns immediately (no change).
+//! - If `n == 0`,                      the function returns immediately.
+//! - If `alpha == 0.0 && beta == 1.0`, the function returns immediately.
 //! - A **fast path** is taken when `lda == n`, using an in-place triangular microkernel
 //!   that touches each stored `A` element once without packing.
 //! - Otherwise, a **blocked algorithm** iterates over row panels of height `MC` and

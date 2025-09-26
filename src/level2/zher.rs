@@ -1,14 +1,12 @@
 //! Performs a complex double precision Hermitian rank-1 update (HER).
 //!
-//! This function implements the BLAS [`zher`] routine, computing
-//!
 //! ```text
 //!     A := alpha * x * x^H + A
 //! ```
 //!
-//! where `A` is an `n x n` **Hermitian** column-major matrix and only the triangle
-//! indicated by `uplo` is referenced/updated. `x` is a complex vector of length `n`
-//! stored as interleaved `[re, im, re, im, ...]`.
+//! where `A` is an `n x n` **Hermitian** interleaved column-major matrix, `[re, im, ...]`.
+//! Only the triangle indicated by `uplo` is referenced and updated. `x` is a complex vector 
+//! of length `n`. 
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1`)
 //! that applies a triangular [`zaxpy`] into each column, and falls back to a general
@@ -16,17 +14,16 @@
 //!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
-//! - `n`      (usize)           : Dimension of the matrix `A`.
+//! - `n`      (usize)           : Order of the matrix `A`.
 //! - `alpha`  (f64)             : Real scalar multiplier applied to the outer product `x * x^H`.
-//! - `x`      (&[f64])          : Input slice containing the complex vector `x`; interleaved.
+//! - `x`      (&[f64])          : Input slice containing the complex vector `x`. 
 //! - `incx`   (usize)           : Stride between consecutive complex elements of `x`.
-//! - `matrix` (&mut [f64])      : Input/output slice containing the matrix `A` in column-major layout
-//!                              | as interleaved complex scalars; specified triangle updated in place.
-//! - `lda`    (usize)           : Leading dimension in complex elements of `A`.
+//! - `matrix` (&mut [f64])      : Input/output slice containing the matrix `A`.
+//!                              | specified triangle updated in place.
+//! - `lda`    (usize)           : Leading dimension of `A`.
 //!
 //! # Returns
-//! - Nothing. The contents of `matrix` are updated in place
-//!   within the specified triangle.
+//! - Nothing. The contents of `matrix` are updated in place within the specified triangle.
 //!
 //! # Notes
 //! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`zaxpy`] kernel.

@@ -4,8 +4,8 @@
 //!     y := alpha * A^H * x + beta * y
 //! ```
 //!
-//! where `A` is an `n_rows` x `n_cols` column-major matrix (interleaved complex), `x` is a complex vector of
-//! length `n_rows`, and `y` is a complex vector of length `n_cols`.  
+//! where `A` is an `n_rows` x `n_cols` interleaved column-major matrix `[re, im, ...]`
+//! `x` is a complex vector of length `n_rows`, and `y` is a complex vector of length `n_cols`.  
 //!
 //! This function implements the BLAS [`crate::level2::cgemv`] routine for the
 //! **conjugate-transpose** case, optimized for AArch64 NEON architectures with blocking and 
@@ -15,22 +15,20 @@
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
 //! - `alpha`  ([f32; 2])   : Complex scalar multiplier applied to the product `A^H * x`.
-//! - `matrix` (&[f32])     : Input slice containing the matrix `A` (interleaved complex), stored in column-major
-//!                         | order with leading dimension `lda`.
-//! - `lda`    (usize)      : Leading dimension of `A` (stride between successive columns, in complex elements).
-//! - `x`      (&[f32])     : Input complex vector of length `n_rows`, with stride `incx`.
+//! - `matrix` (&[f32])     : Input slice containing the interleaved matrix `A`.
+//! - `lda`    (usize)      : Leading dimension of `A`.
+//! - `x`      (&[f32])     : Input complex vector of length `n_rows`.
 //! - `incx`   (usize)      : Stride between consecutive complex elements of `x`.
 //! - `beta`   ([f32; 2])   : Complex scalar multiplier applied to `y` prior to accumulation.
-//! - `y`      (&mut [f32]) : Input/output complex vector of length `n_cols`, with stride `incy`.
+//! - `y`      (&mut [f32]) : Input/output complex vector of length `n_cols`.
 //! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place to contain the result
-//!   `alpha * A^H * x + beta * y`.
+//! - Nothing. The contents of `y` are updated in place. 
 //!
 //! # Notes
-//! - If `n_rows == 0` or `n_cols == 0`, the function returns immediately.
-//! - If `alpha == 0 + 0i && beta == 1 + 0i`, the function returns immediately (no change).
+//! - If `n_rows == 0` or `n_cols == 0`,      the function returns immediately.
+//! - If `alpha == 0 + 0i && beta == 1 + 0i`, the function returns immediately.
 //! - When `lda == n_rows`, the matrix is stored contiguously, and a **fast path**
 //!   is taken using a single fused [`cdotcf`] call.
 //! - Otherwise, the routine falls back to a **blocked algorithm**, iterating over

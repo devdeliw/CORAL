@@ -6,8 +6,8 @@
 //!     A := alpha * x * y^T + A
 //! ```
 //!
-//! where `A` is an `n_rows x n_cols` column-major matrix, `x` is a vector of length
-//! `n_rows`, and `y` is a vector of length `n_cols`.  
+//! where `A` is an `n_rows x n_cols` column-major matrix, 
+//! `x` is a vector of length `n_rows`, and `y` is a vector of length `n_cols`.  
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1` and `incy == 1`)
 //! that applies a scaled [`saxpy`] into each column, and falls back to a general pointer-walk
@@ -21,12 +21,12 @@
 //! - `incx`   (usize)      : Stride between consecutive elements of `x`.
 //! - `y`      (&[f32])     : Input slice containing the vector `y`.
 //! - `incy`   (usize)      : Stride between consecutive elements of `y`.
-//! - `matrix` (&mut [f32]) : Input/output slice containing the matrix `A` in column-major layout,
+//! - `matrix` (&mut [f32]) : Input/output slice containing the matrix `A`.
 //!                         | updated in place.
-//! - `lda`    (usize)      : Leading dimension (stride between columns) of `A`.
+//! - `lda`    (usize)      : Leading dimension of `A`.
 //!
 //! # Returns
-//! - Nothing. The contents of `matrix` are updated in place as `A := alpha * x * y^T + A`.
+//! - Nothing. The contents of `matrix` are updated in place. 
 //!
 //! # Notes
 //! - Optimized for AArch64 NEON targets; fast path uses SIMD, have not made portable.

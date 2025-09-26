@@ -4,26 +4,25 @@
 //! This function implements the BLAS [`crate::level2::strmv`] routine for **lower triangular** matrices,
 //! computing the in-place product `x := op(A) * x`, where `op(A)` is either `A` or `A^T`.
 //!
-//! [`strlmv`] function is crate visible and is implemented via [`crate::level2::strmv`] routine. 
+//! Function is crate visible and is implemented via [`crate::level2::strmv`] routine. 
 //!
 //! # Arguments
-//! - `n`          (usize)           : Order (dimension) of the square matrix `A`.
+//! - `n`          (usize)           : Order of the square matrix `A`.
 //! - `diagonal`   (CoralDiagonal)   : Indicates if the diagonal is unit (all 1s) or non-unit.
 //! - `transpose`  (CoralTranspose)  : Specifies whether to use `A` or `A^T`.
-//! - `matrix`     (&[f32])          : Input slice containing the lower triangular matrix `A` in
-//!                                  | column-major layout.
-//! - `lda`        (usize)           : Leading dimension (stride between columns) of `A`.
-//! - `x`          (&mut [f32])      : Input/output slice containing the vector `x`, updated in place.
+//! - `matrix`     (&[f32])          : Input slice containing the lower triangular matrix `A`
+//! - `lda`        (usize)           : Leading dimension of `A`.
+//! - `x`          (&mut [f32])      : Input/output slice containing the vector `x`. 
 //! - `incx`       (usize)           : Stride between consecutive elements of `x`.
 //!
 //! # Returns
-//! - Nothing. The contents of `x` are updated in place as `x := op(A) * x`.
+//! - Nothing. The contents of `x` are updated in place. 
 //!
 //! # Notes
 //! - The implementation uses block decomposition with a block size of `NB = 64`.
-//! - Fused level-1 routines ([`saxpyf`] and [`sdotf`]) are used for panel updates to improve 
-//!   performance.
-//! - The kernel is optimized for AArch64 NEON targets and assumes column-major memory layout.
+//! - Fused level-1 routines ([`saxpyf`] and [`sdotf`]) are used for panel updates. 
+//! - The kernel is optimized for AArch64 NEON targets. 
+//! - Assumes column-major memory layout.
 //!
 //! # Visibility 
 //! - pub(crate)

@@ -5,8 +5,23 @@
 //! Transpose     => y = alpha * A^T * x + beta * y
 //! ConjTranspose => y = alpha * A^H * x + beta * y
 //! ```
+//! 
+//! `A` is interleaved column-major `[re, im, ...]`
 //!
-//! Dispatches to [`zgemv_notranspose`] or [`zgemv_transpose`] or [`zgemv_conjtranspose`].
+//! # Arguments
+//! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
+//! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
+//! - `alpha`  ([f64; 2])   : Complex scalar multiplier applied to the product `A^T * x`.
+//! - `matrix` (&[f64])     : Input slice containing the matrix `A`.
+//! - `lda`    (usize)      : Leading dimension of `A`.
+//! - `x`      (&[f64])     : Input complex vector of length `n_rows`.
+//! - `incx`   (usize)      : Stride between consecutive complex elements of `x`.
+//! - `beta`   ([f64; 2])   : Complex scalar multiplier applied to `y` prior to accumulation.
+//! - `y`      (&mut [f64]) : Input/output complex vector of length `n_cols`.
+//! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.
+//!
+//! # Returns
+//! - Nothing. The contents of `y` are updated in place.
 
 use crate::level2::{ 
     enums::CoralTranspose, 

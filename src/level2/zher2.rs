@@ -1,14 +1,12 @@
 //! Performs a complex double precision Hermitian rank-2 update (HER2).
 //!
-//! This function implements the BLAS [`zher2`] routine, computing
-//!
 //! ```text
 //!     A := alpha * (x * y^H) + conj(alpha) * (y * x^H) + A
 //! ```
 //!
-//! where `A` is an `n x n` **Hermitian** column-major matrix and only the triangle
-//! indicated by `uplo` is referenced/updated. `x` and `y` are complex vectors of length `n`
-//! stored as interleaved `[re, im, re, im, ...]`.
+//! where `A` is an `n x n` **Hermitian** interleaved column-major matrix, `[re, im, ...]`. 
+//! Only the triangle indicated by `uplo` is referenced/updated. `x` and `y` are complex vectors 
+//! of length `n`. 
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1 && incy == 1`)
 //! that applies two triangular [`zaxpy`] streams per column, and falls back to a general
@@ -16,19 +14,18 @@
 //!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
-//! - `n`      (usize)           : Dimension of the matrix `A`.
-//! - `alpha`  ([f64; 2])        : Complex scalar multiplier.
-//! - `x`      (&[f64])          : Vector `x` (interleaved complex).
-//! - `incx`   (usize)           : Stride for `x` (in complex elements).
-//! - `y`      (&[f64])          : Vector `y` (interleaved complex).
-//! - `incy`   (usize)           : Stride for `y` (in complex elements).
-//! - `matrix` (&mut [f64])      : Column-major storage for `A` as interleaved complex scalars
-//!                              | (updated in place; only the specified triangle is touched).
+//! - `n`      (usize)           : Order of the matrix `A`.
+//! - `alpha`  (f64)             : Real scalar multiplier applied to the outer product `x * x^H`.
+//! - `x`      (&[f64])          : Input slice containing the complex vector `x`.
+//! - `incx`   (usize)           : Stride between consecutive complex elements of `x`.
+//! - `y`      (&[f64])          : Input slice containing the complex vector `y`.
+//! - `incy`   (usize)           : Stride between consecutive complex elements of `y`.
+//! - `matrix` (&mut [f64])      : Input/output slice containing the matrix `A`.
+//!                              | specified triangle updated in place.
 //! - `lda`    (usize)           : Leading dimension of `A`.
 //!
 //! # Returns
-//! - Nothing. The contents of `matrix` are updated in place
-//!   within the specified triangle.
+//! - Nothing. The contents of `matrix` are updated in place within the specified triangle.
 //!
 //! # Notes
 //! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`zaxpy`] kernel.

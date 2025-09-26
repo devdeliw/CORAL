@@ -11,7 +11,7 @@
 //!
 //! Internally, this uses a fast path for the **unit-stride** case (`incx == 1`)
 //! that applies a triangular [`daxpy`] into each column, and falls back to a general
-//! pointer-walk loop with fused multiply-add (FMA) for arbitrary strides.
+//! pointer-walk loop for arbitrary strides.
 //!
 //! # Arguments
 //! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
@@ -19,13 +19,12 @@
 //! - `alpha`  (f64)             : Scalar multiplier applied to the outer product `x * x^T`.
 //! - `x`      (&[f64])          : Input slice containing the vector `x`.
 //! - `incx`   (usize)           : Stride between consecutive elements of `x`.
-//! - `matrix` (&mut [f64])      : Input/output slice containing the matrix `A` in column-major layout;
-//!                              | updated in place (only the specified triangle is touched).
-//! - `lda`    (usize)           : Leading dimension (stride between columns) of `A`.
+//! - `matrix` (&mut [f64])      : Input/output slice containing the matrix `A`.
+//!                              | Only the specified triangle is touched.
+//! - `lda`    (usize)           : Leading dimension of `A`.
 //!
 //! # Returns
-//! - Nothing. The contents of `matrix` are updated in place.
-//!   within the specified triangle.
+//! - Nothing. The contents of `matrix` are updated in place within the specified triangle.
 //!
 //! # Notes
 //! - Optimized for AArch64 NEON targets; fast path uses SIMD via the level1 [`daxpy`] kernel.

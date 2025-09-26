@@ -1,12 +1,12 @@
-pub(crate) mod saxpyf; 
-pub(crate) mod daxpyf; 
-pub(crate) mod caxpyf; 
-pub(crate) mod zaxpyf; 
+pub mod saxpyf; 
+pub mod daxpyf; 
+pub mod caxpyf; 
+pub mod zaxpyf; 
 
-pub(crate) mod sdotf; 
-pub(crate) mod ddotf; 
-pub(crate) mod cdotuf; 
-pub(crate) mod cdotcf; 
-pub(crate) mod zdotuf; 
-pub(crate) mod zdotcf; 
+pub mod sdotf; 
+pub mod ddotf; 
+pub mod cdotuf; 
+pub mod cdotcf; 
+pub mod zdotuf; 
+pub mod zdotcf; 
 

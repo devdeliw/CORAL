@@ -4,9 +4,9 @@
 //!     y := alpha * A * x + beta * y
 //! ```
 //!
-//! where `A` is an `n` x `n` **Hermitian** column-major matrix of complex numbers (interleaved
-//! `[re, im, ...]`). Only the triangle indicated by `uplo` is referenced. `x` is a complex
-//! vector of length `n`, and `y` is a complex vector of length `n`.
+//! where `A` is an `n` x `n` **Hermitian** interleaved column-major matrix `[re, im, ...]`. 
+//! Only the triangle indicated by `uplo` is referenced. `x` is a complex vector of length `n`, 
+//! and `y` is a complex vector of length `n`.
 //!
 //! This function implements the BLAS [`crate::level2::chemv`] routine, optimized for
 //! AArch64 NEON architectures with blocking and panel packing. For off-diagonal work
@@ -15,22 +15,19 @@
 //! contributions implied by Hermitian structure.
 //!
 //! # Arguments
-//! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored (`Upper` or `Lower`).
+//! - `uplo`   (CoralTriangular) : Which triangle of `A` is stored.
 //! - `n`      (usize)           : Dimension of the matrix `A`.
-//! - `alpha`  ([f32; 2])        : Scalar multiplier applied to `A * x` (complex: `[re, im]`).
-//! - `matrix` (&[f32])          : Input slice containing the matrix `A`; interleaved complex
-//! - `lda`    (usize)           : Leading dimension of `A` in complex units.
-//! - `x`      (&[f32])          : Input complex vector of length `n`, with stride `incx` in
-//!                              | complex units (underlying scalar stride is `2 *incx`).
+//! - `alpha`  ([f32; 2])        : Scalar multiplier applied to `A * x` (`[re, im]`).
+//! - `matrix` (&[f32])          : Input slice containing the matrix `A`; interleaved complex.
+//! - `lda`    (usize)           : Leading dimension of `A`. 
+//! - `x`      (&[f32])          : Input complex vector of length `n`. 
 //! - `incx`   (usize)           : Stride between consecutive complex elements of `x`.
 //! - `beta`   ([f32; 2])        : Scalar multiplier applied to `y` prior to accumulation.
 //! - `y`      (&mut [f32])      : Input/output complex vector of complex length `n`
-//!                              | in complex units (underlying f64 stride is `2 * incy`).
 //! - `incy`   (usize)           : Stride between consecutive complex elements of `y`.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place to contain the result
-//!   `alpha * A * x + beta * y`.
+//! - Nothing. The contents of `y` are updated in place. 
 //!
 //! # Notes
 //! - If `n == 0`, the function returns immediately.

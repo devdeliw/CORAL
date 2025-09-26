@@ -5,7 +5,22 @@
 //! Transpose/ConjTrans => y = alpha * A^T * x + beta * y
 //! ```
 //!
-//! Dispatches to [`dgemv_notranspose`] or [`dgemv_transpose`].
+//! `A` is a column-major matrix.
+//!
+//! # Arguments
+//! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
+//! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
+//! - `alpha`  (f64)        : Scalar multiplier applied to the product `A * x`.
+//! - `matrix` (&[f64])     : Input slice containing the matrix `A`.
+//! - `lda`    (usize)      : Leading dimension of `A`.
+//! - `x`      (&[f64])     : Input vector of length `n_cols`.
+//! - `incx`   (usize)      : Stride between consecutive elements of `x`.
+//! - `beta`   (f64)        : Scalar multiplier applied to `y` prior to accumulation.
+//! - `y`      (&mut [f64]) : Input/output vector of length `n_rows`.
+//! - `incy`   (usize)      : Stride between consecutive elements of `y`.
+//!
+//! # Returns
+//! - Nothing. The contents of `y` are updated in place. 
 
 use crate::level2::{ 
     enums::CoralTranspose, 

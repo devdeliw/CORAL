@@ -4,7 +4,7 @@
 //!     y := alpha * A * x + beta * y
 //! ```
 //!
-//! where `A` is an `n_rows` x `n_cols` column-major matrix of **interleaved complex** `[re, im, ...]`,
+//! where `A` is an `n_rows` x `n_cols` interleaved column-major matrix, `[re, im, ...]`,
 //! `x` is a complex vector of length `n_cols`, and `y` is a complex vector of length `n_rows`.  
 //!
 //! This function implements the BLAS [`crate::level2::zgemv`] routine for the
@@ -15,26 +15,25 @@
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
 //! - `alpha`  ([f64; 2])   : Complex scalar multiplier applied to the product `A * x`.
-//! - `matrix` (&[f64])     : Input slice containing the matrix `A` (interleaved complex), stored in column-major
-//!                         | order with leading dimension `lda`.
-//! - `lda`    (usize)      : Leading dimension of `A` (stride between successive columns, in complex elements).
-//! - `x`      (&[f64])     : Input complex vector of length `n_cols`, with stride `incx`.
+//! - `matrix` (&[f64])     : Input slice containing the matrix `A`.
+//! - `lda`    (usize)      : Leading dimension of `A`.
+//! - `x`      (&[f64])     : Input complex vector of length `n_cols`.
 //! - `incx`   (usize)      : Stride between consecutive complex elements of `x`.
 //! - `beta`   ([f64; 2])   : Complex scalar multiplier applied to `y` prior to accumulation.
-//! - `y`      (&mut [f64]) : Input/output complex vector of length `n_rows`, with stride `incy`.
+//! - `y`      (&mut [f64]) : Input/output complex vector of length `n_rows`.
 //! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place to contain the result
-//!   `alpha * A * x + beta * y`.
+//! - Nothing. The contents of `y` are updated in place. 
 //!
 //! # Notes
-//! - If `n_rows == 0` or `n_cols == 0`, the function returns immediately.
+//! - If `n_rows == 0` or `n_cols == 0`,       the function returns immediately.
 //! - If `alpha == 0 + 0i && beta == 1 + 0i`,  the function returns immediately.
 //! - When `lda == n_rows`, the matrix is stored contiguously, and a **fast path**
 //!   is taken using a single fused [`zaxpyf`] call.
 //! - Otherwise, the routine falls back to a **blocked algorithm**, iterating over
 //!   panels of size `MC x NC` with contiguous packing into temporary buffers.
+//! - Assumes column-major layout. 
 //!
 //! # Author
 //! Deval Deliwala
