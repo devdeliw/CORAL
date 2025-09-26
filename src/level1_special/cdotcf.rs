@@ -1,16 +1,21 @@
-//! Computes fused column dots (conjugated): out := out + conj(A)^T x
+//! Computes fused column DOT (conjugated): 
+//!
+//! ```text 
+//! out := out + conj(A)^T x
+//! ```
 //!
 //! # Arguments
 //! - `n_rows` (usize)      : Number of complex rows (m).
 //! - `n_cols` (usize)      : Number of columns (n).
-//! - `matrix` (&[f32])     : Column-major A (interleaved) with dims (`lda` x `n_cols`).
-//! - `lda`    (usize)      : Leading dimension in complex elements (>= `n_rows`).
-//! - `x`      (&[f32])     : Complex vector of length `n_rows` (interleaved) with stride `incx`.
+//! - `matrix` (&[f32])     : Compplex interleaved A with dimension (`lda` x `n_cols`).
+//! - `lda`    (usize)      : Leading dimension of `A`. Must be >= `n_rows.
+//! - `x`      (&[f32])     : Complex interleaved vector.
 //! - `incx`   (usize)      : Stride for `x` in complex elements.
-//! - `out`    (&mut [f32]) : Complex output (interleaved) of length `n_cols`, accumulated in place.
+//! - `out`    (&mut [f32]) : Complex interleaved output of length >= 2*`n_rows`. 
+//!                           updated in place.
 //!
 //! # Notes
-//! - Fast path when `incx == 1` uses NEON + blocking (NR=8, MC=128).
+//! - Fast path when `incx == 1` uses NEON + blocking.
 //! - Otherwise falls back to level-1 `cdotc` per column.
 
 #[cfg(target_arch = "aarch64")]

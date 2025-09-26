@@ -1,12 +1,16 @@
-//! Computes fused column dots: out := out + A^T x
+//! Computes fused double precision column DOT: 
+//!
+//! ```text
+//! out := out + A^T x
+//! ```
 //!
 //! # Arguments
 //! - `n_rows` (usize)      : Number of rows (m).
 //! - `n_cols` (usize)      : Number of columns (n).
-//! - `matrix` (&[f64])     : Column-major A with dims (`lda` x `n_cols`).
-//! - `lda`    (usize)      : Leading dimension (>= `n_rows`).
-//! - `x`      (&[f64])     : Vector of length `n_rows` with stride `incx`.
-//! - `incx`   (usize)      : Stride for `x`.
+//! - `matrix` (&[f64])     : Matrix A of dimension (`lda` x `n_cols`).
+//! - `lda`    (usize)      : Leading dimension of A. Must be >= `n_rows`.
+//! - `x`      (&[f64])     : Vector of length `n_rows`. 
+//! - `incx`   (usize)      : Stride between consecutive elements of `x`.
 //! - `out`    (&mut [f64]) : Output of length `n_cols`, accumulated in place.
 //!
 //! # Notes

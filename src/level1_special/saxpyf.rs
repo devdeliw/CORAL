@@ -1,17 +1,20 @@
-//! Performs a matrix-vector multiply and accumulation: y := y + A x
+//! Performs a matrix-vector multiply and accumulation AXPY:
+//! ```text
+//! y := y + A x
+//! ```
 //!
 //! # Arguments
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
 //! - `x`      (&[f32])     : Input vector of length `n_cols`.
 //! - `incx`   (usize)      : Stride between consecutive elements of `x`.
-//! - `matrix` (&[f32])     : Column-major matrix `A` of dimensions (`lda` x `n_cols`).
-//! - `lda`    (usize)      : Leading dimension (column stride) of `A`, must be >= `n_rows`.
+//! - `matrix` (&[f32])     : Matrix `A` of dimension (`lda` x `n_cols`).
+//! - `lda`    (usize)      : Leading dimension of `A`. Must be >= `n_rows`.
 //! - `y`      (&mut [f32]) : Input/output vector of length `n_rows`.
 //! - `incy`   (usize)      : Stride between consecutive elements of `y`.
 //!
 //! # Notes
-//! - For unit strides, uses NEON micro-kernels with MR x NR paneling (8-wide inner).
+//! - For unit strides, uses NEON micro-kernels with MR x NR paneling.
 
 #[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{

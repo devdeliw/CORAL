@@ -1,16 +1,20 @@
-//! Computes fused column dots: out := out + A^T x
+//! Computes fused single precision column DOT: 
+//!
+//! ```text
+//! out := out + A^T x
+//! ```
 //!
 //! # Arguments
 //! - `n_rows` (usize)      : Number of rows (m).
 //! - `n_cols` (usize)      : Number of columns (n).
-//! - `matrix` (&[f32])     : Column-major A with dims (`lda` x `n_cols`).
-//! - `lda`    (usize)      : Leading dimension (>= `n_rows`).
-//! - `x`      (&[f32])     : Vector of length `n_rows` with stride `incx`.
+//! - `matrix` (&[f32])     : Matrix A of dimension (`lda` x `n_cols`).
+//! - `lda`    (usize)      : Leading dimension of A. Must be >= `n_rows`.
+//! - `x`      (&[f32])     : Vector of length `n_rows`.
 //! - `incx`   (usize)      : Stride for `x`.
 //! - `out`    (&mut [f32]) : Output of length `n_cols`, accumulated in place.
 //!
 //! # Notes
-//! - Fast path when `incx == 1` uses NEON + blocking (MR x NR panels, 8-wide micro-kernel).
+//! - Fast path when `incx == 1` uses NEON + blocking of MR x NR panels.
 //! - Otherwise falls back to scalar strided dots.
 
 #[cfg(target_arch = "aarch64")]

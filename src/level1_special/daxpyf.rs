@@ -1,8 +1,12 @@
-//! Performs a matrix-vector multiply and accumulation: y := y + A x
+//! Performs a matrix-vector multiply and accumulation AXPY:
+//!
+//! ```text
+//! y := y + A x
+//! ```
 //!
 //! This function implements an optimized fused double-precision BLAS [`daxpy`]
 //! operation using NEON intrinsics on AArch64. It computes the product
-//! of a matrix `A` (size m × n) and a vector `x` (length n), and
+//! of a matrix `A` (size m x n) and a vector `x` (length n), and
 //! accumulates the result into `y` (length m).
 //!
 //! # Arguments
@@ -10,10 +14,9 @@
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
 //! - `x`      (&[f64])     : Input vector of length `n_cols`.
 //! - `incx`   (usize)      : Stride between consecutive elements of `x`.
-//! - `matrix` (&[f64])     : Column-major matrix `A` of dimensions
-//!                         | (`lda` × `n_cols`).
-//! - `lda`    (usize)      : Leading dimension (column stride) of `A`,
-//!                         | must be ≥ `n_rows`.
+//! - `matrix` (&[f64])     : Matrix `A` of dimension (`lda` x `n_cols`).
+//! - `lda`    (usize)      : Leading dimension of `A`,
+//!                         | must be >= `n_rows`.
 //! - `y`      (&mut [f64]) : Input/output vector of length `n_rows`.
 //! - `incy`   (usize)      : Stride between consecutive elements of `y`.
 //!

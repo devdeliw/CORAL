@@ -1,4 +1,8 @@
-//! Performs a complex matrix-vector multiply and accumulation: y := y + A x
+//! Performs a fused single precision complex AXPY 
+//!
+//! ```text 
+//! y := y + A x
+//! ```
 //!
 //! This function implements an optimized fused single-precision complex
 //! BLAS [`caxpy`] operation using NEON intrinsics on AArch64. It computes the
@@ -9,15 +13,12 @@
 //! # Arguments
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
-//! - `x`      (&[f32])     : Input complex vector of length `2*n_cols`,
-//!                         | stored as interleaved `[re, im, re, im, ...]`.
+//! - `x`      (&[f32])     : Input interleaved complex vector,
+//!                         | `[re, im, re, im, ...]`.
 //! - `incx`   (usize)      : Stride between consecutive complex elements of `x`.
-//! - `matrix` (&[f32])     : Column-major complex matrix `A` of dimensions
-//!                         | (`lda` x `n_cols`), stored as interleaved pairs.
-//! - `lda`    (usize)      : Leading dimension (column stride, in complexes)
-//!                         | of `A`, must be >= `n_rows`.
-//! - `y`      (&mut [f32]) : Input/output complex vector of length `2*n_rows`,
-//!                         | stored as interleaved `[re, im, re, im, ...]`.
+//! - `matrix` (&[f32])     : Complex interleaved matrix `A` of dimension (`lda` x `n_cols`)
+//! - `lda`    (usize)      : Leading dimension of `A`, must be >= `n_rows`.
+//! - `y`      (&mut [f32]) : Input/output complex interleaved vector.
 //! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.
 //!
 //! # Notes

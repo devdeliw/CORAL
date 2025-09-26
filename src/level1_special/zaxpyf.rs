@@ -1,4 +1,8 @@
-//! Performs a complex matrix-vector multiply and accumulation: y := y + A x
+//! Performs a complex matrix-vector multiply and accumulation AXPY:
+//!
+//! ```text
+//! y := y + A x
+//! ```
 //!
 //! This function implements an optimized fused double-precision complex
 //! BLAS [`zaxpy`] operation using NEON intrinsics on AArch64. It computes the
@@ -9,20 +13,18 @@
 //! # Arguments
 //! - `n_rows` (usize)      : Number of rows (m) in the matrix `A`.
 //! - `n_cols` (usize)      : Number of columns (n) in the matrix `A`.
-//! - `x`      (&[f64])     : Input complex vector of length `2*n_cols`,
-//!                         | stored as interleaved `[re, im, re, im, ...]`.
+//! - `x`      (&[f64])     : Input interleaved complex vector.
+//!                         | `[re, im, re, im, ...]`.
 //! - `incx`   (usize)      : Stride between consecutive complex elements of `x`.
-//! - `matrix` (&[f64])     : Column-major complex matrix `A` of dimensions
-//!                         | (`lda` x `n_cols`), stored as interleaved pairs.
-//! - `lda`    (usize)      : Leading dimension (column stride, in complexes)
-//!                         | of `A`, must be >= `n_rows`.
-//! - `y`      (&mut [f64]) : Input/output complex vector of length `2*n_rows`,
-//!                         | stored as interleaved `[re, im, re, im, ...]`.
+//! - `matrix` (&[f64])     : Complex interleaved matrix `A` of dimensions
+//!                         | (`lda` x `n_cols`). 
+//! - `lda`    (usize)      : Leading dimension of `A`. Must be >= `n_rows`.
+//! - `y`      (&mut [f64]) : Input/output interleaved complex vector.
 //! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.
 //!
 //! # Notes
 //! - For unit strides (`incx == 1`, `incy == 1`), the kernel uses
-//!   SIMD microkernels with blocking for high performance.
+//!   SIMD microkernels with blocking. 
 //! - For non-unit strides, it falls back to scalar [`zaxpy`] updates.
 
 #[cfg(target_arch = "aarch64")]

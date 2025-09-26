@@ -1,13 +1,18 @@
-//! Computes fused column dots (unconjugated): out := out + A^T x
+//! Computes fused column DOT (unconjugated): 
+//!
+//! ```text
+//! out := out + A^T x
+//! ```
 //!
 //! # Arguments
 //! - `n_rows` (usize)      : Number of complex rows (m).
 //! - `n_cols` (usize)      : Number of columns (n).
-//! - `matrix` (&[f64])     : Column-major A (interleaved) with dims (`lda` x `n_cols`).
-//! - `lda`    (usize)      : Leading dimension in complex elements (>= `n_rows`).
-//! - `x`      (&[f64])     : Complex vector of length `n_rows` (interleaved) with stride `incx`.
+//! - `matrix` (&[f64])     : Complex interleaved matrix A with dimension (`lda` x `n_cols`).
+//! - `lda`    (usize)      : Leading dimension. Must be >= `n_rows`.
+//! - `x`      (&[f64])     : Complex interleaved vector of length `n_rows`.
 //! - `incx`   (usize)      : Stride for `x` in complex elements.
-//! - `out`    (&mut [f64]) : Complex output (interleaved) of length `n_cols`, accumulated in place.
+//! - `out`    (&mut [f64]) : Complex interleaved output of length `n_cols`, 
+//!                           accumulated in place.
 //!
 //! # Notes
 //! - Fast path when `incx == 1` uses NEON + blocking (NR=8, MC=128).
