@@ -39,6 +39,10 @@ pub mod dsymv;
 
 pub mod sger;
 pub mod dger; 
+pub mod cgeru; 
+pub mod cgerc; 
+pub mod zgeru; 
+pub mod zgerc; 
 
 pub mod ssyr;
 pub mod dsyr; 

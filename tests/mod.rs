@@ -56,10 +56,14 @@ mod dsyr2_tests;
 // complex single precision 
 #[path = "level2/cgemv_tests.rs"]
 mod cgemv_tests;
+#[path = "level2/cger_tests.rs" ] 
+mod cger_tests;
 
 //
 // complex double precision 
 #[path = "level2/zgemv_tests.rs"] 
 mod zgemv_tests; 
+#[path = "level2/zger_tests.rs" ] 
+mod zger_tests;
 
 

@@ -101,7 +101,7 @@ fn cblas_conjtranspose(
 }
 
 // helpers
-fn make_col_major_zmatrix(
+fn make_zmatrix(
     m   : usize,
     n   : usize,
     lda : usize,
@@ -187,7 +187,7 @@ fn notranspose_small() {
     let alpha = [0.75f64, -0.10f64];
     let beta  = [-0.25f64, 0.05f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..n)
         .flat_map(|k| [0.2 + 0.1 * (k as f64), -0.05 * (k as f64)])
         .collect::<Vec<_>>();
@@ -236,7 +236,7 @@ fn transpose_small() {
     let alpha = [-0.6f64, 0.2f64];
     let beta  = [0.4f64, -0.1f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..m)
         .flat_map(|k| [0.1 - 0.07 * (k as f64), 0.03 * (k as f64)])
         .collect::<Vec<_>>();
@@ -285,7 +285,7 @@ fn conjtranspose_small() {
     let alpha = [0.3f64, 0.7f64];
     let beta  = [0.1f64, -0.2f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..m)
         .flat_map(|k| [-0.08 * (k as f64), 0.09 + 0.01 * (k as f64)])
         .collect::<Vec<_>>();
@@ -334,7 +334,7 @@ fn notranspose_large() {
     let alpha = [1.25f64, -0.5f64];
     let beta  = [-0.5f64, 0.25f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..n).
         flat_map(|k| [0.2 + (k as f64) * 0.1, -0.01 * (k as f64)])
         .collect::<Vec<_>>();
@@ -383,7 +383,7 @@ fn transpose_large() {
     let alpha = [-0.75f64, 0.3f64];
     let beta  = [0.3f64, -0.15f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..m)
         .flat_map(|k| [0.4 - (k as f64) * 0.07, -0.02 * (k as f64)])
         .collect::<Vec<_>>();
@@ -432,7 +432,7 @@ fn conjtranspose_large() {
     let alpha = [0.85f64, 0.15f64];
     let beta  = [0.1f64, -0.05f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..m)
         .flat_map(|k| [0.05 - 0.02 * (k as f64), 0.04 + 0.01 * (k as f64)])
         .collect::<Vec<_>>();
@@ -481,7 +481,7 @@ fn notranspose_padded() {
     let alpha = [0.85f64, -0.2f64];
     let beta  = [0.1f64, 0.0f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..n)
         .flat_map(|k| [-0.05 + 0.02 * (k as f64), 0.01 * (k as f64)])
         .collect::<Vec<_>>();
@@ -533,7 +533,7 @@ fn strided_notranspose() {
     let incx = 2usize;
     let incy = 3usize;
 
-    let a = make_col_major_zmatrix(m, n, lda);
+    let a = make_zmatrix(m, n, lda);
     let x = make_strided_zvec(n, incx, |k| [0.05 + 0.03 * (k as f64), 0.02 - 0.01 * (k as f64)]);
     let y = make_strided_zvec(m, incy, |k| [-0.2 + 0.02 * (k as f64), 0.01 * (k as f64)]);
 
@@ -584,7 +584,7 @@ fn strided_transpose() {
     let incx = 3usize;
     let incy = 2usize;
 
-    let a = make_col_major_zmatrix(m, n, lda);
+    let a = make_zmatrix(m, n, lda);
     let x = make_strided_zvec(m, incx, |k| [0.12 - 0.01 * (k as f64), 0.02 * (k as f64)]);
     let y = make_strided_zvec(n, incy, |k| [0.2 + 0.005 * (k as f64), -0.015 * (k as f64)]);
 
@@ -634,7 +634,7 @@ fn strided_conjtranspose() {
     let incx = 2usize;
     let incy = 4usize;
 
-    let a = make_col_major_zmatrix(m, n, lda);
+    let a = make_zmatrix(m, n, lda);
     let x = make_strided_zvec(m, incx, |k| [0.1 * (k as f64), 0.03 - 0.02 * (k as f64)]);
     let y = make_strided_zvec(n, incy, |k| [0.3 - 0.01 * (k as f64), -0.02 + 0.004 * (k as f64)]);
 
@@ -682,7 +682,7 @@ fn alpha_zero_scales_y() {
     let alpha = [0.0f64, 0.0f64];
     let beta  = [-0.75f64, 0.2f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..n).flat_map(|k| [0.1 * (k as f64), 0.02 * (k as f64)]).collect::<Vec<_>>();
     let y0 = (0..m).flat_map(|k| [0.05 * (k as f64) - 0.4, -0.03 + 0.01 * (k as f64)]).collect::<Vec<_>>();
 
@@ -727,7 +727,7 @@ fn beta_zero_overwrites_y() {
     let alpha = [1.1f64, -0.6f64];
     let beta  = [0.0f64, 0.0f64];
 
-    let a  = make_col_major_zmatrix(m, n, lda);
+    let a  = make_zmatrix(m, n, lda);
     let x  = (0..n)
         .flat_map(|k| [-0.02 + 0.015 * (k as f64), 0.01 - 0.005 * (k as f64)])
         .collect::<Vec<_>>();
