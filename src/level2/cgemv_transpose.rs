@@ -58,7 +58,6 @@ use crate::level2::{
     panel_packing::pack_panel_c32,
 };
 
-// TUNED
 const MC: usize = 64;
 const NC: usize = 64;
 

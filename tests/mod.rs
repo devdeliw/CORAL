@@ -57,4 +57,9 @@ mod dsyr2_tests;
 #[path = "level2/cgemv_tests.rs"]
 mod cgemv_tests;
 
+//
+// complex double precision 
+#[path = "level2/zgemv_tests.rs"] 
+mod zgemv_tests; 
+
 
