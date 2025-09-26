@@ -21,9 +21,8 @@
 //! - `incx`   (usize)      : Stride between consecutive complex elements of `x`.
 //! - `y`      (&[f32])     : Input slice containing interleaved complex vector `y` elements.
 //! - `incy`   (usize)      : Stride between consecutive complex elements of `y`.
-//! - `matrix` (&mut [f32]) : Input/output slice containing interleaved complex matrix `A` in column-major layout,
-//!                         | updated in place.
-//! - `lda`    (usize)      : Leading dimension (stride between columns, in complex elements) of `A`.
+//! - `matrix` (&mut [f32]) : Input slice containing interleaved complex matrix `A`; updated in place.
+//! - `lda`    (usize)      : Leading dimension of `A`.
 //!
 //! # Returns
 //! - Nothing. The contents of `matrix` are updated in place as `A := alpha * x * y^H + A`.
@@ -41,8 +40,8 @@
 use crate::level1::caxpy::caxpy;
 
 // assert length helpers 
-use crate::level1::assert_length_helpers::required_len_ok; 
-use crate::level2::assert_length_helpers::required_len_ok_matrix; 
+use crate::level1::assert_length_helpers::required_len_ok_cplx; 
+use crate::level2::assert_length_helpers::required_len_ok_matrix_cplx; 
 
 #[inline] 
 #[cfg(target_arch = "aarch64")]
@@ -62,10 +61,10 @@ pub fn cgerc(
 
     debug_assert!(incx > 0 && incy > 0, "incx/incy strides must be nonzero"); 
     debug_assert!(lda >= n_rows, "leading dimension must be >= n_rows"); 
-    debug_assert!(required_len_ok(x.len(), n_rows, incx * 2), "x not large enough for n_rows/incx"); 
-    debug_assert!(required_len_ok(y.len(), n_cols, incy * 2), "y not large enough for n_cols/incy"); 
+    debug_assert!(required_len_ok_cplx(x.len(), n_rows, incx), "x not large enough for n_rows/incx"); 
+    debug_assert!(required_len_ok_cplx(y.len(), n_cols, incy), "y not large enough for n_cols/incy"); 
     debug_assert!(
-        required_len_ok_matrix(matrix.len(), n_rows * 2, n_cols, lda * 2), 
+        required_len_ok_matrix_cplx(matrix.len(), n_rows, n_cols, lda), 
         "matrix not large enough for given n_rows x n_cols and lda"
     ); 
 

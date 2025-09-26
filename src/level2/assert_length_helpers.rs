@@ -28,7 +28,7 @@ pub(crate) fn required_len_ok_matrix_cplx(
         // empty matrix valid
         true 
     } else {
-        len >= 2 * (n_cols - 1) * lda + n_rows
+        len >= 2 * (n_cols - 1) * lda + 2 * n_rows
     }
 }
 

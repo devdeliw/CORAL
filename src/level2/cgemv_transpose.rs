@@ -45,8 +45,8 @@ use crate::level1::csscal::csscal;
 use crate::level1_special::cdotuf::cdotuf;
 
 // assert length helpers
-use crate::level1::assert_length_helpers::required_len_ok;
-use crate::level2::assert_length_helpers::required_len_ok_matrix;
+use crate::level1::assert_length_helpers::required_len_ok_cplx;
+use crate::level2::assert_length_helpers::required_len_ok_matrix_cplx;
 
 // contiguous packing helpers
 use crate::level2::{
@@ -81,10 +81,10 @@ pub(crate) fn cgemv_transpose(
 
     debug_assert!(incx > 0 && incy > 0, "vector increments must be nonzero");
     debug_assert!(lda >= n_rows, "matrix leading dimension must be >= n_rows");
-    debug_assert!(required_len_ok(x.len() / 2, n_rows, incx), "x too short for m/incx");
-    debug_assert!(required_len_ok(y.len() / 2, n_cols, incy), "y too short for n/incy");
+    debug_assert!(required_len_ok_cplx(x.len(), n_rows, incx), "x too short for m/incx");
+    debug_assert!(required_len_ok_cplx(y.len(), n_cols, incy), "y too short for n/incy");
     debug_assert!(
-        required_len_ok_matrix(matrix.len() / 2, n_rows, n_cols, lda),
+        required_len_ok_matrix_cplx(matrix.len(), n_rows, n_cols, lda),
         "matrix too short for given n_rows/n_cols and lda"
     );
 

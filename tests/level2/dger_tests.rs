@@ -33,7 +33,7 @@ fn cblas_dger_wrapper(
 }
 
 // helpers
-fn make_col_major_matrix(
+fn make_matrix(
     m   : usize,
     n   : usize,
     lda : usize,
@@ -92,7 +92,7 @@ fn contiguous_small() {
 
     let alpha = 1.25f64;
 
-    let a0 = make_col_major_matrix(m, n, lda);
+    let a0 = make_matrix(m, n, lda);
     let x  = (0..m).map(|i| 0.2f64  + 0.1f64  * (i as f64)).collect::<Vec<_>>();
     let y  = (0..n).map(|j| -0.3f64 + 0.05f64 * (j as f64)).collect::<Vec<_>>();
 
@@ -135,7 +135,7 @@ fn contiguous_large_tall() {
 
     let alpha = -0.37f64;
 
-    let a0 = make_col_major_matrix(m, n, lda);
+    let a0 = make_matrix(m, n, lda);
     let x  = (0..m).map(|i| 0.05f64 + 0.002f64 * (i as f64)).collect::<Vec<_>>();
     let y  = (0..n).map(|j| 0.4f64  - 0.003f64 * (j as f64)).collect::<Vec<_>>();
 
@@ -176,7 +176,7 @@ fn contiguous_large_wide() {
 
     let alpha = 0.93f64;
 
-    let a0 = make_col_major_matrix(m, n, lda);
+    let a0 = make_matrix(m, n, lda);
     let x  = (0..m).map(|i| -0.2f64 + 0.0015f64 * (i as f64)).collect::<Vec<_>>();
     let y  = (0..n).map(|j|  0.1f64 + 0.0020f64 * (j as f64)).collect::<Vec<_>>();
 
@@ -217,7 +217,7 @@ fn strided_padded() {
 
     let alpha = -0.85f64;
 
-    let a0 = make_col_major_matrix(m, n, lda);
+    let a0 = make_matrix(m, n, lda);
 
     // non-unit strides
     let incx = 2usize;
@@ -265,7 +265,7 @@ fn alpha_zero_keeps_a() {
 
     let alpha = 0.0f64;
 
-    let a0 = make_col_major_matrix(m, n, lda);
+    let a0 = make_matrix(m, n, lda);
     let x  = (0..m).map(|i| 0.11f64 + 0.01f64 * (i as f64)).collect::<Vec<_>>();
     let y  = (0..n).map(|j| 0.07f64 - 0.01f64 * (j as f64)).collect::<Vec<_>>();
 
@@ -307,7 +307,7 @@ fn accumulate_twice() {
     let alpha1 = 1.2f64;
     let alpha2 = -0.7f64;
 
-    let a0 = make_col_major_matrix(m, n, lda);
+    let a0 = make_matrix(m, n, lda);
     let x1 = (0..m).map(|i| 0.2f64  + 0.01f64 * (i as f64)).collect::<Vec<_>>();
     let y1 = (0..n).map(|j| -0.1f64 + 0.02f64 * (j as f64)).collect::<Vec<_>>();
     let x2 = (0..m).map(|i| -0.3f64 + 0.03f64 * (i as f64)).collect::<Vec<_>>();
@@ -415,7 +415,7 @@ fn n_zero_quick_return() {
 
     let alpha = -0.55f64;
 
-    let a0 = make_col_major_matrix(m, 1.max(n), lda); // allocate non-empty
+    let a0 = make_matrix(m, 1.max(n), lda); // allocate non-empty
     let x  = (0..m).map(|i| 0.3f64 - 0.02f64 * (i as f64)).collect::<Vec<_>>();
     let y  = vec![0.0f64; 1]; // dummy
 

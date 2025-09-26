@@ -45,8 +45,8 @@ use crate::level1::csscal::csscal;
 use crate::level1_special::caxpyf::caxpyf;
 
 // assert length helpers 
-use crate::level1::assert_length_helpers::required_len_ok;
-use crate::level2::assert_length_helpers::required_len_ok_matrix;
+use crate::level1::assert_length_helpers::required_len_ok_cplx;
+use crate::level2::assert_length_helpers::required_len_ok_matrix_cplx;
 
 // contiguous packing helpers 
 use crate::level2::{
@@ -81,10 +81,10 @@ pub(crate) fn cgemv_notranspose(
 
     debug_assert!(incx > 0 && incy > 0, "vector increments must be nonzero (complex)"); 
     debug_assert!(lda >= n_rows, "matrix leading dimension must be >= n_rows (complex)"); 
-    debug_assert!(required_len_ok(x.len() / 2, n_cols, incx), "x too short for n_cols/incx (NO TRANSPOSE)"); 
-    debug_assert!(required_len_ok(y.len() / 2, n_rows, incy), "y too short for n_rows/incy (NO TRANSPOSE)"); 
+    debug_assert!(required_len_ok_cplx(x.len(), n_cols, incx), "x too short for n_cols/incx (NO TRANSPOSE)"); 
+    debug_assert!(required_len_ok_cplx(y.len(), n_rows, incy), "y too short for n_rows/incy (NO TRANSPOSE)"); 
     debug_assert!(
-        required_len_ok_matrix(matrix.len() / 2, n_rows, n_cols, lda),
+        required_len_ok_matrix_cplx(matrix.len(), n_rows, n_cols, lda),
         "matrix too short for given n_rows/n_cols and lda (NO TRANSPOSE)"
     ); 
 

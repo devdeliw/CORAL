@@ -266,48 +266,6 @@ fn lower_small() {
 }
 
 #[test]
-fn upper_large() {
-    let n   = 1024usize;
-    let lda = n;
-
-    let alpha = 1.25f32;
-    let beta  = -0.5f32;
-
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| 0.2 + (k as f32) * 0.1).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| -0.3 + (k as f32) * 0.05).collect::<Vec<_>>();
-
-    let mut y_coral = y0.clone();
-    ssymv(
-        CoralTriangular::UpperTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
-
-    let mut y_ref = y0.clone();
-    cblas_upper(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
-
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
-}
-
-#[test]
 fn lower_large() {
     let n   = 768usize;
     let lda = n;

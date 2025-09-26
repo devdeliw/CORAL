@@ -36,6 +36,8 @@ pub mod dtrsv;
 
 pub mod ssymv;
 pub mod dsymv;
+pub mod chemv; 
+pub mod zhemv; 
 
 pub mod sger;
 pub mod dger; 
@@ -46,9 +48,13 @@ pub mod zgerc;
 
 pub mod ssyr;
 pub mod dsyr; 
+pub mod cher; 
+pub mod zher; 
 
 pub mod ssyr2;
 pub mod dsyr2;
+pub mod cher2; 
+pub mod zher2; 
 
 
 

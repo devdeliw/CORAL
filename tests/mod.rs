@@ -58,12 +58,24 @@ mod dsyr2_tests;
 mod cgemv_tests;
 #[path = "level2/cger_tests.rs" ] 
 mod cger_tests;
-
+#[path = "level2/chemv_tests.rs"] 
+mod chemv_tests; 
+#[path = "level2/cher_tests.rs" ] 
+mod cher_tests;
+#[path = "level2/cher2_tests.rs"] 
+mod cher2_tests;
+//
 //
 // complex double precision 
 #[path = "level2/zgemv_tests.rs"] 
 mod zgemv_tests; 
 #[path = "level2/zger_tests.rs" ] 
 mod zger_tests;
+#[path = "level2/zhemv_tests.rs"] 
+mod zhemv_tests;
+#[path = "level2/zher_tests.rs" ] 
+mod zher_tests; 
+#[path = "level2/zher2_tests.rs"] 
+mod zher2_tests; 
 
 
