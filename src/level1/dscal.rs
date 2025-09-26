@@ -1,4 +1,8 @@
-//! Scales a double precision vector by a real scalar.
+//! SCAL scales a double precision vector by a real scalar.
+//!
+//! ```text 
+//! x := alpha * x
+//! ```
 //!
 //! This function implements the BLAS [`dscal`] routine, multiplying each element 
 //! of the input vector `x` by the scalar `alpha` over `n` entries with a specified stride.
@@ -10,11 +14,11 @@
 //! - `incx`  (usize)      : Stride between consecutive elements of `x`. 
 //!
 //! # Returns 
-//! - Nothing. The contents of `x` are updated in place as `x[i] = alpha * x[i]`. 
+//! - Nothing. The contents of `x` are updated in place.  
 //!
 //! # Notes 
 //! - For `incx == 1`, [`dscal`] does not perform SIMD or unrolling; LLVM is enough.  
-//! - For non-unit strides, LLVM does not vectorize and the function falls back to a scalar loop. 
+//! - For non-unit strides, the function falls back to a scalar loop. 
 //! - If `n == 0` or `incx == 0`, the function returns immediately; no slice modification. 
 //!
 //! # Author 

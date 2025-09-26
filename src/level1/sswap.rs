@@ -1,4 +1,4 @@
-//! Swaps elements of two single precision vectors.
+//! SWAP Swaps elements of two single precision vectors.
 //!
 //! This function implements the BLAS [`sswap`] routine, exchanging elements of 
 //! two input vectors `x` and `y` over `n` entries with specified strides.

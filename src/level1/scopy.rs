@@ -1,4 +1,4 @@
-//! Copies a single precision vector into another.
+//! Copies COPY a single precision vector into another.
 //!
 //! This function implements the BLAS [`scopy`] routine, copying `n` elements from
 //! the input vector `x` into the output vector `y` with specified strides.

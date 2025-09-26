@@ -1,4 +1,4 @@
-//! Copies a complex double precision vector into another.
+//! COPY Copies a complex double precision vector into another.
 //!
 //! This function implements the BLAS [`zcopy`] routine, copying `n` complex elements from
 //! the input vector `x` into the output vector `y` with specified strides.
@@ -7,18 +7,15 @@
 //! - `n`    (usize)      : Number of complex elements to copy.
 //! - `x`    (&[f64])     : Input slice containing interleaved complex vector elements
 //!                       | `[re0, im0, re1, im1, ...]`.
-//! - `incx` (usize)      : Stride between consecutive complex elements of `x`
-//!                       | (measured in complex numbers; every step advances two scalar idxs).
-//! - `y`    (&mut [f64]) : Output slice to receive copied complex elements
-//!                       | `[re0, im0, re1, im1, ...]`.
-//! - `incy` (usize)      : Stride between consecutive complex elements of `y`
-//!                         (measured in complex numbers; every step advances two scalar idxs).
+//! - `incx` (usize)      : Stride between consecutive complex elements of `x`; complex units. 
+//! - `y`    (&mut [f64]) : Output slice to receive copied interleaved complex elements.
+//! - `incy` (usize)      : Stride between consecutive complex elements of `y`; complex units. 
 //!
 //! # Returns
 //! - Nothing. The contents of `y` are overwritten with elements from `x`.
 //!
 //! # Notes
-//! - For `incx == 1 && incy == 1`, [`zcopy`] uses `core::ptr::copy_nonoverlapping` for fast
+//! - For `incx == 1 && incy == 1`, [`zcopy`] uses [`core::ptr::copy`] for fast
 //!   contiguous memory copying of real and imag parts.
 //! - For non unit or negative strides, the function falls back to a scalar loop.
 //! - If `n == 0`, the function returns immediately without modifying `y`.

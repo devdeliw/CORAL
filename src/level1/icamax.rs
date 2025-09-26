@@ -1,6 +1,7 @@
-//! Finds the index of the element with maximum absolute value in a complex single precision vector.
+//! Finds the index of the element with maximum absolute value in a complex 
+//! single precision vector.
 //!
-//! This function implements the BLAS [`icamax`] routine, returning the 1-based index
+//! This function implements the BLAS [`icamax`] routine, returning the 0-based index
 //! of the first complex element of maximum absolute value over `n` elements of the input
 //! vector `x` with a specified stride.
 //!
@@ -10,8 +11,7 @@
 //! - `n`    (usize)  : Number of complex elements in the vector.
 //! - `x`    (&[f32]) : Input slice containing interleaved complex vector elements
 //!                   | `[re0, im0, re1, im1, ...]`.
-//! - `incx` (usize)  : Stride between consecutive complex elements of `x`
-//!                   (measured in complex numbers; every step advances two scalar idxs).
+//! - `incx` (usize)  : Stride between consecutive complex elements of `x`; complex units
 //!
 //! # Returns
 //! - `usize` 0-based index of the first complex element with maximum absolute value.
@@ -54,7 +54,7 @@ pub fn icamax(
     // quick return 
     if n == 0 || incx <= 0 { return 0; }
 
-    debug_assert!(required_len_ok_cplx(x.len(), n, incx), "x too short for n/incx (complex)");
+    debug_assert!(required_len_ok_cplx(x.len(), n, incx), "x too short for n/incx");
 
     unsafe {
         let mut best_val = f32::NEG_INFINITY;

@@ -1,8 +1,11 @@
-//! Computes the Euclidean norm of a double precision vector.
+//! Computes the Euclidean norm NRM2 of a double precision vector.
 //!
-//! This function implements the BLAS [`dnrm2`] routine, returning
-//! sqrt(x[0]^2 + x[1]^2 + ... + x[n-1]^2) over `n` elements of the
-//! input vector `x` with a specified stride.
+//! ```text
+//! sqrt(x[0]^2 + x[1]^2 + ... + x[n-1]^2)
+//! ```
+//!
+//! This function implements the BLAS [`dnrm2`] routine, returning the
+//! Euclidean norm over `n` elements of the input vector `x` with a specified stride.
 //!
 //! # Arguments
 //! - `n`    (usize)  : Number of elements in the vector.

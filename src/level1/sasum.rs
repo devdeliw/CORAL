@@ -1,7 +1,11 @@
-//! Computes the sum of absolute values of elements in a single precision vector. 
+//! Computes the sum of absolute values ASUM of elements in a single precision vector. 
 //!
-//! This function implements the BLAS [`sasum`] routine, returning sum(|x[i]|) over 
-//! `n` elements of the input vector `x` with a specified stride. 
+//! ```text 
+//! sum(|x[i]|)
+//! ```
+//!
+//! This function implements the BLAS [`sasum`] routine over `n` elements of the input 
+//! vector `x` with a specified stride. 
 //!
 //! # Arguments 
 //! - `n`    (usize)  : Number of elements to sum. 

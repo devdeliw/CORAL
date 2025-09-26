@@ -1,4 +1,4 @@
-//! Copies a double precision vector into another.
+//! COPY Copies a double precision vector into another.
 //!
 //! This function implements the BLAS [`dcopy`] routine, copying `n` elements from
 //! the input vector `x` into the output vector `y` with specified strides.

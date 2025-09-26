@@ -1,4 +1,4 @@
-//! Applies a modified Givens rotation to two single precision vectors.
+//! Applies a modified Givens rotation ROTM to two single precision vectors.
 //!
 //! This function implements the BLAS [`srotm`] routine, updating the elements of 
 //! vectors `x` and `y` using the modified Givens transformation defined by the 

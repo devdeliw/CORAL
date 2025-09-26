@@ -1,4 +1,8 @@
-//! Performs a complex single precision AXPY operation: y := alpha * x + y.
+//! Performs a complex single precision AXPY operation. 
+//!
+//! ```text 
+//! y := alpha * x + y.
+//! ```
 //!
 //! This function implements the BLAS [`caxpy`] routine, updating the vector `y`
 //! by adding `alpha * x` elementwise over `n` complex entries with specified strides.
@@ -8,15 +12,13 @@
 //! - `alpha` ([f32; 2])   : Complex scalar multiplier given as `[real, imag]`.
 //! - `x`     (&[f32])     : Input slice containing interleaved complex vector elements
 //!                        | `[re0, im0, re1, im1, ...]`.
-//! - `incx`  (usize)      : Stride between consecutive complex elements of `x`
-//!                        | (measured in complex numbers; every step advances two scalar idxs).
+//! - `incx`  (usize)      : Stride between consecutive complex elements of `x`; complex units.
 //! - `y`     (&mut [f32]) : Input/output slice containing interleaved complex vector elements,
 //!                        | updated in place.
-//! - `incy`  (usize)      : Stride between consecutive complex elements of `y`
-//!                          (measured in complex numbers; every step advances two scalar idxs).
+//! - `incy`  (usize)      : Stride between consecutive complex elements of `y`; complex units.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place as `y[i] = alpha * x[i] + y[i]`.
+//! - Nothing. The contents of `y` are updated in place.
 //!
 //! # Notes
 //! - For `incx == 1 && incy == 1`, [`caxpy`] uses unrolled NEON SIMD instructions

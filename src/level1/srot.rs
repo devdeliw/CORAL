@@ -1,18 +1,22 @@
-//! Applies a plane rotation to two single precision vectors.
+//! Applies a plane rotation ROT to two single precision vectors.
 //!
 //! This function implements the BLAS [`srot`] routine, replacing elements of
 //! vectors `x` and `y` with
 //!
+//! ```text 
 //! x[i] := c * x[i] + s * y[i]
 //! y[i] := c * y[i] - s * x[i]
+//! ```
 //!
 //! over `n` entries with specified strides.
 //!
 //! # Arguments
 //! - `n`    (usize)      : Number of elements to process.
-//! - `x`    (&mut [f32]) : Input/output slice containing the first vector, updated in place.
+//! - `x`    (&mut [f32]) : Input/output slice containing the first vector
+//!                       | updated in place.
 //! - `incx` (usize)      : Stride between consecutive elements of `x`.
-//! - `y`    (&mut [f32]) : Input/output slice containing the second vector, updated in place.
+//! - `y`    (&mut [f32]) : Input/output slice containing the second vector
+//!                       | updated in place.
 //! - `incy` (usize)      : Stride between consecutive elements of `y`.
 //! - `c`    (f32)        : Cosine component of the rotation.
 //! - `s`    (f32)        : Sine component of the rotation.

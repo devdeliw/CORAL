@@ -1,4 +1,8 @@
-//! Performs a double precision AXPY operation: y := alpha * x + y.
+//! Performs a double precision AXPY operation. 
+//!
+//! ```text 
+//! y := alpha * x + y
+//! ```
 //!
 //! This function implements the BLAS [`daxpy`] routine, updating the vector `y`
 //! by adding `alpha * x` elementwise over `n` entries with specified strides.
@@ -8,11 +12,12 @@
 //! - `alpha` (f64)       : Scalar multiplier for `x`.
 //! - `x`     (&[f64])    : Input slice containing vector elements.
 //! - `incx`  (usize)     : Stride between consecutive elements of `x`.
-//! - `y`     (&mut [f64] : Input/output slice containing vector elements, updated in place.
+//! - `y`     (&mut [f64] : Input/output slice containing vector elements
+//!                       | updated in place.
 //! - `incy`  (usize)     : Stride between consecutive elements of `y`.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place as `y[i] = alpha * x[i] + y[i]`.
+//! - Nothing. The contents of `y` are updated in place.
 //!
 //! # Notes
 //! - For `incx == 1 && incy == 1`, [`daxpy`] uses unrolled NEON SIMD instructions

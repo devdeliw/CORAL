@@ -1,10 +1,12 @@
-//! Applies a plane rotation to two complex double precision vectors.
+//! Applies a plane rotation ROT to two complex double precision vectors.
 //!
 //! This function implements the BLAS [`zdrot`] routine, replacing elements of
 //! vectors `x` and `y` with
-//!
+//! 
+//! ```text
 //! x[i] := c * x[i] + s * y[i]
 //! y[i] := c * y[i] - s * x[i]
+//! ```
 //!
 //! where the rotation is applied elementwise to both the real and imaginary parts
 //! of each complex number, over `n` complex entries with specified strides.
@@ -13,12 +15,10 @@
 //! - `n`    (usize)      : Number of complex elements to process.
 //! - `x`    (&mut [f64]) : Input/output slice containing interleaved complex vector elements
 //!                       | `[re0, im0, re1, im1, ...]`, updated in place.
-//! - `incx` (usize)      : Stride between consecutive complex elements of `x`
-//!                       | (measured in complex numbers; every step advances two scalar idxs).
+//! - `incx` (usize)      : Stride between consecutive complex elements of `x`; complex units. 
 //! - `y`    (&mut [f64]) : Input/output slice containing interleaved complex vector elements,
 //!                       | updated in place.
-//! - `incy` (usize)      : Stride between consecutive complex elements of `y`
-//!                       | (measured in complex numbers; every step advances two scalar idxs).
+//! - `incy` (usize)      : Stride between consecutive complex elements of `y`; complex units. 
 //! - `c`    (f64)        : Cosine component of the rotation.
 //! - `s`    (f64)        : Sine component of the rotation.
 //!

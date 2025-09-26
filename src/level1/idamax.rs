@@ -1,6 +1,6 @@
 //! Finds the index of the element with maximum absolute value in a double precision vector.
 //!
-//! This function implements the BLAS [`idamax`] routine, returning the 1-based index
+//! This function implements the BLAS [`idamax`] routine, returning the 0-based index
 //! of the first element of maximum absolute value over `n` elements of the input
 //! vector `x` with a specified stride.
 //!

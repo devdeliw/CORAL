@@ -1,10 +1,12 @@
-//! Constructs a Givens rotation for single precision scalars.
+//! Constructs a Givens rotation ROTG for single precision scalars.
 //!
 //! This function implements the BLAS [`srotg`] routine, computing parameters
 //! `c` and `s` that define a Givens plane rotation such that
-//!
+//! 
+//! ```text 
 //! [ c  s ] [ a ] = [ r ]
 //! [-s  c ] [ b ]   [ 0 ]
+//! ```
 //!
 //! The values of `a` and `b` are overwritten with `r` and `z`, where `r`
 //! is the nonzero result and `z` encodes information for reconstructing

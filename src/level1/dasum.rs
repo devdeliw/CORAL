@@ -1,6 +1,10 @@
-//! Computes the sum of absolute values of elements in a double precision vector. 
+//! Computes the sum of absolute values of elements ASUM in a double precision vector. 
 //!
-//! This function implements the BLAS [`dasum`] routine, returning sum(|x[i]|) over 
+//! ```text 
+//! sum(|x[i]|)
+//! ```
+//!
+//! This function implements the BLAS [`dasum`] routine, returning the absolute sum over 
 //! `n` elements of the input vector `x` with a specified stride. 
 //!
 //! # Arguments 
@@ -22,7 +26,11 @@
 
 #[cfg(target_arch = "aarch64")] 
 use core::arch::aarch64::{ 
-    vld1q_f64, vdupq_n_f64, vaddq_f64, vaddvq_f64, vabsq_f64,
+    vld1q_f64, 
+    vdupq_n_f64, 
+    vaddq_f64, 
+    vaddvq_f64,
+    vabsq_f64,
 };
 use crate::level1::assert_length_helpers::required_len_ok;
 

@@ -1,19 +1,19 @@
-//! Computes the unconjugated dot product of two complex single precision vectors.
+//! Computes the unconjugated DOT of two complex single precision vectors.
 //!
-//! This function implements the BLAS [`cdotu`] routine, returning
-//! sum(x[i] * y[i]) over `n` complex elements of the input vectors `x` and `y`
-//! with specified strides. No conjugation is applied to either vector.
+//! ```text 
+//! sum(x[i] * y[i])
+//! ```
+//!
+//! This function implements the BLAS [`cdotu`] routine, over `n` complex elements 
+//! of the input vectors `x` and `y` with specified strides. 
 //!
 //! # Arguments
 //! - `n`    (usize)  : Number of complex elements in the vectors.
 //! - `x`    (&[f32]) : Input slice containing interleaved complex vector elements
 //!                   | `[re0, im0, re1, im1, ...]`.
-//! - `incx` (usize)  : Stride between consecutive complex elements of `x`
-//!                   | (measured in complex numbers; every step advances two scalar idxs).
+//! - `incx` (usize)  : Stride between consecutive complex elements of `x`; complex units.
 //! - `y`    (&[f32]) : Input slice containing interleaved complex vector elements
-//!                   | `[re0, im0, re1, im1, ...]`.
-//! - `incy` (usize)  : Stride between consecutive complex elements of `y`
-//!                     (measured in complex numbers; every step advances two scalar idxs).
+//! - `incy` (usize)  : Stride between consecutive complex elements of `y`; complex units.
 //!
 //! # Returns
 //! - `[f32; 2]` complex result of the dot product, `[real, imag]`.

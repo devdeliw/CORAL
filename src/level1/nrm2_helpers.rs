@@ -1,10 +1,11 @@
-//! Internal helpers for `nrm2` (Euclidean norm) routines.
+//! Internal helpers for NRM2 routines.
 //!
 //! These functions implement the scaled sum-of-squares update used to maintain
-//! numerical stability when accumulating ||x||_2. 
+//! numerical stability when accumulating the norm.  
 //!
 //! Given the current scaling factor `scale` and sum-of-squares `ssq`, they update both 
-//! with a new block’s maximum absolute value `cmax` and its normalized squared contribution `cssq`.
+//! with a new block’s maximum absolute value `cmax` and its normalized squared contribution 
+//! `cssq`.
 //!
 //! - `upd_f32` : Single precision.  
 //! - `upd_f64` : Double precision.

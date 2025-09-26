@@ -1,4 +1,4 @@
-//! Scales a single precision vector by a real scalar.
+//! SCAL Scales a single precision vector by a real scalar.
 //!
 //! This function implements the BLAS [`sscal`] routine, multiplying each element 
 //! of the input vector `x` by the scalar `alpha` over `n` entries with a specified stride.
@@ -14,7 +14,7 @@
 //!
 //! # Notes 
 //! - For `incx == 1`, [`sscal`] does not perform SIMD or unrolling; LLVM is enough. 
-//! - For non unit strides, LLVM doesn't vectorize and fallbacks to scalar loop. 
+//! - For non unit strides, fallbacks to scalar loop. 
 //! - If `n == 0` or `incx == 0`, the function returns immediately; no slice modification. 
 //!
 //! # Author 

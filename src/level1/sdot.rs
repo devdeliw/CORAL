@@ -1,8 +1,11 @@
-//! Computes the dot product of two single precision vectors.
+//! Computes the DOT product of two single precision vectors.
 //!
-//! This function implements the BLAS [`sdot`] routine, returning
-//! sum(x[i] * y[i]) over `n` elements of the input vectors `x` and `y`
-//! with specified strides.
+//! ```text 
+//! sum(x[i] * y[i])
+//! ```
+//!
+//! This function implements the BLAS [`sdot`] routine, over `n` elements 
+//! of the input vectors `x` and `y`with specified strides.
 //!
 //! # Arguments
 //! - `n`    (usize)  : Number of elements in the vectors.

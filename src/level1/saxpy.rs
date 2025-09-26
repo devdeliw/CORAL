@@ -1,4 +1,8 @@
-//! Performs a single precision AXPY operation: y := alpha * x + y.
+//! Performs a single precision AXPY operation. 
+//!
+//! ```text 
+//! y := alpha * x + y 
+//! ```
 //!
 //! This function implements the BLAS [`saxpy`] routine, updating the vector `y`
 //! by adding `alpha * x` elementwise over `n` entries with specified strides.
@@ -12,7 +16,7 @@
 //! - `incy`  (usize)     : Stride between consecutive elements of `y`.
 //!
 //! # Returns
-//! - Nothing. The contents of `y` are updated in place as `y[i] = alpha * x[i] + y[i]`.
+//! - Nothing. The contents of `y` are updated in place. 
 //!
 //! # Notes
 //! - For `incx == 1 && incy == 1`, [`saxpy`] uses unrolled NEON SIMD instructions

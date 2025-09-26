@@ -1,4 +1,4 @@
-//! Swaps elements of two double precision vectors.
+//! SWAP Swaps elements of two double precision vectors.
 //!
 //! This function implements the BLAS [`dswap`] routine, exchanging elements of 
 //! two input vectors `x` and `y` over `n` entries with specified strides.

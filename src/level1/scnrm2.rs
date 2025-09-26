@@ -1,15 +1,17 @@
-//! Computes the Euclidean norm of a complex single precision vector.
+//! Computes the Euclidean norm NRM2 of a complex single precision vector.
 //!
-//! This function implements the BLAS [`scnrm2`] routine, returning
-//! sqrt(sum(|Re(x[i])|^2 + |Im(x[i])|^2)) over `n` complex elements of the
+//! ```text 
+//! sqrt(sum(|Re(x[i])|^2 + |Im(x[i])|^2))
+//! ```
+//!
+//! This function implements the BLAS [`scnrm2`] routine over `n` complex elements of the 
 //! input vector `x` with a specified stride.
 //!
 //! # Arguments
 //! - `n`    (usize)  : Number of complex elements in the vector.
 //! - `x`    (&[f32]) : Input slice containing interleaved complex vector elements
 //!                   | `[re0, im0, re1, im1, ...]`.
-//! - `incx` (usize)  : Stride between consecutive complex elements of `x`
-//!                     (measured in complex numbers; every step advances two scalar idxs).
+//! - `incx` (usize)  : Stride between consecutive complex elements of `x`; complex units. 
 //!
 //! # Returns
 //! - `f32` Euclidean norm of the selected complex vector elements.

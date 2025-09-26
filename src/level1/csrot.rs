@@ -1,24 +1,21 @@
 //! Applies a plane rotation to two complex single precision vectors.
 //!
-//! This function implements the BLAS [`csrot`] routine, replacing elements of
-//! vectors `x` and `y` with
-//!
+//! ```text
 //! x[i] := c * x[i] + s * y[i]
 //! y[i] := c * y[i] - s * x[i]
-//!
-//! where the rotation is applied elementwise to both the real and imaginary parts
+//! ```
+//! This function implements the BLAS [`csrot`] routine, replacing elements of
+//! vectors `x` and `y`. The rotation is applied elementwise to both the real and imag parts
 //! of each complex number, over `n` complex entries with specified strides.
 //!
 //! # Arguments
 //! - `n`    (usize)      : Number of complex elements to process.
 //! - `x`    (&mut [f32]) : Input/output slice containing interleaved complex vector elements
-//!                       | `[re0, im0, re1, im1, ...]`, updated in place.
-//! - `incx` (usize)      : Stride between consecutive complex elements of `x`
-//!                       | (measured in complex numbers; every step advances two scalar idxs).
+//!                       | `[re0, im0, re1, im1, ...]`; updated in place.
+//! - `incx` (usize)      : Stride between consecutive complex elements of `x`; complex units. 
 //! - `y`    (&mut [f32]) : Input/output slice containing interleaved complex vector elements,
 //!                       | updated in place.
-//! - `incy` (usize)      : Stride between consecutive complex elements of `y`
-//!                       | (measured in complex numbers; every step advances two scalar idxs).
+//! - `incy` (usize)      : Stride between consecutive complex elements of `y`; complex units. 
 //! - `c`    (f32)        : Cosine component of the rotation.
 //! - `s`    (f32)        : Sine component of the rotation.
 //!

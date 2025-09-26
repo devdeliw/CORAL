@@ -1,4 +1,4 @@
-//! Copies a complex single precision vector into another.
+//! COPY Copies a complex single precision vector into another.
 //!
 //! This function implements the BLAS [`ccopy`] routine, copying `n` complex elements from
 //! the input vector `x` into the output vector `y` with specified strides.
@@ -7,12 +7,10 @@
 //! - `n`    (usize)      : Number of complex elements to copy.
 //! - `x`    (&[f32])     : Input slice containing interleaved complex vector elements
 //!                       | `[re0, im0, re1, im1, ...]`.
-//! - `incx` (usize)      : Stride between consecutive complex elements of `x`
-//!                       | (measured in complex numbers; every step advances two scalar idxs).
+//! - `incx` (usize)      : Stride between consecutive complex elements of `x`; complex units.
 //! - `y`    (&mut [f32]) : Output slice to receive copied complex elements
 //!                       `[re0, im0, re1, im1, ...]`.
-//! - `incy` (usize)      : Stride between consecutive complex elements of `y`
-//!                       (measured in complex numbers; every step advances two scalar idxs).
+//! - `incy` (usize)      : Stride between consecutive complex elements of `y`; complex units.
 //!
 //! # Returns
 //! - Nothing. The contents of `y` are overwritten with elements from `x`.

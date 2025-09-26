@@ -1,4 +1,8 @@
-//! Scales a complex double precision vector by a real scalar.
+//! SCAL Scales a complex double precision vector by a real scalar.
+//!
+//! ```text
+//! x := alpha * x 
+//! ```
 //!
 //! This function implements the BLAS [`zdscal`] routine, multiplying each complex element 
 //! of the input vector `x` by the real scalar `alpha` over `n` entries with a specified stride.
@@ -8,11 +12,10 @@
 //! - `alpha` (f64)        : Real scalar multiplier. 
 //! - `x`     (&mut [f64]) : Input/output slice containing interleaved complex vector elements 
 //!                        | `[re0, im0, re1, im1, ...]`. 
-//! - `incx`  (usize)      : Stride between consecutive complex elements of `x` 
-//!                          (measured in complex numbers; every step advances two scalar idxs). 
+//! - `incx`  (usize)      : Stride between consecutive complex elements of `x`; complex units. 
 //!
 //! # Returns 
-//! - Nothing. The contents of `x` are updated in place as `x[i] = alpha * x[i]`. 
+//! - Nothing. The contents of `x` are updated in place. 
 //!
 //! # Notes 
 //! - For `incx == 1`, [`zdscal`] uses NEON SIMD instructions for optimized performance on AArch64. 
