@@ -1,7 +1,11 @@
 //! Performs a double precision triangular solve (TRSV) with a lower triangular matrix.
 //!
 //! This function implements the BLAS [`crate::level2::dtrsv`] routine for **lower triangular** matrices,
-//! solving the system `op(L) * x = b` in place for `x`, where `op(L)` is either `L` or `L^T`.
+//! solving the system 
+//!
+//! ```text
+//! op(L) * x = b in place for x, where op(L) is either L or L^T
+//! ```
 //!
 //! The [`dtrlsv`] function is crate-visible and is implemented via 
 //! [`crate::level2::dtrsv`] using block forward/back substitution kernels.
@@ -25,7 +29,8 @@
 //!   and remaining elements are updated with a fused [`daxpyf`] panel update.
 //! - For the transpose case, diagonal blocks are solved using a **backward substitution** kernel,
 //!   and previously solved elements are propagated with a fused [`ddotf`] update.
-//! - The kernel is optimized for AArch64 NEON targets and assumes column-major memory layout.
+//! - The kernel is optimized for AArch64 NEON targets 
+//! - Assumes column-major memory layout.
 //!
 //! # Visibility
 //! - pub(crate)

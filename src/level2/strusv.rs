@@ -1,7 +1,11 @@
 //! Performs a single precision triangular solve (TRSV) with an upper triangular matrix.
 //!
 //! This function implements the BLAS [`crate::level2::strsv`] routine for **upper triangular** matrices,
-//! solving the system `op(A) * x = b` in place for `x`, where `op(A)` is either `A` or `A^T`.
+//! solving the system 
+//!
+//! ```text
+//! op(A) * x = b in place for x, where op(A) is either A or A^T.
+//! ```
 //!
 //! The [`strusv`] function is crate-visible and is implemented via 
 //! [`crate::level2::strsv`] using block back/forward substitution kernels.

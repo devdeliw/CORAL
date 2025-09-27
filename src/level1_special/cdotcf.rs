@@ -7,7 +7,7 @@
 //! # Arguments
 //! - `n_rows` (usize)      : Number of complex rows (m).
 //! - `n_cols` (usize)      : Number of columns (n).
-//! - `matrix` (&[f32])     : Compplex interleaved A with dimension (`lda` x `n_cols`).
+//! - `matrix` (&[f32])     : Complex interleaved A with dimension (`lda` x `n_cols`).
 //! - `lda`    (usize)      : Leading dimension of `A`. Must be >= `n_rows.
 //! - `x`      (&[f32])     : Complex interleaved vector.
 //! - `incx`   (usize)      : Stride for `x` in complex elements.
@@ -16,7 +16,7 @@
 //!
 //! # Notes
 //! - Fast path when `incx == 1` uses NEON + blocking.
-//! - Otherwise falls back to level-1 `cdotc` per column.
+//! - Otherwise falls back to level-1 [`cdotc`] per column.
 
 #[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{

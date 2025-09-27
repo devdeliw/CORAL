@@ -64,7 +64,10 @@ mod chemv_tests;
 mod cher_tests;
 #[path = "level2/cher2_tests.rs"] 
 mod cher2_tests;
-//
+#[path = "level2/ctrmv_tests.rs"] 
+mod ctrmv_tests;
+#[path = "level2/ctrsv_tests.rs"] 
+mod ctrsv_tests; 
 //
 // complex double precision 
 #[path = "level2/zgemv_tests.rs"] 
@@ -77,5 +80,9 @@ mod zhemv_tests;
 mod zher_tests; 
 #[path = "level2/zher2_tests.rs"] 
 mod zher2_tests; 
+#[path = "level2/ztrmv_tests.rs"] 
+mod ztrmv_tests;
+#[path = "level2/ztrsv_tests.rs"] 
+mod ztrsv_tests; 
 
 

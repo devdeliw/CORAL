@@ -16,7 +16,7 @@
 //!
 //! # Notes
 //! - Fast path when `incx == 1` uses NEON + blocking (NR=8, MC=128).
-//! - Otherwise falls back to level-1 `zdotu` per column.
+//! - Otherwise falls back to level-1 [`zdotu`] per column.
 
 #[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::{

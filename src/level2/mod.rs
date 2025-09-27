@@ -24,15 +24,27 @@ pub(crate) mod strumv;
 pub(crate) mod strlmv; 
 pub(crate) mod dtrumv; 
 pub(crate) mod dtrlmv; 
+pub(crate) mod ctrumv; 
+pub(crate) mod ctrlmv; 
+pub(crate) mod ztrumv; 
+pub(crate) mod ztrlmv; 
 pub mod strmv; 
 pub mod dtrmv; 
+pub mod ctrmv; 
+pub mod ztrmv;
 
 pub(crate) mod strusv; 
 pub(crate) mod strlsv; 
 pub(crate) mod dtrusv; 
-pub(crate) mod dtrlsv; 
+pub(crate) mod dtrlsv;
+pub(crate) mod ctrusv; 
+pub(crate) mod ctrlsv; 
+pub(crate) mod ztrusv; 
+pub(crate) mod ztrlsv; 
 pub mod strsv; 
 pub mod dtrsv; 
+pub mod ctrsv; 
+pub mod ztrsv; 
 
 pub mod ssymv;
 pub mod dsymv;

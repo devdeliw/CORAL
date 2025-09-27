@@ -5,14 +5,22 @@
 //! For complex data, each element occupies two indices (real & imag).
 
 #[inline]
-pub(crate) fn required_len_ok(len: usize, n: usize, inc: usize) -> bool {
+pub(crate) fn required_len_ok(
+    len: usize, 
+    n: usize, 
+    inc: usize
+) -> bool {
     if n == 0 { return true; }
     len >= (n - 1).saturating_mul(inc) + 1
 }
 
 
 #[inline]
-pub(crate) fn required_len_ok_cplx(len: usize, n: usize, inc: usize) -> bool {
+pub(crate) fn required_len_ok_cplx(
+    len: usize, 
+    n: usize, 
+    inc: usize
+) -> bool {
     if n == 0 { return true; }
     len >= (n - 1).saturating_mul(inc * 2) + 2 
 }
