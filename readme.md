@@ -16,7 +16,7 @@ Level-3 routines (including GEMM) are not implemented yet.
 
 ## Preliminary benchmarks
 
-Early microbenchmarks (contiguous, unit-stride) suggest competitive performance on AArch64 up to $n \simeq 2.5\text{k}$. 
+Early microbenchmarks (contiguous, unit-stride) suggest competitive performance on AArch64 up to $n \simeq$ 2500. 
 Below are two example plots from [benches/plots/](benches/plots/). 
 
 ### SGEMV (TRANSPOSE)
@@ -27,7 +27,7 @@ Below are two example plots from [benches/plots/](benches/plots/).
 
 Apple Accelerate is outrageously fast for GEMV routines. It is not included in
 the above SGEMV plot because it is an order-of-magnitude faster, reaching ~400 GFLOP/s and masks my improvement over OpenBLAS. 
-However, for triangular solves my implementations exceed both Accelerate and OpenBLAS (for $n \le 2.5\text{k}$).
+However, for triangular solves my implementations exceed both Accelerate and OpenBLAS (for $n \leq$ 2500).
 
 *These results are preliminary and subject to change as kernels and packing strategies evolve.*
 
