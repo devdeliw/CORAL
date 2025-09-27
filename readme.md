@@ -1,15 +1,27 @@
 # CORAL
 
-**COre** **R**ust **A**rchitecture for **L**inear-algebra is a pure-Rust implementation of BLAS routines. 
+**COre** **R**ust **A**rchitecture for **L**inear-algebra — a pure-Rust implementation of BLAS routines.
 
-I am not knowledgable enough *yet* to make it as fast as traditional BLAS libraries, but I hope
-to reach about **70–80% of their performance**, while making it written entirely in Rust.
+This is a work-in-progress project aiming to reach *~70–80%* of BLAS performance while remaining pure Rust.
 
-So far core Level 1 and Level 2 routines are written. Most outperform
-[openblas](https://github.com/OpenMathLib/OpenBLAS) *for contiguous, unit-stride memory
-layouts* because coral is specialized for aarch64. 
+Core Level-1 and Level-2 routines are implemented. Some outperform
+[OpenBLAS](https://github.com/OpenMathLib/OpenBLAS) for *contiguous, unit-stride layouts* thanks to AArch64-specialized kernels.
 
-Level 3 routines, including GEMM, have not been written yet. 
+**Level-3** routines (including GEMM) are not implemented yet.
 
-Currently, it is optimized only for **AArch64**.
+> **Architecture:** Optimized currently for **AArch64**.
+
+---
+
+## Preliminary benchmarks
+
+Early microbenchmarks (contiguous, unit-stride) suggest competitive performance on AArch64. Below are two example plots from [plots/](benches/plots/):
+
+### SGEMV (TRANSPOSE)
+![SGEMV TRANSPOSE](benches/plots/SGEMV%20TRANSPOSE.png)
+
+### STRSV (UPPER, NOTRANSPOSE)
+![STRSV UPPER NOTRANSPOSE](benches/plots/STRSV%20UPPER%20NOTRANSPOSE.png)
+
+*These results are preliminary and subject to change as kernels and packing strategies evolve.*
 
