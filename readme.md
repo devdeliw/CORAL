@@ -1,13 +1,13 @@
 # CORAL
 
-**COre** **R**ust **A**rchitecture for **L**inear-algebra — a pure-Rust implementation of BLAS routines.
+**COre** **R**ust **A**rchitecture for **L**inear-algebra — *pure Rust BLAS*
 
-This is a work-in-progress project aiming to reach *~70–80%* of BLAS performance while remaining pure Rust.
+This is a work-in-progress project aiming to reach *~70–80%* of BLAS performance while remaining 100% Rust.
 
 Core Level-1 and Level-2 routines are implemented. Some outperform
 [OpenBLAS](https://github.com/OpenMathLib/OpenBLAS) for *contiguous, unit-stride layouts* thanks to AArch64-specialized kernels.
 
-**Level-3** routines (including GEMM) are not implemented yet.
+Level-3 routines (including GEMM) are not implemented yet.
 
 > **Architecture:** Optimized currently for **AArch64**.
 
@@ -15,7 +15,7 @@ Core Level-1 and Level-2 routines are implemented. Some outperform
 
 ## Preliminary benchmarks
 
-Early microbenchmarks (contiguous, unit-stride) suggest competitive performance on AArch64. Below are two example plots from [plots/](benches/plots/):
+Early microbenchmarks (contiguous, unit-stride) suggest competitive performance on AArch64. Below are two example plots from [benches/plots/](benches/plots/):
 
 ### SGEMV (TRANSPOSE)
 ![SGEMV TRANSPOSE](benches/plots/SGEMV%20TRANSPOSE.png)
