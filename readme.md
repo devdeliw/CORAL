@@ -15,7 +15,7 @@ Level-3 routines (including GEMM) are not implemented yet.
 
 ## Preliminary benchmarks
 
-Early microbenchmarks (contiguous, unit-stride) suggest competitive performance on AArch64. Below are two example plots from [benches/plots/](benches/plots/):
+Early microbenchmarks (contiguous, unit-stride) suggest competitive performance on AArch64 up to n~2.5k. Below are two example plots from [benches/plots/](benches/plots/):
 
 ### SGEMV (TRANSPOSE)
 ![SGEMV TRANSPOSE](benches/plots/SGEMV%20TRANSPOSE.png)
