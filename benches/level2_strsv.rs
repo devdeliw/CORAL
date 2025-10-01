@@ -130,7 +130,7 @@ pub fn bench_strsv(c: &mut Criterion) {
 pub fn bench_strsv_n(c: &mut Criterion) {
     let sizes: Vec<usize> = (128..=2048).step_by(128).collect();
 
-    // upper no trans
+    // upper no trans 
     let mut group_u = c.benchmark_group("strsv_upper_notrans");
     for &n in &sizes {
         let lda = n + 8;
@@ -249,8 +249,129 @@ pub fn bench_strsv_n(c: &mut Criterion) {
         });
     }
     group_l.finish();
+
+    // upper trans 
+    let mut group_ut = c.benchmark_group("strsv_upper_trans");
+    for &n in &sizes {
+        let lda = n + 8;
+
+        let matrix_upper = {
+            let mut a = vec![0.0f32; lda * n];
+            for j in 0..n {
+                for i in 0..=j {
+                    a[i + j * lda] = 1.0;
+                }
+            }
+            a
+        };
+
+        let x0 = vec![1.0f32; n];
+
+        group_ut.bench_with_input(BenchmarkId::new("coral", n), &n, |b, &_n| {
+            b.iter_batched_ref(
+                || x0.clone(),
+                |x| {
+                    strsv(
+                        black_box(CoralTriangular::UpperTriangular),
+                        black_box(CoralTranspose::Transpose),
+                        black_box(CoralDiagonal::UnitDiagonal),
+                        black_box(n),
+                        black_box(&matrix_upper),
+                        black_box(lda),
+                        black_box(x.as_mut_slice()),
+                        black_box(1),
+                    );
+                    black_box(&*x);
+                },
+                BatchSize::SmallInput,
+            );
+        });
+
+        group_ut.bench_with_input(BenchmarkId::new("blas", n), &n, |b, &_n| {
+            b.iter_batched_ref(
+                || x0.clone(),
+                |x| unsafe {
+                    cblas_strsv(
+                        black_box(CBLAS_LAYOUT::CblasColMajor),
+                        black_box(CBLAS_UPLO::CblasUpper),
+                        black_box(CBLAS_TRANSPOSE::CblasTrans),
+                        black_box(CBLAS_DIAG::CblasUnit),
+                        black_box(n as i32),
+                        black_box(matrix_upper.as_ptr()),
+                        black_box(lda as i32),
+                        black_box(x.as_mut_ptr()),
+                        black_box(1),
+                    );
+                    black_box(&*x);
+                },
+                BatchSize::SmallInput,
+            );
+        });
+    }
+    group_ut.finish();
+
+    // lower trans 
+    let mut group_lt = c.benchmark_group("strsv_lower_trans");
+    for &n in &sizes {
+        let lda = n + 8;
+
+        let matrix_lower = {
+            let mut a = vec![0.0f32; lda * n];
+            for j in 0..n {
+                for i in j..n {
+                    a[i + j * lda] = 1.0;
+                }
+            }
+            a
+        };
+
+        let x0 = vec![1.0f32; n];
+
+        group_lt.bench_with_input(BenchmarkId::new("coral", n), &n, |b, &_n| {
+            b.iter_batched_ref(
+                || x0.clone(),
+                |x| {
+                    strsv(
+                        black_box(CoralTriangular::LowerTriangular),
+                        black_box(CoralTranspose::Transpose),
+                        black_box(CoralDiagonal::NonUnitDiagonal),
+                        black_box(n),
+                        black_box(&matrix_lower),
+                        black_box(lda),
+                        black_box(x.as_mut_slice()),
+                        black_box(1),
+                    );
+                    black_box(&*x);
+                },
+                BatchSize::SmallInput,
+            );
+        });
+
+        group_lt.bench_with_input(BenchmarkId::new("blas", n), &n, |b, &_n| {
+            b.iter_batched_ref(
+                || x0.clone(),
+                |x| unsafe {
+                    cblas_strsv(
+                        black_box(CBLAS_LAYOUT::CblasColMajor),
+                        black_box(CBLAS_UPLO::CblasLower),
+                        black_box(CBLAS_TRANSPOSE::CblasTrans),
+                        black_box(CBLAS_DIAG::CblasNonUnit),
+                        black_box(n as i32),
+                        black_box(matrix_lower.as_ptr()),
+                        black_box(lda as i32),
+                        black_box(x.as_mut_ptr()),
+                        black_box(1),
+                    );
+                    black_box(&*x);
+                },
+                BatchSize::SmallInput,
+            );
+        });
+    }
+    group_lt.finish();
 }
 
 criterion_group!(benches, bench_strsv, bench_strsv_n);
 criterion_main!(benches);
+
 
