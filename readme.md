@@ -20,10 +20,10 @@ Early microbenchmarks (contiguous, unit-stride) suggest competitive performance 
 Below are two example plots from [benches/plots/](benches/plots/). 
 
 ### SGEMV (TRANSPOSE)
-![SGEMV TRANSPOSE](benches/plots/SGEMV%20TRANSPOSE.png)
+![SGEMV TRANSPOSE](benches/plots/SGEMV\ TRANSPOSE.png)
 
 ### STRSV (UPPER, NOTRANSPOSE)
-![STRSV UPPER NOTRANSPOSE](benches/plots/STRSV%20UPPER%20NOTRANSPOSE.png)
+![STRSV UPPER NOTRANSPOSE](benches/plots/STRSV\ UPPER\ NOTRANSPOSE.png)
 
 Apple Accelerate is outrageously fast for GEMV and TRMV routines (on Apple Silicon). It is not included in
 the above SGEMV plot because it is an order-of-magnitude faster, reaching ~400 GFLOP/s and masks my improvement over OpenBLAS. 
