@@ -1,202 +1,166 @@
-pub const MR: usize = 6;  
-pub const NR: usize = 8;
+pub const MR: usize = 6;
+pub const NR: usize = 8; // locked; don't change 
 
 #[inline(always)]
-const fn round_up(
-    x: usize, 
-    b: usize
-) -> usize { 
-    (x + b - 1) / b * b 
+const fn round_up(x: usize, b: usize) -> usize {
+    (x + b - 1) / b * b
 }
-
-#[inline(always)]
-fn idx(
-    base_row    : usize, 
-    base_col    : usize, 
-    r           : usize,
-    c           : usize, 
-    row_stride  : usize, 
-    col_stride  : usize
-) -> usize {
-    (base_row + r) * row_stride + (base_col + c) * col_stride
-}
-
 
 // A side 
 
-/// Packs one `MR x k` micro-panel from A without padding. 
+/// Pack one `MR x k` micro-panel from A; no padding.
+/// A_base points to A[base_row + base_col*lda].
 #[inline(always)]
-pub fn pack_mrxk_a(
-    k: usize,
-    a: &[f64],
-    row_stride : usize,
-    col_stride : usize,
-    base_row   : usize,
-    base_col   : usize,
-    dst: &mut [f64],        
+pub fn pack_a_mrxk(
+    k       : usize,
+    a_base  : *const f64, // &A[base_row + base_col*lda]
+    lda     : usize,
+    dst     : *mut f64,      
 ) {
-    debug_assert!(dst.len() >= MR * k);
-
-    let mut d = 0;
-    for j in 0..k {
-        if row_stride == 1 {
-            let off = idx(base_row, base_col, 0, j, row_stride, col_stride);
-
-            unsafe {
-                let src = core::slice::from_raw_parts(a.as_ptr().add(off), MR);
-                core::ptr::copy_nonoverlapping(src.as_ptr(), dst.as_mut_ptr().add(d), MR);
-            }
-        } else {
-            for i in 0..MR {
-                let off = idx(base_row, base_col, i, j, row_stride, col_stride);
-
-                unsafe { 
-                    *dst.get_unchecked_mut(d + i) = *a.get_unchecked(off); 
-                }
-            }
-        }
-        d += MR;
-    }
-}
-
-/// Pack an `mc, kc` block of A, padding tail rows up to MR. 
-#[inline(always)]
-pub fn pack_a(
-    mc : usize,
-    kc : usize,
-    a  : &[f64],
-    row_stride : usize,
-    col_stride : usize,
-    base_row : usize,
-    base_col : usize,
-    dst: &mut [f64],
-) {
-    let need = round_up(mc, MR) * kc;
-    debug_assert!(dst.len() >= need);
-
-    let mp = mc / MR;
-    let mr_tail = mc % MR;
-
-    // full MR blocks
-    let mut d_off = 0;
-    for blk in 0..mp {
-        let br = base_row + blk * MR;
-
-        pack_mrxk_a(
-            kc,
-            a, 
-            row_stride,
-            col_stride,
-            br, 
-            base_col, 
-            &mut dst[d_off .. d_off + MR * kc]
-        );
-
-        d_off += MR * kc;
-    }
-
-    // tail rows; pad to MR
-    if mr_tail > 0 {
-        for j in 0..kc {
-            // copy mr_tail rows
-            for i in 0..mr_tail {
-                let off = idx(base_row, base_col, mp*MR + i, j, row_stride, col_stride);
-                unsafe { *dst.get_unchecked_mut(d_off + j*MR + i) = *a.get_unchecked(off); }
-            }
-
-            // zero-pad remaining
-            for i in mr_tail..MR {
-                unsafe { *dst.get_unchecked_mut(d_off + j*MR + i) = 0.0; }
-            }
+    unsafe { 
+        let mut ap = a_base;
+        let mut dp = dst;
+        for _ in 0..k {
+            core::ptr::copy_nonoverlapping(ap, dp, MR);
+            ap = ap.add(lda);
+            dp = dp.add(MR);
         }
     }
 }
 
-// B side
-
-/// Pack one `k x NR` panel from B without padding. 
+/// tail; 
+/// pack `mr_tail x k` and zero-pad to `MR` per `k`-step.
 #[inline(always)]
-pub fn pack_kxnr_b(
-    k : usize,
-    b : &[f64],
-    row_stride : usize,
-    col_stride : usize,
-    base_row   : usize,
-    base_col   : usize,
-    dst: &mut [f64],         
+pub fn pack_a_mrxk_tail(
+    k       : usize,
+    a_base  : *const f64,
+    lda     : usize,
+    mr_tail : usize,    // 1..MR-1
+    dst     : *mut f64, // len >= MR*k
 ) {
-    debug_assert!(dst.len() >= k * NR);
+    unsafe { 
+        let mut ap = a_base;
+        let mut dp = dst;
+        for _ in 0..k {
+            core::ptr::copy_nonoverlapping(ap, dp, mr_tail);
 
-    let mut d = 0;
-    for i in 0..k {
-        if col_stride == 1 {
-            let off = idx(base_row, base_col, i, 0, row_stride, col_stride);
-
-            unsafe {
-                let src = core::slice::from_raw_parts(b.as_ptr().add(off), NR);
-                core::ptr::copy_nonoverlapping(src.as_ptr(), dst.as_mut_ptr().add(d), NR);
-            }
-        } else {
-            for j in 0..NR {
-                let off = idx(base_row, base_col, i, j, row_stride, col_stride);
-
-                unsafe { *dst.get_unchecked_mut(d + j) = *b.get_unchecked(off); }
-            }
+            // zero pad 
+            core::ptr::write_bytes(dp.add(mr_tail), 0, MR - mr_tail); 
+            ap = ap.add(lda);
+            dp = dp.add(MR);
         }
-        d += NR;
     }
 }
 
-/// Pack a `kc x nc` block of B; padding tail cols up to NR
+/// Pack an `mc x kc` A-block; pads the last partial MR.
 #[inline(always)]
-pub fn pack_b(
-    kc  : usize,
-    nc  : usize,
-    b   : &[f64],
-    row_stride : usize,
-    col_stride : usize,
-    base_row   : usize,
-    base_col   : usize,
-    dst: &mut [f64],
+pub fn pack_a_block(
+    mc          : usize,
+    kc          : usize,
+    a_block_base: *const f64, // &A[base_row + base_col*lda]
+    lda         : usize,
+    dst         : *mut f64,          
 ) {
-    let need = kc * round_up(nc, NR);
-    debug_assert!(dst.len() >= need);
+    unsafe { 
+        let mp = mc / MR;
+        let mr_tail = mc % MR;
 
-    let np = nc / NR;
-    let nr_tail = nc % NR;
+        let mut dp = dst;
+        let mut abp = a_block_base;
 
-    // full NR blocks
-    let mut d_off = 0;
-    for blk in 0..np {
-        let bc = base_col + blk * NR;
+        // full MR
+        for _ in 0..mp {
+            pack_a_mrxk(kc, abp, lda, dp);
+            dp  = dp.add(MR * kc);
+            abp = abp.add(MR); 
+        }
 
-        pack_kxnr_b(
-            kc, 
-            b,
-            row_stride,
-            col_stride, 
-            base_row, bc,
-            &mut dst[d_off .. d_off + kc * NR]
-        );
+        // tail MR
+        if mr_tail != 0 {
+            pack_a_mrxk_tail(kc, abp, lda, mr_tail, dp);
+        }
+    } 
+}
 
-        d_off += kc * NR;
+// B side 
+
+/// Pack one `k x NR` micro-panel from B; no padding.
+/// B_base points to B[base_row + base_col*ldb].
+#[inline(always)]
+pub fn pack_b_kxnr(
+    k:       usize,
+    b_base  : *const f64,    // &B[base_row + base_col*ldb]
+    ldb     : usize,
+    dst     : *mut f64,      // len >= k*NR
+) {
+    unsafe { 
+        let mut dp = dst;
+        for i in 0..k {
+            let rp = b_base.add(i);
+            *dp.add(0) = *rp.add(0 * ldb);
+            *dp.add(1) = *rp.add(1 * ldb);
+            *dp.add(2) = *rp.add(2 * ldb);
+            *dp.add(3) = *rp.add(3 * ldb);
+            *dp.add(4) = *rp.add(4 * ldb);
+            *dp.add(5) = *rp.add(5 * ldb);
+            *dp.add(6) = *rp.add(6 * ldb);
+            *dp.add(7) = *rp.add(7 * ldb);
+            dp = dp.add(NR);
+        }
     }
+}
 
-    // tail cols; pad to NR
-    if nr_tail > 0 {
-        for i in 0..kc {
-            // copy tail
+/// tail; 
+/// pack `k x nr_tail` and zero-pad to NR per k-step. 
+#[inline(always)]
+pub fn pack_b_kxnr_tail(
+    k       : usize,
+    b_base  : *const f64,
+    ldb     : usize,
+    nr_tail : usize,     // 1..NR-1
+    dst     : *mut f64,  // len >= k*NR
+) {
+    unsafe { 
+        let mut dp = dst;
+        for i in 0..k {
+            let rp = b_base.add(i);
             for j in 0..nr_tail {
-                let off = idx(base_row, base_col, i, np*NR + j, row_stride, col_stride);
-                unsafe { *dst.get_unchecked_mut(d_off + j) = *b.get_unchecked(off); }
+                *dp.add(j) = *rp.add(j * ldb);
             }
 
-            // zero-pad remaining
-            for j in nr_tail..NR {
-                unsafe { *dst.get_unchecked_mut(d_off + j) = 0.0; }
-            }
+            // zero pad
+            core::ptr::write_bytes(dp.add(nr_tail), 0, NR - nr_tail);
+            dp = dp.add(NR);
+        }
+    }
+}
 
-            d_off += NR;
+/// Pack a `kc x nc` B-block; pads the last partial NR.
+#[inline(always)]
+pub fn pack_b_block(
+    kc           : usize, 
+    nc           : usize,
+    b_block_base : *const f64, // &B[base_row + base_col*ldb]
+    ldb          : usize,
+    dst          : *mut f64,            
+) {
+    unsafe { 
+        let np = nc / NR;
+        let nr_tail = nc % NR;
+
+        let mut dp  = dst;
+        let mut bbp = b_block_base;
+
+        // full NR 
+        for _ in 0..np {
+            pack_b_kxnr(kc, bbp, ldb, dp);
+            dp  = dp.add(kc * NR);
+            bbp = bbp.add(NR * ldb); 
+        }
+
+        // tail NR
+        if nr_tail != 0 {
+            pack_b_kxnr_tail(kc, bbp, ldb, nr_tail, dp);
         }
     }
 }
