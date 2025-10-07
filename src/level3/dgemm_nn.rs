@@ -1,12 +1,11 @@
-use crate::level3::packers::{
-    a_buf_len, b_buf_len, 
-    pack_a_block, pack_b_block, 
+use crate::level3::{ 
+    dgemm::{MC, NC, KC}, 
+    macro_kernel::macro_kernel, 
+    packers::{
+        a_buf_len, b_buf_len, 
+        pack_a_block, pack_b_block,
+    }, 
 }; 
-use crate::level3::macro_kernel::macro_kernel; 
-
-pub const MC: usize = 258;
-pub const NC: usize = 384;
-pub const KC: usize = 256;
 
 pub fn dgemm_nn( 
     m     : usize, 
@@ -21,7 +20,11 @@ pub fn dgemm_nn(
     c     : *mut f64, 
     ldc   : usize, 
 ) {
-    debug_assert!(ldc >= m && lda >= m && ldb >= k, "matrix dimension's don't satisfy lda/b/c");
+    debug_assert!(
+        ldc >= m && lda >= m && ldb >= k, 
+        "matrix dimension's don't satisfy lda/b/c"
+    );
+
     unsafe { 
         if alpha == 0.0 || k == 0 { 
             // scale C by beta 
@@ -54,7 +57,7 @@ pub fn dgemm_nn(
             while l0 < k { 
                 let kcblk = core::cmp::min(KC, k - l0); 
 
-                // pack B(kcblk x nc) starting at (l0, j0) 
+                // pack B (kcblk x nc) starting at (l0, j0) 
                 { 
                     let b_block_base = b.add(l0 + j0 * ldb); 
                     pack_b_block(kcblk, nc, b_block_base, ldb, b_buf.as_mut_ptr());
@@ -66,7 +69,7 @@ pub fn dgemm_nn(
                 while i0 < m { 
                     let mc = core::cmp::min(MC, m - i0); 
 
-                    // pack A(mc x kcblk) at (i0, l0) 
+                    // pack A (mc x kcblk) at (i0, l0) 
                     { 
                         let a_block_base = a.add(i0 + l0 * lda); 
                         pack_a_block(mc, kcblk, a_block_base, lda, a_buf.as_mut_ptr());

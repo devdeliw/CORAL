@@ -130,7 +130,7 @@ fn assert_allclose(
 
         assert!(
             diff <= tol,
-            "mismatch at {i}: {x} vs {y} (|Δ|={diff}, tol={tol})"
+            "mismatch at {i}: {x} vs {y} (delta={diff}, tol={tol})"
         );
     }
 }

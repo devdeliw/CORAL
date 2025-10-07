@@ -22,6 +22,7 @@ mod iamax_tests;
 // level 2 
 //
 // single precision 
+//
 #[path = "level2/sgemv_tests.rs"]
 mod sgemv_tests;
 #[path = "level2/strmv_tests.rs"] 
@@ -38,6 +39,7 @@ mod ssyr_tests;
 mod ssyr2_tests;
 //
 // double precision
+//
 #[path = "level2/dgemv_tests.rs"] 
 mod dgemv_tests; 
 #[path = "level2/dtrmv_tests.rs"] 
@@ -52,7 +54,6 @@ mod dsymv_tests;
 mod dsyr_tests; 
 #[path = "level2/dsyr2_tests.rs"] 
 mod dsyr2_tests;
-// 
 // complex single precision 
 #[path = "level2/cgemv_tests.rs"]
 mod cgemv_tests;
@@ -67,9 +68,10 @@ mod cher2_tests;
 #[path = "level2/ctrmv_tests.rs"] 
 mod ctrmv_tests;
 #[path = "level2/ctrsv_tests.rs"] 
-mod ctrsv_tests; 
+mod ctrsv_tests;
 //
 // complex double precision 
+// 
 #[path = "level2/zgemv_tests.rs"] 
 mod zgemv_tests; 
 #[path = "level2/zger_tests.rs" ] 
@@ -86,3 +88,9 @@ mod ztrmv_tests;
 mod ztrsv_tests; 
 
 
+// level 3 
+//
+// double precision 
+//
+#[path = "level3/dgemm_tests.rs"] 
+mod dgemm_tests;
