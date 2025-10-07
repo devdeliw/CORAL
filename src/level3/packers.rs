@@ -1,9 +1,19 @@
-pub const MR: usize = 6;
-pub const NR: usize = 8; // locked; don't change 
+pub const MR: usize = 6; // fixed; don't change
+pub const NR: usize = 8; // fixed; don't change 
 
 #[inline(always)]
 const fn round_up(x: usize, b: usize) -> usize {
     (x + b - 1) / b * b
+}
+
+#[inline(always)] 
+pub(crate) fn a_buf_len(mc: usize, kc: usize) -> usize { 
+    round_up(mc, MR) * kc 
+}
+
+#[inline(always)] 
+pub(crate) fn b_buf_len(kc: usize, nc: usize) -> usize { 
+    kc * round_up(nc, NR) 
 }
 
 // A side 
