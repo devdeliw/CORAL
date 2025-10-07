@@ -2,8 +2,7 @@
 
 **COre** **R**ust **A**rchitecture for **L**inear-algebra — *pure Rust BLAS*
 
-This is a work-in-progress project aiming to reach *~70–80%* of BLAS performance
-while remaining 100% Rust.
+This is a project aiming to be comparable to BLAS performance while remaining 100% Rust.
 
 Core Level-1 and Level-2 routines are implemented. Some outperform
 [OpenBLAS](https://github.com/OpenMathLib/OpenBLAS) and 
@@ -18,7 +17,7 @@ Level-3 routines are being written.
 
 ## Preliminary benchmarks
 
-Early microbenchmarks (contiguous, unit-stride) suggest competitive performance up to 
+Early microbenchmarks (contiguous) suggest competitive performance up to 
 $n \simeq 2.5 \times 10^3$.  Below are two example plots from [benches/plots/](benches/plots/). 
 
 ### DGEMM (NO TRANSPOSE X NO TRANSPOSE) 
