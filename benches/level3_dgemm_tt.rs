@@ -16,29 +16,29 @@ fn make_matrix_colmajor(m: usize, n: usize, ld: usize, fill: f64) -> Vec<f64> {
     a
 }
 
-pub fn bench_dgemm_nn_fixed_1024(c: &mut Criterion) {
+pub fn bench_dgemm_tt_fixed_1024(c: &mut Criterion) {
     let n: usize = 1024;
     let (m, k) = (n, n);
 
-    let lda = m;
-    let ldb = k;
+    let lda = k;
+    let ldb = n;
     let ldc = m;
 
     let alpha: f64 = 1.000123;
     let beta:  f64 = 0.000321;
 
-    let a  = make_matrix_colmajor(m, k, lda, 1.0);
-    let b  = make_matrix_colmajor(k, n, ldb, 1.0);
+    let a  = make_matrix_colmajor(k, m, lda, 1.0);
+    let b  = make_matrix_colmajor(n, k, ldb, 1.0);
     let c0 = make_matrix_colmajor(m, n, ldc, 2.0);
 
     // coral
-    c.bench_function("coral_dgemm_nn", |bch| {
+    c.bench_function("coral_dgemm_tt", |bch| {
         bch.iter_batched_ref(
             || c0.clone(),
             |c_buf| {
                 dgemm(
-                    CoralTranspose::NoTranspose,
-                    CoralTranspose::NoTranspose,
+                    CoralTranspose::Transpose,
+                    CoralTranspose::Transpose,
                     black_box(m),
                     black_box(n),
                     black_box(k),
@@ -56,14 +56,14 @@ pub fn bench_dgemm_nn_fixed_1024(c: &mut Criterion) {
         );
     });
 
-    c.bench_function("blas_dgemm_nn", |bch| {
+    c.bench_function("blas_dgemm_tt", |bch| {
         bch.iter_batched_ref(
             || c0.clone(),
             |c_buf| unsafe {
                 cblas_dgemm(
                     black_box(CBLAS_LAYOUT::CblasColMajor),
-                    black_box(CBLAS_TRANSPOSE::CblasNoTrans),
-                    black_box(CBLAS_TRANSPOSE::CblasNoTrans),
+                    black_box(CBLAS_TRANSPOSE::CblasTrans),
+                    black_box(CBLAS_TRANSPOSE::CblasTrans),
                     black_box(m as i32),
                     black_box(n as i32),
                     black_box(k as i32),
@@ -82,22 +82,22 @@ pub fn bench_dgemm_nn_fixed_1024(c: &mut Criterion) {
     });
 }
 
-pub fn bench_dgemm_nn_sweep(c: &mut Criterion) {
+pub fn bench_dgemm_tt_sweep(c: &mut Criterion) {
     let sizes: Vec<usize> = (128..=2048).step_by(128).collect();
 
-    let mut group = c.benchmark_group("dgemm_nn");
+    let mut group = c.benchmark_group("dgemm_tt");
 
     for &n in &sizes {
         let (m, k) = (n, n);
-        let lda = m;
-        let ldb = k;
+        let lda = k;
+        let ldb = n;
         let ldc = m;
 
         let alpha: f64 = 1.000123;
         let beta:  f64 = 0.000321;
 
-        let a  = make_matrix_colmajor(m, k, lda, 1.0);
-        let b  = make_matrix_colmajor(k, n, ldb, 1.0);
+        let a  = make_matrix_colmajor(k, m, lda, 1.0);
+        let b  = make_matrix_colmajor(n, k, ldb, 1.0);
         let c0 = make_matrix_colmajor(m, n, ldc, 2.0);
 
         // coral
@@ -106,8 +106,8 @@ pub fn bench_dgemm_nn_sweep(c: &mut Criterion) {
                 || c0.clone(),
                 |c_buf| {
                     dgemm(
-                        CoralTranspose::NoTranspose,
-                        CoralTranspose::NoTranspose,
+                        CoralTranspose::Transpose,
+                        CoralTranspose::Transpose,
                         black_box(m),
                         black_box(n),
                         black_box(k),
@@ -132,8 +132,8 @@ pub fn bench_dgemm_nn_sweep(c: &mut Criterion) {
                 |c_buf| unsafe {
                     cblas_dgemm(
                         black_box(CBLAS_LAYOUT::CblasColMajor),
-                        black_box(CBLAS_TRANSPOSE::CblasNoTrans),
-                        black_box(CBLAS_TRANSPOSE::CblasNoTrans),
+                        black_box(CBLAS_TRANSPOSE::CblasTrans),
+                        black_box(CBLAS_TRANSPOSE::CblasTrans),
                         black_box(m as i32),
                         black_box(n as i32),
                         black_box(k as i32),
@@ -155,6 +155,6 @@ pub fn bench_dgemm_nn_sweep(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_dgemm_nn_fixed_1024, bench_dgemm_nn_sweep);
+criterion_group!(benches, bench_dgemm_tt_fixed_1024, bench_dgemm_tt_sweep);
 criterion_main!(benches);
 
