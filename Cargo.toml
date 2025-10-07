@@ -10,11 +10,38 @@ blas-src  = { version = "0.12", default-features = false }
 [features] 
 accelerate = ["blas-src/accelerate"] 
 openblas   = ["blas-src/openblas"] 
-default    = ["openblas"] 
 
 [dev-dependencies]
-criterion = "0.5"       
+criterion = "0.5"      
 
+## level 1 
+[[bench]] 
+name    = "level1_asum"
+harness = false 
+[[bench]] 
+name    = "level1_axpy" 
+harness = false
+[[bench]] 
+name    = "level1_scal" 
+harness = false 
+[[bench]] 
+name    = "level1_swap" 
+harness = false 
+[[bench]] 
+name    = "level1_copy" 
+harness = false
+[[bench]] 
+name    = "level1_nrm2" 
+harness = false
+[[bench]] 
+name    = "level1_iamax"
+harness = false
+[[bench]] 
+name    = "level1_dot" 
+harness = false 
+
+## level 2 
+# single precision 
 [[bench]] 
 name    = "level2_sgemv" 
 harness = false 
@@ -27,3 +54,33 @@ harness = false
 [[bench]]
 name    = "level2_sger" 
 harness = false
+[[bench]] 
+name    = "level2_ssyr" 
+harness = false 
+[[bench]] 
+name    = "level2_ssyr2"
+harness = false
+[[bench]] 
+name    = "level2_ssymv"
+harness = false 
+
+# double precision 
+[[bench]] 
+name    = "level2_dgemv" 
+harness = false
+
+# single complex precision 
+[[bench]] 
+name    = "level2_cgemv" 
+harness = false 
+
+# double complex precision 
+[[bench]]
+name    = "level2_zgemv"
+harness = false
+
+## level 3 
+# double precision 
+[[bench]] 
+name    = "level3_dgemm_nn" 
+harness = false 

@@ -4,7 +4,11 @@ use crate::level3::packers::{
 }; 
 use crate::level3::macro_kernel::macro_kernel; 
 
-pub(crate) fn dgemm_notranspose( 
+pub const MC: usize = 258;
+pub const NC: usize = 384;
+pub const KC: usize = 256;
+
+pub fn dgemm_nn( 
     m     : usize, 
     n     : usize, 
     k     : usize, 
@@ -16,7 +20,8 @@ pub(crate) fn dgemm_notranspose(
     beta  : f64, 
     c     : *mut f64, 
     ldc   : usize, 
-) { 
+) {
+    debug_assert!(ldc >= m && lda >= m && ldb >= k, "matrix dimension's don't satisfy lda/b/c");
     unsafe { 
         if alpha == 0.0 || k == 0 { 
             // scale C by beta 
@@ -38,8 +43,8 @@ pub(crate) fn dgemm_notranspose(
             return;
         }
 
-        let mut a_buf = vec![0.0; a_buf_len(MC, KC).max(a_buf_len(m, KC))]; 
-        let mut b_buf = vec![0.0; b_buf_len(KC, NC).max(b_buf_len(KC, n))]; 
+        let mut a_buf = vec![0.0; a_buf_len(MC, KC)]; 
+        let mut b_buf = vec![0.0; b_buf_len(KC, NC)]; 
 
         let mut j0 = 0; 
         while j0 < n { 
@@ -51,7 +56,7 @@ pub(crate) fn dgemm_notranspose(
 
                 // pack B(kcblk x nc) starting at (l0, j0) 
                 { 
-                    let b_block_base = b.add(l0 * j0 * ldb); 
+                    let b_block_base = b.add(l0 + j0 * ldb); 
                     pack_b_block(kcblk, nc, b_block_base, ldb, b_buf.as_mut_ptr());
                 }
 
@@ -63,7 +68,7 @@ pub(crate) fn dgemm_notranspose(
 
                     // pack A(mc x kcblk) at (i0, l0) 
                     { 
-                        let a_block_base = a.add(i0 * l0 * lda); 
+                        let a_block_base = a.add(i0 + l0 * lda); 
                         pack_a_block(mc, kcblk, a_block_base, lda, a_buf.as_mut_ptr());
                     }
 
@@ -81,13 +86,13 @@ pub(crate) fn dgemm_notranspose(
                         ldc
                     ); 
 
-                    i0 += MC; 
+                    i0 += mc; 
                 }
 
-                l0 += KC; 
+                l0 += kcblk; 
             }
 
-            j0 += NC; 
+            j0 += nc; 
         }
 
     }

@@ -4,7 +4,7 @@
 //!     y := alpha * A * x + beta * y
 //! ```
 //!
-//! where `A` is an `n_rows` x `n_cols` column-major matrix of **interleaved complex** `[re, im, ...]`,
+//! where `A` is an `n_rows` x `n_cols` interleaved column-major matrix,  `[re, im, ...]`,
 //! `x` is a complex vector of length `n_cols`, and `y` is a complex vector of length `n_rows`.  
 //!
 //! This function implements the BLAS [`crate::level2::cgemv`] routine for the
