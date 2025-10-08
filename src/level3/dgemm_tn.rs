@@ -1,13 +1,13 @@
 use crate::level3::{ 
     dgemm::{MC, NC, KC}, 
-    macro_kernel::macro_kernel, 
-    packers::{
-        a_buf_len, b_buf_len,
-        pack_a_block_t, pack_b_block,
+    f64_macro_kernel::macro_kernel, 
+    f64_packers::{
+        pack_a_block_t, pack_b_block, 
+        a_buf_len, b_buf_len, 
     },
 };
 
-pub fn dgemm_tn(
+pub(crate) fn dgemm_tn(
     m     : usize,
     n     : usize,
     k     : usize,

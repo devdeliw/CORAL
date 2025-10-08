@@ -90,6 +90,10 @@ mod ztrsv_tests;
 
 // level 3 
 //
+// single precision 
+#[path = "level3/sgemm_tests.rs"] 
+mod sgemm_tests;
+//
 // double precision 
 //
 #[path = "level3/dgemm_tests.rs"] 

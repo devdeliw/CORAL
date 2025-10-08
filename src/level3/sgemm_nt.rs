@@ -1,27 +1,27 @@
-use crate::level3::{ 
-    dgemm::{MC, NC, KC}, 
-    f64_macro_kernel::macro_kernel,
-    f64_packers::{
-        pack_a_block_t, pack_b_block_t, 
-        a_buf_len, b_buf_len, 
+use crate::level3::{
+    sgemm::{MC, NC, KC},
+    f32_macro_kernel::macro_kernel,
+    f32_packers::{
+        pack_a_block, pack_b_block_t, 
+        a_buf_len, b_buf_len
     },
 };
 
-pub(crate) fn dgemm_tt(
+pub(crate) fn sgemm_nt(
     m     : usize,
     n     : usize,
     k     : usize,
-    alpha : f64,
-    a     : *const f64,
+    alpha : f32,
+    a     : *const f32,
     lda   : usize,
-    b     : *const f64,
+    b     : *const f32,
     ldb   : usize,
-    beta  : f64,
-    c     : *mut f64,
+    beta  : f32,
+    c     : *mut f32,
     ldc   : usize,
 ) {
     debug_assert!(
-        ldc >= m && lda >= k && ldb >= n, 
+        ldc >= m && lda >= m && ldb >= n,
         "matrix dimensions don't satisfy lda/ldb/ldc"
     );
 
@@ -36,7 +36,6 @@ pub(crate) fn dgemm_tt(
             } else if beta != 1.0 {
                 for j in 0..n {
                     let col = c.add(j * ldc);
-
                     for i in 0..m {
                         *col.add(i) *= beta;
                     }
@@ -68,10 +67,10 @@ pub(crate) fn dgemm_tt(
                 while i0 < m {
                     let mc = core::cmp::min(MC, m - i0);
 
-                    // pack A^T (mc x kcblk) at (i0, l0)
+                    // pack A (mc x kcblk) starting at (i0, l0)
                     {
-                        let a_block_base = a.add(l0 + i0 * lda);
-                        pack_a_block_t(mc, kcblk, a_block_base, lda, a_buf.as_mut_ptr());
+                        let a_block_base = a.add(i0 + l0 * lda);
+                        pack_a_block(mc, kcblk, a_block_base, lda, a_buf.as_mut_ptr());
                     }
 
                     let c_base = c.add(i0 + j0 * ldc);
@@ -98,3 +97,4 @@ pub(crate) fn dgemm_tt(
         }
     }
 }
+

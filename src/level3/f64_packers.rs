@@ -288,6 +288,7 @@ pub(crate) fn pack_b_block(
         // full NR 
         for _ in 0..np {
             pack_b_kxnr(kc, bbp, ldb, dp);
+
             dp  = dp.add(kc * NR);
             bbp = bbp.add(NR * ldb); 
         }

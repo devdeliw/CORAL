@@ -16,7 +16,7 @@ fn make_matrix_colmajor(m: usize, n: usize, ld: usize, fill: f64) -> Vec<f64> {
     a
 }
 
-pub fn bench_dgemm_tt_fixed_1024(c: &mut Criterion) {
+pub fn bench_dgemm_tt_fixed(c: &mut Criterion) {
     let n: usize = 1024;
     let (m, k) = (n, n);
 
@@ -155,6 +155,6 @@ pub fn bench_dgemm_tt_sweep(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_dgemm_tt_fixed_1024, bench_dgemm_tt_sweep);
+criterion_group!(benches, bench_dgemm_tt_fixed, bench_dgemm_tt_sweep);
 criterion_main!(benches);
 

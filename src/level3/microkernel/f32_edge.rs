@@ -1,16 +1,16 @@
-use crate::level3::f64_packers::{MR, NR}; 
+use crate::level3::f32_packers::{MR, NR}; 
 
 #[inline(always)] 
-pub(crate) fn f64_edge( 
+pub(crate) fn f32_edge( 
     mr    : usize, 
     nr    : usize, 
     kc    : usize, 
-    a     : *const f64, 
-    b     : *const f64, 
-    c     : *mut f64, 
+    a     : *const f32, 
+    b     : *const f32, 
+    c     : *mut f32, 
     ldc   : usize, 
-    alpha : f64, 
-    beta  : f64, 
+    alpha : f32, 
+    beta  : f32, 
 ) { 
     unsafe { 
         let mut acc = [[0.0; NR]; MR]; 
@@ -59,3 +59,4 @@ pub(crate) fn f64_edge(
 
     }       
 }
+

@@ -1,27 +1,27 @@
-use crate::level3::{ 
-    dgemm::{MC, NC, KC}, 
-    f64_macro_kernel::macro_kernel,
-    f64_packers::{
-        pack_a_block_t, pack_b_block_t, 
-        a_buf_len, b_buf_len, 
+use crate::level3::{
+    sgemm::{MC, NC, KC},
+    f32_macro_kernel::macro_kernel,
+    f32_packers::{
+        pack_a_block_t, pack_b_block_t,
+        a_buf_len, b_buf_len
     },
 };
 
-pub(crate) fn dgemm_tt(
-    m     : usize,
-    n     : usize,
-    k     : usize,
-    alpha : f64,
-    a     : *const f64,
-    lda   : usize,
-    b     : *const f64,
-    ldb   : usize,
-    beta  : f64,
-    c     : *mut f64,
-    ldc   : usize,
+pub(crate) fn sgemm_tt(
+    m: usize,
+    n: usize,
+    k: usize,
+    alpha: f32,
+    a: *const f32,
+    lda: usize,
+    b: *const f32,
+    ldb: usize,
+    beta: f32,
+    c: *mut f32,
+    ldc: usize,
 ) {
     debug_assert!(
-        ldc >= m && lda >= k && ldb >= n, 
+        ldc >= m && lda >= k && ldb >= n,
         "matrix dimensions don't satisfy lda/ldb/ldc"
     );
 
@@ -45,8 +45,8 @@ pub(crate) fn dgemm_tt(
             return;
         }
 
-        let mut a_buf = vec![0.0; a_buf_len(MC, KC)];
-        let mut b_buf = vec![0.0; b_buf_len(KC, NC)];
+        let mut a_buf = vec![0.0f32; a_buf_len(MC, KC)];
+        let mut b_buf = vec![0.0f32; b_buf_len(KC, NC)];
 
         let mut j0 = 0;
         while j0 < n {
@@ -98,3 +98,4 @@ pub(crate) fn dgemm_tt(
         }
     }
 }
+

@@ -18,24 +18,21 @@ Level-3 routines are being written.
 ## Preliminary benchmarks
 
 Early microbenchmarks (contiguous) suggest competitive performance up to 
-$n \simeq 2.5 \times 10^3$.  Below are two example plots from [benches/plots/](benches/plots/). 
+$n \simeq 2.5 \times 10^3$.  Below are example `GEMM` benchmarks from 
+[benches/plots/](benches/plots/). 
 
-### DGEMM (NO TRANSPOSE X NO TRANSPOSE) 
-![DGEMM NN](benches/plots/DGEMM%20NOTRANSPOSE%20x%20NOTRANSPOSE.png)
+### DGEMM 
+![DGEMM NN](benches/plots/DGEMM_NOTRANSPOSE_x_NOTRANSPOSE.png)
 
-### SGEMV (TRANSPOSE)
-![SGEMV TRANSPOSE](benches/plots/SGEMV%20TRANSPOSE.png)
+### SGEMM 
+![SGEMM NN](benches/plots/SGEMM_NOTRANSPOSE_x_NOTRANSPOSE.png)
 
-Apple Accelerate uses Apple-specific magic (AMX/matrix units) beyond
-NEON intrinsics. It's not included in the above plots because it's an 
-order-of-magnitude faster, reaching ~400GFLOP/s and masks any comparison between
-CORAL and OpenBLAS. 
+Hence, for `?GEMM` my implementations on AArch64 are well-comparable.
+Additionally, for many critical Level 2 routines, notably `SGEMV/STRMV` (transpose) 
+and `STRSV` (no transpose), my implementations do perform better than OpenBLAS, 
+but are *extremely* slower than Apple Accelerate. These benchmarks are also in 
+[benches/plots](benches/plots/). 
 
-### STRSV (UPPER, NOTRANSPOSE)
-![STRSV UPPER NOTRANSPOSE](benches/plots/STRSV%20UPPER%20NOTRANSPOSE.png)
-
-However, for triangular solves my implementations exceed both Accelerate and OpenBLAS
-(for $n \leq 2.5 \times 10^3$).
 
 *These results are preliminary and subject to change as kernels and packing strategies evolve.*
 

@@ -1,4 +1,4 @@
-use crate::level3::packers::{MR, NR}; 
+use crate::level3::f64_packers::{MR, NR}; 
 use core::arch::aarch64::{ 
     vld1q_f64, 
     vst1q_f64, 
@@ -269,8 +269,8 @@ pub(crate) fn f64_mrxnr_betax(
         }
 
         // general beta: C := beta*C + alpha*acc
-            for j in 0..NR {
-                let colp = c.add(j * ldc);
+        for j in 0..NR {
+            let colp = c.add(j * ldc);
             let (mut c01, mut c23, mut c45) = load_col6(colp);
 
             // cXY *= beta

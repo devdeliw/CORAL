@@ -1,7 +1,11 @@
-use crate::level3::packers::{MR, NR}; 
+use crate::level3::f64_packers::{MR, NR}; 
 use crate::level3::microkernel::{
     f64_edge::f64_edge, 
-    f64_mrxnr::{f64_mrxnr_beta0, f64_mrxnr_beta1, f64_mrxnr_betax}, 
+    f64_mrxnr::{
+        f64_mrxnr_beta0, 
+        f64_mrxnr_beta1, 
+        f64_mrxnr_betax
+    }, 
 };
 
 #[inline(always)] 

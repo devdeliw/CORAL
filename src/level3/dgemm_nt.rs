@@ -1,14 +1,14 @@
 use crate::level3::{
     dgemm::{MC, NC, KC}, 
-    macro_kernel::macro_kernel, 
-    packers::{
-        a_buf_len, b_buf_len,
-        pack_a_block, pack_b_block_t,
-    },
+    f64_macro_kernel::macro_kernel, 
+    f64_packers::{
+        pack_a_block, pack_b_block_t, 
+        a_buf_len, b_buf_len
+    }, 
 };
 
 
-pub fn dgemm_nt(
+pub(crate) fn dgemm_nt(
     m     : usize,
     n     : usize,
     k     : usize,
@@ -21,7 +21,11 @@ pub fn dgemm_nt(
     c     : *mut f64,
     ldc   : usize,
 ) {
-    debug_assert!(ldc >= m && lda >= m && ldb >= n, "matrix dimensions don't satisfy lda/ldb/ldc");
+    debug_assert!(
+        ldc >= m && lda >= m && ldb >= n, 
+        "matrix dimensions don't satisfy lda/ldb/ldc"
+    );
+
     unsafe {
         if alpha == 0.0 || k == 0 {
             // scale C by beta
