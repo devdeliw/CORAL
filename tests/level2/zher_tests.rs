@@ -435,7 +435,7 @@ fn run_quick_return_n_zero() {
 }
 
 #[test]
-fn zher_upper_suites() {
+fn upper_suites() {
     run_small_and_large(Tri::Upper);
     run_alpha_zero_does_nothing();
     run_accumulate_twice();
@@ -443,13 +443,13 @@ fn zher_upper_suites() {
 }
 
 #[test]
-fn zher_lower_suites() {
+fn lower_suites() {
     run_small_and_large(Tri::Lower);
     run_lower_padded_strided();
 }
 
 #[test]
-fn zher_upper_equals_lower() {
+fn upper_equals_lower() {
     run_upper_equals_lower();
 }
 

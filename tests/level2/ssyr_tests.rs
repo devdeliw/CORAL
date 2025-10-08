@@ -1,14 +1,11 @@
 use blas_src as _;
-use cblas_sys::{
-    cblas_ssyr,
-    CBLAS_LAYOUT,
-    CBLAS_UPLO,
-};
+use cblas_sys::{ cblas_ssyr, CBLAS_LAYOUT, CBLAS_UPLO };
 
 use coral::level2::ssyr::ssyr;
 use coral::enums::CoralTriangular;
 
-fn cblas_ssyr_wrapper(
+#[inline(always)]
+fn cblas_ssyr_ref(
     uplo  : CBLAS_UPLO,
     n     : i32,
     alpha : f32,
@@ -31,13 +28,22 @@ fn cblas_ssyr_wrapper(
     }
 }
 
-// builders 
+#[inline(always)]
+fn to_uplo(
+    tri : CoralTriangular,
+) -> CBLAS_UPLO {
+    match tri {
+        CoralTriangular::UpperTriangular => CBLAS_UPLO::CblasUpper,
+        CoralTriangular::LowerTriangular => CBLAS_UPLO::CblasLower,
+    }
+}
+
 fn make_strided_vec(
     len_logical : usize,
     inc         : usize,
     f           : impl Fn(usize) -> f32,
 ) -> Vec<f32> {
-    let mut v = vec![0.0f32; (len_logical - 1) * inc + 1];
+    let mut v = vec![0.0; (len_logical - 1) * inc + 1];
     let mut idx = 0usize;
     for k in 0..len_logical {
         v[idx] = f(k);
@@ -50,7 +56,7 @@ fn make_symmetric_col_major(
     n   : usize,
     lda : usize,
 ) -> Vec<f32> {
-    let mut a = vec![0.0f32; lda * n];
+    let mut a = vec![0.0; lda * n];
     for j in 0..n {
         for i in 0..=j {
             let lo  = i.min(j) as f32;
@@ -69,14 +75,11 @@ fn assert_allclose(
     rtol : f32,
     atol : f32,
 ) {
-    assert_eq!(a.len(), b.len(), "length mismatch: {} vs {}", a.len(), b.len());
+    assert_eq!(a.len(), b.len());
     for (i, (&x, &y)) in a.iter().zip(b.iter()).enumerate() {
         let diff = (x - y).abs();
         let tol  = atol + rtol * x.abs().max(y.abs());
-        assert!(
-            diff <= tol,
-            "mismatch at {i}: {x} vs {y} (|Δ|={diff}, tol={tol})"
-        );
+        assert!(diff <= tol, "mismatch at {i}: {x} vs {y} (|Δ|={diff}, tol={tol})");
     }
 }
 
@@ -95,7 +98,7 @@ fn assert_upper_lower_equal(
             let y   = al[j + i * lda];
             let diff= (x - y).abs();
             let tol = atol + rtol * x.abs().max(y.abs());
-            assert!(diff <= tol, "mirror mismatch at (i={}, j={}): {} vs {} (|Δ|={}, tol={})", i, j, x, y, diff, tol);
+            assert!(diff <= tol, "mirror mismatch at (i={i}, j={j}): {x} vs {y} (|Δ|={diff}, tol={tol})");
         }
     }
 }
@@ -115,8 +118,8 @@ fn assert_only_triangle_touched(
             if untouched {
                 assert!(
                     updated[idx].to_bits() == baseline[idx].to_bits(),
-                    "untouched half modified at (i={}, j={}): {} -> {}",
-                    i, j, baseline[idx], updated[idx]
+                    "untouched half modified at (i={i}, j={j}): {} -> {}",
+                    baseline[idx], updated[idx]
                 );
             }
         }
@@ -126,157 +129,21 @@ fn assert_only_triangle_touched(
 const RTOL: f32 = 1e-6;
 const ATOL: f32 = 1e-5;
 
-#[test]
-fn upper_small() {
-    let n    = 7usize;
-    let lda  = n;
-    let alpha= 1.25f32;
-
+fn run_case(
+    tri           : CoralTriangular,
+    n             : usize,
+    lda           : usize,
+    incx          : usize,
+    alpha         : f32,
+    xgen          : impl Fn(usize) -> f32,
+    check_touched : bool,
+) {
     let a0 = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|i| 0.2 + 0.1 * (i as f32)).collect::<Vec<_>>();
+    let x  = make_strided_vec(n, incx, xgen);
 
     let mut a_coral = a0.clone();
     ssyr(
-        CoralTriangular::UpperTriangular,
-        n,
-        alpha,
-        &x,
-        1,
-        &mut a_coral,
-        lda,
-    );
-
-    let mut a_ref = a0.clone();
-    cblas_ssyr_wrapper(
-        CBLAS_UPLO::CblasUpper,
-        n as i32,
-        alpha,
-        x.as_ptr(),
-        1,
-        a_ref.as_mut_ptr(),
-        lda as i32,
-    );
-
-    assert_allclose(&a_coral, &a_ref, RTOL, ATOL);
-    assert_only_triangle_touched(&a_coral, &a0, n, lda, true);
-}
-
-#[test]
-fn lower_small() {
-    let n    = 7usize;
-    let lda  = n;
-    let alpha= -0.8f32;
-
-    let a0 = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|i| -0.3 + 0.05 * (i as f32)).collect::<Vec<_>>();
-
-    let mut a_coral = a0.clone();
-    ssyr(
-        CoralTriangular::LowerTriangular,
-        n,
-        alpha,
-        &x,
-        1,
-        &mut a_coral,
-        lda,
-    );
-
-    let mut a_ref = a0.clone();
-    cblas_ssyr_wrapper(
-        CBLAS_UPLO::CblasLower,
-        n as i32,
-        alpha,
-        x.as_ptr(),
-        1,
-        a_ref.as_mut_ptr(),
-        lda as i32,
-    );
-
-    assert_allclose(&a_coral, &a_ref, RTOL, ATOL);
-    assert_only_triangle_touched(&a_coral, &a0, n, lda, false);
-}
-
-#[test]
-fn large_upper() {
-    let n    = 1024usize;
-    let lda  = n;
-    let alpha= -0.37f32;
-
-    let a0 = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|i| 0.05 + 0.002 * (i as f32)).collect::<Vec<_>>();
-
-    let mut a_coral = a0.clone();
-    ssyr(
-        CoralTriangular::UpperTriangular,
-        n,
-        alpha,
-        &x,
-        1,
-        &mut a_coral,
-        lda,
-    );
-
-    let mut a_ref = a0.clone();
-    cblas_ssyr_wrapper(
-        CBLAS_UPLO::CblasUpper,
-        n as i32,
-        alpha,
-        x.as_ptr(),
-        1,
-        a_ref.as_mut_ptr(),
-        lda as i32,
-    );
-
-    assert_allclose(&a_coral, &a_ref, RTOL, ATOL);
-}
-
-#[test]
-fn large_lower() {
-    let n    = 512usize;
-    let lda  = n;
-    let alpha= 0.93f32;
-
-    let a0 = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|i| -0.2 + 0.0015 * (i as f32)).collect::<Vec<_>>();
-
-    let mut a_coral = a0.clone();
-    ssyr(
-        CoralTriangular::LowerTriangular,
-        n,
-        alpha,
-        &x,
-        1,
-        &mut a_coral,
-        lda,
-    );
-
-    let mut a_ref = a0.clone();
-    cblas_ssyr_wrapper(
-        CBLAS_UPLO::CblasLower,
-        n as i32,
-        alpha,
-        x.as_ptr(),
-        1,
-        a_ref.as_mut_ptr(),
-        lda as i32,
-    );
-
-    assert_allclose(&a_coral, &a_ref, RTOL, ATOL);
-}
-
-#[test]
-fn lower_padded() {
-    let n    = 9usize;
-    let lda  = n + 3;
-    let alpha= -0.85f32;
-
-    let a0   = make_symmetric_col_major(n, lda);
-    let incx = 2usize; // non unit stride 
-    let x    = make_strided_vec(n, incx, |i| 0.05 + 0.03 * (i as f32));
-
-    let mut a_coral = a0.clone();
-    ssyr(
-        CoralTriangular::LowerTriangular,
+        tri,
         n,
         alpha,
         &x,
@@ -286,8 +153,8 @@ fn lower_padded() {
     );
 
     let mut a_ref = a0.clone();
-    cblas_ssyr_wrapper(
-        CBLAS_UPLO::CblasLower,
+    cblas_ssyr_ref(
+        to_uplo(tri),
         n as i32,
         alpha,
         x.as_ptr(),
@@ -297,60 +164,98 @@ fn lower_padded() {
     );
 
     assert_allclose(&a_coral, &a_ref, RTOL, ATOL);
-    assert_only_triangle_touched(&a_coral, &a0, n, lda, false);
+    if check_touched {
+        assert_only_triangle_touched(
+            &a_coral,
+            &a0,
+            n,
+            lda,
+            matches!(tri, CoralTriangular::UpperTriangular),
+        );
+    }
 }
 
-#[test]
-fn alpha_zero_does_nothing() {
-    let n    = 300usize;
-    let lda  = n + 5;
-    let alpha= 0.0f32;
+fn run_small() {
+    run_case(
+        CoralTriangular::UpperTriangular,
+        7,
+        7,
+        1,
+        1.25,
+        |i| 0.2 + 0.1 * (i as f32),
+        true,
+    );
+
+    run_case(
+        CoralTriangular::LowerTriangular,
+        7,
+        7,
+        1,
+        -0.8,
+        |i| -0.3 + 0.05 * (i as f32),
+        true,
+    );
+}
+
+fn run_large() {
+    run_case(
+        CoralTriangular::UpperTriangular,
+        1024,
+        1024,
+        1,
+        -0.37,
+        |i| 0.05 + 0.002 * (i as f32),
+        false,
+    );
+
+    run_case(
+        CoralTriangular::LowerTriangular,
+        512,
+        512,
+        1,
+        0.93,
+        |i| -0.2 + 0.0015 * (i as f32),
+        false,
+    );
+}
+
+fn run_padded_strided() {
+    run_case(
+        CoralTriangular::LowerTriangular,
+        9,
+        9 + 3,
+        2,
+        -0.85,
+        |i| 0.05 + 0.03 * (i as f32),
+        true,
+    );
+}
+
+fn run_alpha_zero() {
+    run_case(
+        CoralTriangular::UpperTriangular,
+        300,
+        300 + 5,
+        1,
+        0.0,
+        |i| 0.11 + 0.01 * (i as f32),
+        false,
+    );
+}
+
+fn run_accumulate_twice() {
+    let n   = 64;
+    let lda = n;
 
     let a0 = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|i| 0.11 + 0.01 * (i as f32)).collect::<Vec<_>>();
+    let x1 = make_strided_vec(n, 1, |i| 0.2  + 0.01 * (i as f32));
+    let x2 = make_strided_vec(n, 1, |i| -0.3 + 0.03 * (i as f32));
 
     let mut a_coral = a0.clone();
     ssyr(
         CoralTriangular::UpperTriangular,
         n,
-        alpha,
-        &x,
-        1,
-        &mut a_coral,
-        lda,
-    );
-
-    let mut a_ref = a0.clone();
-    cblas_ssyr_wrapper(
-        CBLAS_UPLO::CblasUpper,
-        n as i32,
-        alpha,
-        x.as_ptr(),
-        1,
-        a_ref.as_mut_ptr(),
-        lda as i32,
-    );
-
-    assert_allclose(&a_coral, &a_ref, RTOL, ATOL);
-    assert_allclose(&a_coral, &a0, RTOL, ATOL);
-}
-
-#[test]
-fn accumulate_twice() {
-    let n     = 64usize;
-    let lda   = n;
-    let alpha1= 1.2f32;
-    let alpha2= -0.7f32;
-
-    let a0 = make_symmetric_col_major(n, lda);
-    let x1 = (0..n).map(|i| 0.2  + 0.01 * (i as f32)).collect::<Vec<_>>();
-    let x2 = (0..n).map(|i| -0.3 + 0.03 * (i as f32)).collect::<Vec<_>>();
-
-    let mut a_coral = a0.clone();
-    ssyr(
-        CoralTriangular::UpperTriangular,
-        n,
-        alpha1,
+        1.2,
         &x1,
         1,
         &mut a_coral,
@@ -359,7 +264,7 @@ fn accumulate_twice() {
     ssyr(
         CoralTriangular::UpperTriangular,
         n,
-        alpha2,
+        -0.7,
         &x2,
         1,
         &mut a_coral,
@@ -367,19 +272,19 @@ fn accumulate_twice() {
     );
 
     let mut a_ref = a0.clone();
-    cblas_ssyr_wrapper(
+    cblas_ssyr_ref(
         CBLAS_UPLO::CblasUpper,
         n as i32,
-        alpha1,
+        1.2,
         x1.as_ptr(),
         1,
         a_ref.as_mut_ptr(),
         lda as i32,
     );
-    cblas_ssyr_wrapper(
+    cblas_ssyr_ref(
         CBLAS_UPLO::CblasUpper,
         n as i32,
-        alpha2,
+        -0.7,
         x2.as_ptr(),
         1,
         a_ref.as_mut_ptr(),
@@ -389,31 +294,27 @@ fn accumulate_twice() {
     assert_allclose(&a_coral, &a_ref, RTOL, ATOL);
 }
 
-#[test]
-fn upper_equals_lower() {
-    let n    = 33usize;
-    let lda  = n;
-    let alpha= 0.77f32;
+fn run_upper_equals_lower() {
+    let n   = 33;
+    let lda = n;
+    let x   = make_strided_vec(n, 1, |i| 0.2 + 0.005 * (i as f32));
 
-    let a0 = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|i| 0.2 + 0.005 * (i as f32)).collect::<Vec<_>>();
-
-    let mut a_upper = a0.clone();
+    let mut a_upper = make_symmetric_col_major(n, lda);
     ssyr(
         CoralTriangular::UpperTriangular,
         n,
-        alpha,
+        0.77,
         &x,
         1,
         &mut a_upper,
         lda,
     );
 
-    let mut a_lower = a0.clone();
+    let mut a_lower = make_symmetric_col_major(n, lda);
     ssyr(
         CoralTriangular::LowerTriangular,
         n,
-        alpha,
+        0.77,
         &x,
         1,
         &mut a_lower,
@@ -423,31 +324,27 @@ fn upper_equals_lower() {
     assert_upper_lower_equal(&a_upper, &a_lower, n, lda, RTOL, ATOL);
 }
 
-#[test]
-fn n_zero_quick_return() {
-    let n    = 0usize;
-    let lda  = 1usize;
-    let alpha= 0.55f32;
+fn run_quick_return_n_zero() {
+    let n   = 0;
+    let lda = 1;
+    let x   = vec![1.0];
 
-    let a0 = vec![0.0f32; lda];
-    let x  = vec![1.0f32; 1];
-
-    let mut a_coral = a0.clone();
+    let mut a_coral: Vec<f32> = vec![0.0; lda];
     ssyr(
         CoralTriangular::UpperTriangular,
         n,
-        alpha,
+        0.55,
         &x,
         1,
         &mut a_coral,
         lda,
     );
 
-    let mut a_ref = a0.clone();
-    cblas_ssyr_wrapper(
+    let mut a_ref = vec![0.0; lda];
+    cblas_ssyr_ref(
         CBLAS_UPLO::CblasUpper,
         n as i32,
-        alpha,
+        0.55,
         x.as_ptr(),
         1,
         a_ref.as_mut_ptr(),
@@ -455,5 +352,24 @@ fn n_zero_quick_return() {
     );
 
     assert_allclose(&a_coral, &a_ref, RTOL, ATOL);
+}
+
+#[test]
+fn main_suites() {
+    run_small();
+    run_large();
+    run_padded_strided();
+    run_accumulate_twice();
+}
+
+#[test] 
+fn upper_equals_lower() { 
+    run_upper_equals_lower();
+}
+
+#[test]
+fn quick_return() {
+    run_alpha_zero();
+    run_quick_return_n_zero();
 }
 

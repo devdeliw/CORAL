@@ -325,11 +325,15 @@ fn run_quick_returns() {
 }
 
 #[test]
-fn dger_suites() {
+fn main_suites() {
     run_contiguous_sets();
     run_strided_padded();
-    run_alpha_zero(300, 200, 300 + 5);
     run_accumulate_twice();
-    run_quick_returns();
+}
+
+#[test] 
+fn quick_returns() { 
+    run_quick_returns(); 
+    run_alpha_zero(300, 200, 305);
 }
 
