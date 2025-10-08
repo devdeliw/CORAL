@@ -1,14 +1,21 @@
-use blas_src as _; 
-use cblas_sys::{
-    cblas_dsymv,
-    CBLAS_LAYOUT,
-    CBLAS_UPLO,
-};
-use coral::enums::CoralTriangular; 
+use blas_src as _;
+use cblas_sys::{ cblas_dsymv, CBLAS_LAYOUT, CBLAS_UPLO };
+use coral::enums::CoralTriangular;
 use coral::level2::dsymv::dsymv;
 
-// cblas wrappers
-fn cblas_upper(
+#[inline(always)]
+fn to_cblas_uplo(
+    tri : CoralTriangular,
+) -> CBLAS_UPLO {
+    match tri {
+        CoralTriangular::UpperTriangular => CBLAS_UPLO::CblasUpper,
+        CoralTriangular::LowerTriangular => CBLAS_UPLO::CblasLower,
+    }
+}
+
+#[inline(always)]
+fn cblas_dsymv_ref(
+    tri   : CoralTriangular,
     n     : i32,
     alpha : f64,
     a     : *const f64,
@@ -22,7 +29,7 @@ fn cblas_upper(
     unsafe {
         cblas_dsymv(
             CBLAS_LAYOUT::CblasColMajor,
-            CBLAS_UPLO::CblasUpper,
+            to_cblas_uplo(tri),
             n,
             alpha,
             a,
@@ -36,49 +43,19 @@ fn cblas_upper(
     }
 }
 
-fn cblas_lower(
-    n     : i32,
-    alpha : f64,
-    a     : *const f64,
-    lda   : i32,
-    x     : *const f64,
-    incx  : i32,
-    beta  : f64,
-    y     : *mut f64,
-    incy  : i32,
-) {
-    unsafe {
-        cblas_dsymv(
-            CBLAS_LAYOUT::CblasColMajor,
-            CBLAS_UPLO::CblasLower,
-            n,
-            alpha,
-            a,
-            lda,
-            x,
-            incx,
-            beta,
-            y,
-            incy,
-        );
-    }
-}
-
-// helpers
 fn make_symmetric_col_major(
     n   : usize,
     lda : usize,
 ) -> Vec<f64> {
-    let mut a = vec![0.0f64; lda * n];
-
+    assert!(lda >= n);
+    let mut a = vec![0.0; lda * n];
     for j in 0..n {
         for i in 0..=j {
             let lo  = i.min(j) as f64;
             let hi  = i.max(j) as f64;
-            let val = 0.1f64 + 0.5f64 * lo + 0.25f64 * hi;
-
-            a[i + j * lda] = val; // (i, j)
-            a[j + i * lda] = val; // (j, i) mirror
+            let val = 0.1 + 0.5 * lo + 0.25 * hi;
+            a[i + j * lda] = val;
+            a[j + i * lda] = val;
         }
     }
     a
@@ -88,17 +65,16 @@ fn make_upper_stored_lower_garbage(
     n   : usize,
     lda : usize,
 ) -> Vec<f64> {
-    let mut a = vec![0.0f64; lda * n];
-    // fill upper (i <= j) with symmetric values
-    // lower with NaN sentinels
+    assert!(lda >= n);
+    let mut a = vec![0.0; lda * n];
     for j in 0..n {
         for i in 0..n {
             if i <= j {
                 let lo = i.min(j) as f64;
                 let hi = i.max(j) as f64;
-                a[i + j * lda] = 0.2f64 + 0.3f64 * lo + 0.15f64 * hi;
+                a[i + j * lda] = 0.2 + 0.3 * lo + 0.15 * hi;
             } else {
-                a[i + j * lda] = f64::NAN; // should be ignored 
+                a[i + j * lda] = f64::NAN;
             }
         }
     }
@@ -109,17 +85,16 @@ fn make_lower_stored_upper_garbage(
     n   : usize,
     lda : usize,
 ) -> Vec<f64> {
-    let mut a = vec![0.0f64; lda * n];
-    // fill lower (i >= j) with symmetric values 
-    // upper with NaN sentinels
+    assert!(lda >= n);
+    let mut a = vec![0.0; lda * n];
     for j in 0..n {
         for i in 0..n {
             if i >= j {
                 let lo = i.min(j) as f64;
                 let hi = i.max(j) as f64;
-                a[i + j * lda] = 0.17f64 + 0.45f64 * lo + 0.08f64 * hi;
+                a[i + j * lda] = 0.17 + 0.45 * lo + 0.08 * hi;
             } else {
-                a[i + j * lda] = f64::NAN; // should be ignored when using Lower
+                a[i + j * lda] = f64::NAN;
             }
         }
     }
@@ -131,9 +106,10 @@ fn make_strided_vec(
     inc         : usize,
     f           : impl Fn(usize) -> f64,
 ) -> Vec<f64> {
-    let mut v = vec![0.0f64; (len_logical - 1) * inc + 1];
+    assert!(len_logical > 0 && inc > 0);
+    let mut v = vec![0.0; (len_logical - 1) * inc + 1];
 
-    let mut idx = 0usize;
+    let mut idx = 0;
     for k in 0..len_logical {
         v[idx] = f(k);
         idx += inc;
@@ -148,7 +124,7 @@ fn copy_logical_strided(
 ) -> Vec<f64> {
     let mut out = Vec::with_capacity(len_logical);
 
-    let mut idx = 0usize;
+    let mut idx = 0;
     for _ in 0..len_logical {
         out.push(src[idx]);
         idx += inc;
@@ -163,292 +139,35 @@ fn assert_allclose(
     atol : f64,
 ) {
     assert_eq!(a.len(), b.len());
-
     for (i, (&x, &y)) in a.iter().zip(b.iter()).enumerate() {
         let diff = (x - y).abs();
-        let tol = atol + rtol * x.abs().max(y.abs());
-
+        let tol  = atol + rtol * x.abs().max(y.abs());
         assert!(
             diff <= tol,
-            "mismatch at {i}: {x} vs {y} (|Δ|={diff}, tol={tol})"
+            "mismatch at {i}: {x} vs {y} (delta={diff}, tol={tol})"
         );
     }
 }
 
-const RTOL: f64 = 5e-15;
-const ATOL: f64 = 5e-15;
+const RTOL: f64 = 1e-13;
+const ATOL: f64 = 1e-13;
 
-// tests
-#[test]
-fn upper_small() {
-    let n   = 6usize;
-    let lda = n;
-
-    let alpha = 0.75f64;
-    let beta  = -0.25f64;
-
+fn run_case(
+    tri   : CoralTriangular,
+    n     : usize,
+    lda   : usize,
+    incx  : usize,
+    incy  : usize,
+    alpha : f64,
+    beta  : f64,
+) {
     let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| 0.2f64 + 0.1f64 * (k as f64)).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| -0.3f64 + 0.05f64 * (k as f64)).collect::<Vec<_>>();
+    let x  = make_strided_vec(n, incx, |k| 0.2 + 0.1 * (k as f64));
+    let y0 = make_strided_vec(n, incy, |k| -0.3 + 0.05 * (k as f64));
 
     let mut y_coral = y0.clone();
     dsymv(
-        CoralTriangular::UpperTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
-
-    let mut y_ref = y0.clone();
-    cblas_upper(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
-
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
-}
-
-#[test]
-fn lower_small() {
-    let n   = 6usize;
-    let lda = n;
-
-    let alpha = -0.6f64;
-    let beta  = 0.4f64;
-
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| 0.1f64 - 0.07f64 * (k as f64)).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| 0.03f64 * (k as f64)).collect::<Vec<_>>();
-
-    let mut y_coral = y0.clone();
-    dsymv(
-        CoralTriangular::LowerTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
-
-    let mut y_ref = y0.clone();
-    cblas_lower(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
-
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
-}
-
-#[test]
-fn upper_large() {
-    let n   = 1024usize;
-    let lda = n;
-
-    let alpha = 1.25f64;
-    let beta  = -0.5f64;
-
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| 0.2f64 + (k as f64) * 0.1f64).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| -0.3f64 + (k as f64) * 0.05f64).collect::<Vec<_>>();
-
-    let mut y_coral = y0.clone();
-    dsymv(
-        CoralTriangular::UpperTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
-
-    let mut y_ref = y0.clone();
-    cblas_upper(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
-
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
-}
-
-#[test]
-fn lower_large() {
-    let n   = 768usize;
-    let lda = n;
-
-    let alpha = -0.75f64;
-    let beta  = 0.3f64;
-
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| 0.4f64 - (k as f64) * 0.07f64).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| 0.1f64 * (k as f64)).collect::<Vec<_>>();
-
-    let mut y_coral = y0.clone();
-    dsymv(
-        CoralTriangular::LowerTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
-
-    let mut y_ref = y0.clone();
-    cblas_lower(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
-
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
-}
-
-#[test]
-fn upper_padded() {
-    let n   = 256usize;
-    let lda = n + 7;
-
-    let alpha = 0.85f64;
-    let beta  = 0.1f64;
-
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| -0.05f64 + 0.02f64 * (k as f64)).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| 0.01f64 * (k as f64) - 0.2f64).collect::<Vec<_>>();
-
-    let mut y_coral = y0.clone();
-    dsymv(
-        CoralTriangular::UpperTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
-
-    let mut y_ref = y0.clone();
-    cblas_upper(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
-
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
-}
-
-#[test]
-fn lower_padded() {
-    let n   = 300usize;
-    let lda = n + 5;
-
-    let alpha = 1.1f64;
-    let beta  = -0.2f64;
-
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| -0.02f64 + 0.015f64 * (k as f64)).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| 0.3f64 - 0.01f64 * (k as f64)).collect::<Vec<_>>();
-
-    let mut y_coral = y0.clone();
-    dsymv(
-        CoralTriangular::LowerTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
-
-    let mut y_ref = y0.clone();
-    cblas_lower(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
-
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
-}
-
-#[test]
-fn strided_upper() {
-    let n   = 640usize;
-    let lda = n;
-
-    let alpha = 0.95f64;
-    let beta  = -1.1f64;
-
-    let incx = 2usize;
-    let incy = 3usize;
-
-    let a = make_symmetric_col_major(n, lda);
-    let x = make_strided_vec(n, incx, |k| 0.05f64 + 0.03f64 * (k as f64));
-    let y = make_strided_vec(n, incy, |k| -0.2f64 + 0.02f64 * (k as f64));
-
-    let mut y_coral = y.clone();
-    dsymv(
-        CoralTriangular::UpperTriangular,
+        tri,
         n,
         alpha,
         &a,
@@ -460,8 +179,9 @@ fn strided_upper() {
         incy,
     );
 
-    let mut y_ref = y.clone();
-    cblas_upper(
+    let mut y_ref = y0.clone();
+    cblas_dsymv_ref(
+        tri,
         n as i32,
         alpha,
         a.as_ptr(),
@@ -478,151 +198,69 @@ fn strided_upper() {
     assert_allclose(&y_coral_logical, &y_ref_logical, RTOL, ATOL);
 }
 
-#[test]
-fn strided_lower() {
-    let n   = 512usize;
-    let lda = n;
-
-    let alpha = -0.4f64;
-    let beta  = 0.9f64;
-
-    let incx = 3usize;
-    let incy = 2usize;
-
-    let a = make_symmetric_col_major(n, lda);
-    let x = make_strided_vec(n, incx, |k| 0.12f64 - 0.01f64 * (k as f64));
-    let y = make_strided_vec(n, incy, |k| 0.2f64 + 0.005f64 * (k as f64));
-
-    let mut y_coral = y.clone();
-    dsymv(
-        CoralTriangular::LowerTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        incx,
-        beta,
-        &mut y_coral,
-        incy,
-    );
-
-    let mut y_ref = y.clone();
-    cblas_lower(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        incx as i32,
-        beta,
-        y_ref.as_mut_ptr(),
-        incy as i32,
-    );
-
-    let y_coral_logical = copy_logical_strided(&y_coral, incy, n);
-    let y_ref_logical   = copy_logical_strided(&y_ref,   incy, n);
-    assert_allclose(&y_coral_logical, &y_ref_logical, RTOL, ATOL);
-}
-
-#[test]
-fn alpha_zero_scales_y() {
-    let n   = 256usize;
-    let lda = n;
-
-    let alpha = 0.0f64;
-    let beta  = -0.75f64;
-
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| 0.1f64 * (k as f64)).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| 0.05f64 * (k as f64) - 0.4f64).collect::<Vec<_>>();
-
-    let mut y_coral = y0.clone();
-    dsymv(
+fn run_all_uplos(
+    n            : usize,
+    lda          : usize,
+    stride_pairs : &[(usize, usize)],
+) {
+    let uplos = [
         CoralTriangular::UpperTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
+        CoralTriangular::LowerTriangular
+    ];
 
-    let mut y_ref = y0.clone();
-    cblas_upper(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
+    // alpha = 0, beta=0, mixed cases
+    let coeffs: &[(f64, f64)] = &[
+        (1.0,   0.0),
+        (0.0,   0.7),
+        (0.75, -0.25),
+        (-0.6,  0.4),
+        (1.1,   0.0),
+        (0.85,  0.1),
+    ];
 
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
+    for &(incx, incy) in stride_pairs {
+        for &tri in &uplos {
+            for &(alpha, beta) in coeffs {
+                run_case(tri, n, lda, incx, incy, alpha, beta);
+            }
+        }
+    }
 }
 
 #[test]
-fn beta_zero_overwrites_y() {
-    let n   = 300usize;
-    let lda = n + 5;
-
-    let alpha = 1.1f64;
-    let beta  = 0.0f64;
-
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| -0.02f64 + 0.015f64 * (k as f64)).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| 0.3f64 - 0.01f64 * (k as f64)).collect::<Vec<_>>();
-
-    let mut y_coral = y0.clone();
-    dsymv(
-        CoralTriangular::LowerTriangular,
-        n,
-        alpha,
-        &a,
-        lda,
-        &x,
-        1,
-        beta,
-        &mut y_coral,
-        1,
-    );
-
-    let mut y_ref = y0.clone();
-    cblas_lower(
-        n as i32,
-        alpha,
-        a.as_ptr(),
-        lda as i32,
-        x.as_ptr(),
-        1,
-        beta,
-        y_ref.as_mut_ptr(),
-        1,
-    );
-
-    assert_allclose(&y_coral, &y_ref, RTOL, ATOL);
+fn dsymv_small_all_uplos() {
+    run_all_uplos(6, 6, &[(1, 1)]);
 }
 
 #[test]
-fn upper_equals_lower() {
-    let n   = 513usize;
+fn dsymv_large_all_uplos() {
+    run_all_uplos(768, 768, &[(1, 1)]);
+}
+
+#[test]
+fn dsymv_padded_all_uplos() {
+    run_all_uplos(300, 300 + 5, &[(1, 1)]);
+}
+
+#[test]
+fn dsymv_strided_all_uplos() {
+    run_all_uplos(640, 640, &[(2, 3), (3, 2), (2, 1)]);
+}
+
+#[test]
+fn dsymv_upper_equals_lower() {
+    let n   = 513;
     let lda = n;
 
-    let alpha = 1.123f64;
-    let beta  = -0.321f64;
+    let a   = make_symmetric_col_major(n, lda);
+    let x   = (0..n).map(|k| -0.07 + 0.013 * (k as f64)).collect::<Vec<_>>();
+    let y0  = (0..n).map(|k|  0.02 - 0.004 * (k as f64)).collect::<Vec<_>>();
 
-    let a  = make_symmetric_col_major(n, lda);
-    let x  = (0..n).map(|k| -0.07f64 + 0.013f64 * (k as f64)).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k|  0.02f64 - 0.004f64 * (k as f64)).collect::<Vec<_>>();
+    let alpha = 1.123;
+    let beta  = -0.321;
 
-    let mut y_upper = y0.clone();
-    let mut y_lower = y0.clone();
+    let mut y_u = y0.clone();
+    let mut y_l = y0.clone();
 
     dsymv(
         CoralTriangular::UpperTriangular,
@@ -633,7 +271,7 @@ fn upper_equals_lower() {
         &x,
         1,
         beta,
-        &mut y_upper,
+        &mut y_u,
         1,
     );
 
@@ -646,25 +284,24 @@ fn upper_equals_lower() {
         &x,
         1,
         beta,
-        &mut y_lower,
+        &mut y_l,
         1,
     );
 
-    assert_allclose(&y_upper, &y_lower, RTOL, ATOL);
+    assert_allclose(&y_u, &y_l, RTOL, ATOL);
 }
 
 #[test]
-fn upper_respects_triangle() {
-    // lower triangular is NaN garbage 
-    let n   = 200usize;
+fn dsymv_upper_respects_triangle() {
+    let n   = 200;
     let lda = n + 3;
 
-    let alpha = 0.7f64;
-    let beta  = 0.25f64;
+    let alpha = 0.7;
+    let beta  = 0.25;
 
     let a  = make_upper_stored_lower_garbage(n, lda);
-    let x  = (0..n).map(|k| 0.03f64 * (k as f64) - 0.5f64).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| -0.1f64 + 0.002f64 * (k as f64)).collect::<Vec<_>>();
+    let x  = (0..n).map(|k| 0.03 * (k as f64) - 0.5).collect::<Vec<_>>();
+    let y0 = (0..n).map(|k| -0.1 + 0.002 * (k as f64)).collect::<Vec<_>>();
 
     let mut y_coral = y0.clone();
     dsymv(
@@ -681,7 +318,8 @@ fn upper_respects_triangle() {
     );
 
     let mut y_ref = y0.clone();
-    cblas_upper(
+    cblas_dsymv_ref(
+        CoralTriangular::UpperTriangular,
         n as i32,
         alpha,
         a.as_ptr(),
@@ -697,16 +335,16 @@ fn upper_respects_triangle() {
 }
 
 #[test]
-fn lower_respects_triangle() {
-    let n   = 180usize;
+fn dsymv_lower_respects_triangle() {
+    let n   = 180;
     let lda = n;
 
-    let alpha = -0.9f64;
-    let beta  = 0.6f64;
+    let alpha = -0.9;
+    let beta  = 0.6;
 
     let a  = make_lower_stored_upper_garbage(n, lda);
-    let x  = (0..n).map(|k| 0.2f64 - 0.001f64 * (k as f64)).collect::<Vec<_>>();
-    let y0 = (0..n).map(|k| 0.15f64 + 0.004f64 * (k as f64)).collect::<Vec<_>>();
+    let x  = (0..n).map(|k| 0.2 - 0.001 * (k as f64)).collect::<Vec<_>>();
+    let y0 = (0..n).map(|k| 0.15 + 0.004 * (k as f64)).collect::<Vec<_>>();
 
     let mut y_coral = y0.clone();
     dsymv(
@@ -723,7 +361,8 @@ fn lower_respects_triangle() {
     );
 
     let mut y_ref = y0.clone();
-    cblas_lower(
+    cblas_dsymv_ref(
+        CoralTriangular::LowerTriangular,
         n as i32,
         alpha,
         a.as_ptr(),

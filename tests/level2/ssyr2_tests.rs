@@ -404,12 +404,16 @@ fn main_suites() {
     run_large();
     run_padded_strided();
     run_accumulate_twice();
-    run_upper_equals_lower();
 }
 
 #[test]
 fn quick_returns() {
     run_alpha_zero();
     run_quick_return_n_zero();
+}
+
+#[test]
+fn upper_equals_lower() { 
+    run_upper_equals_lower();
 }
 
