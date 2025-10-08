@@ -7,14 +7,8 @@ use cblas_sys::{
     cblas_strmv,
 };
 
-use coral::level2::{
-    enums::{
-        CoralDiagonal,
-        CoralTranspose,
-        CoralTriangular,
-    },
-    strmv::strmv,
-};
+use coral::enums::{CoralDiagonal, CoralTranspose, CoralTriangular};
+use coral::level2::strmv::strmv;
 
 fn cblas_strmv_wrapper(
     uplo  : CBLAS_UPLO,

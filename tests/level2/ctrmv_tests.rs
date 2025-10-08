@@ -7,14 +7,8 @@ use cblas_sys::{
     cblas_ctrmv,
 };
 
-use coral::level2::{
-    enums::{
-        CoralDiagonal,
-        CoralTranspose,
-        CoralTriangular,
-    },
-    ctrmv::ctrmv,
-};
+use coral::enums::{CoralDiagonal, CoralTranspose,  CoralTriangular}; 
+use coral::level2::ctrmv::ctrmv;
 
 
 // wrapper

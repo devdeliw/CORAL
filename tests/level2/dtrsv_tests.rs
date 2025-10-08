@@ -7,14 +7,8 @@ use cblas_sys::{
     cblas_dtrsv,
 };
 
-use coral::level2::{
-    enums::{
-        CoralDiagonal,
-        CoralTranspose,
-        CoralTriangular,
-    },
-    dtrsv::dtrsv,
-};
+use coral::enums::{CoralDiagonal, CoralTranspose, CoralTriangular};
+use coral::level2::dtrsv::dtrsv;
 
 fn cblas_dtrsv_wrapper(
     uplo  : CBLAS_UPLO,

@@ -7,14 +7,8 @@ use cblas_sys::{
     cblas_ctrsv,
 };
 
-use coral::level2::{
-    enums::{
-        CoralDiagonal,
-        CoralTranspose,
-        CoralTriangular,
-    },
-    ctrsv::ctrsv,
-};
+use coral::enums::{CoralDiagonal, CoralTranspose, CoralTriangular};
+use coral::level2::ctrsv::ctrsv;
 
 //  wrapper
 fn cblas_ctrsv_wrapper(

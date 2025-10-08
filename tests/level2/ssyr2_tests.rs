@@ -6,7 +6,7 @@ use cblas_sys::{
 };
 
 use coral::level2::ssyr2::ssyr2;
-use coral::level2::enums::CoralTriangular;
+use coral::enums::CoralTriangular;
 
 fn cblas_ssyr2_wrapper(
     uplo  : CBLAS_UPLO,

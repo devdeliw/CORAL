@@ -4,10 +4,8 @@ use cblas_sys::{
     CBLAS_LAYOUT,
     CBLAS_UPLO,
 };
-use coral::level2::{
-    enums::CoralTriangular,
-    dsymv::dsymv,
-};
+use coral::enums::CoralTriangular; 
+use coral::level2::dsymv::dsymv;
 
 // cblas wrappers
 fn cblas_upper(

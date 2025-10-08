@@ -7,14 +7,8 @@ use cblas_sys::{
     cblas_ztrmv,
 };
 
-use coral::level2::{
-    enums::{
-        CoralDiagonal,
-        CoralTranspose,
-        CoralTriangular,
-    },
-    ztrmv::ztrmv,
-};
+use coral::level2::ztrmv::ztrmv;
+use coral::enums::{CoralDiagonal, CoralTranspose, CoralTriangular};
 
 
 // wrapper

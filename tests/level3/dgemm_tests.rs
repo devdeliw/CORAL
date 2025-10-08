@@ -1,15 +1,15 @@
 use blas_src as _; 
 use cblas_sys::{cblas_dgemm, CBLAS_LAYOUT, CBLAS_TRANSPOSE};
 
-use coral::level2::enums::CoralTranspose;
+use coral::enums::CoralTranspose;
 use coral::level3::dgemm::dgemm; 
 
 #[inline(always)]
 fn to_cblas(op: CoralTranspose) -> CBLAS_TRANSPOSE {
     match op {
-        CoralTranspose::NoTranspose          => CBLAS_TRANSPOSE::CblasNoTrans,
-        CoralTranspose::Transpose 
-        | CoralTranspose::ConjugateTranspose => CBLAS_TRANSPOSE::CblasTrans,
+        CoralTranspose::NoTranspose        => CBLAS_TRANSPOSE::CblasNoTrans,
+        CoralTranspose::Transpose          => CBLAS_TRANSPOSE::CblasTrans, 
+        CoralTranspose::ConjugateTranspose => CBLAS_TRANSPOSE::CblasTrans,
     }
 }
 
