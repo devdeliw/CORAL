@@ -228,27 +228,27 @@ fn run_all_uplos(
 }
 
 #[test]
-fn dsymv_small_all_uplos() {
+fn small_all_uplos() {
     run_all_uplos(6, 6, &[(1, 1)]);
 }
 
 #[test]
-fn dsymv_large_all_uplos() {
+fn large_all_uplos() {
     run_all_uplos(768, 768, &[(1, 1)]);
 }
 
 #[test]
-fn dsymv_padded_all_uplos() {
+fn padded_all_uplos() {
     run_all_uplos(300, 300 + 5, &[(1, 1)]);
 }
 
 #[test]
-fn dsymv_strided_all_uplos() {
+fn strided_all_uplos() {
     run_all_uplos(640, 640, &[(2, 3), (3, 2), (2, 1)]);
 }
 
 #[test]
-fn dsymv_upper_equals_lower() {
+fn upper_equals_lower() {
     let n   = 513;
     let lda = n;
 
@@ -292,7 +292,7 @@ fn dsymv_upper_equals_lower() {
 }
 
 #[test]
-fn dsymv_upper_respects_triangle() {
+fn upper_respects_triangle() {
     let n   = 200;
     let lda = n + 3;
 
@@ -335,7 +335,7 @@ fn dsymv_upper_respects_triangle() {
 }
 
 #[test]
-fn dsymv_lower_respects_triangle() {
+fn lower_respects_triangle() {
     let n   = 180;
     let lda = n;
 

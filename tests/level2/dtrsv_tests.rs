@@ -312,27 +312,27 @@ fn run_all(
 
 
 #[test]
-fn dtrsv_small_all() {
+fn small_all() {
     run_all(7, 7, &[1]);
 }
 
 #[test]
-fn dtrsv_large_all() {
+fn large_all() {
     run_all(1024, 1024, &[1]);
 }
 
 #[test]
-fn dtrsv_strided_all() {
+fn strided_all() {
     run_all(640, 640, &[2, 3, 4]);
 }
 
 #[test]
-fn dtrsv_padded_all() {
+fn padded_all() {
     run_all(127, 127 + 5, &[1]);
 }
 
 #[test]
-fn dtrsv_lower_transpose_padded_triangle_respected() {
+fn lower_transpose_padded() {
     // both triangles populated to exercise lda > n 
     // and triangle selection
     let n   = 127;
@@ -369,7 +369,7 @@ fn dtrsv_lower_transpose_padded_triangle_respected() {
 }
 
 #[test]
-fn dtrsv_unitdiag_upper_notranspose() {
+fn unitdiag_upper_notranspose() {
     let n   = 40;
     let lda = n;
 
@@ -404,7 +404,7 @@ fn dtrsv_unitdiag_upper_notranspose() {
 }
 
 #[test]
-fn dtrsv_unitdiag_lower_transpose() {
+fn unitdiag_lower_transpose() {
     let n   = 48;
     let lda = n;
 
@@ -439,7 +439,7 @@ fn dtrsv_unitdiag_lower_transpose() {
 }
 
 #[test]
-fn dtrsv_n_zero_quick_return() {
+fn n_zero_quick_return() {
     let n   = 0;
     let lda = 1; // arbitrary when n == 0
 

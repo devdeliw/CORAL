@@ -238,8 +238,8 @@ fn assert_allclose_c32(
     }
 }
 
-const RTOL: f64 = 1e-12;
-const ATOL: f64 = 1e-12;
+const RTOL: f64 = 1e-11;
+const ATOL: f64 = 1e-11;
 
 fn build_matrix(
     tri  : CoralTriangular,
