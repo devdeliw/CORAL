@@ -32,7 +32,7 @@ $n \simeq 2.5 \times 10^3$.  Below are example `GEMM` benchmarks from
 
 The transpose GEMM variants are similar. Hence, for `GEMM`, CORAL
 on AArch64 is well-comparable to OpenBLAS. However, Apple Accelerate is
-exceptionally fast for `GEMM/GEMV` routines. It is not included in the above
+*exceptionally* fast for `GEMM/GEMV` routines. It is not included in the above
 benchmarks as it masks any comparison between CORAL and OpenBLAS. For some Level
 2 routines though, CORAL does outperform both OpenBLAS and Apple Accelerate. 
 
