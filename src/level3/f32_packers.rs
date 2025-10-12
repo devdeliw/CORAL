@@ -19,7 +19,7 @@ pub(crate) fn b_buf_len(kc: usize, nc: usize) -> usize {
 // A side
 
 /// pack one `MR x k` micro-panel from A; no padding.
-/// A_base points to A[base_row + base_col*lda].
+/// a_base points to A[base_row + base_col*lda].
 #[inline(always)]
 fn pack_a_mrxk(
     k: usize,

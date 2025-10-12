@@ -4,7 +4,7 @@ use crate::level3::{
     sgemm_tn::sgemm_tn, 
     sgemm_tt::sgemm_tt
 };
-use crate::level2::enums::CoralTranspose;
+use crate::enums::CoralTranspose;
 
 pub const MC: usize = 384; 
 pub const NC: usize = 576; 
@@ -13,9 +13,9 @@ pub const KC: usize = 256;
 #[inline(always)]
 fn is_transpose(op: CoralTranspose) -> bool {
     match op {
-        CoralTranspose::NoTranspose          => false,
-        CoralTranspose::Transpose 
-        | CoralTranspose::ConjugateTranspose => true, 
+        CoralTranspose::NoTranspose        => false,
+        CoralTranspose::Transpose          => true, 
+        CoralTranspose::ConjugateTranspose => true, 
     }
 }
 

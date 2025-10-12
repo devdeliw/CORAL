@@ -19,7 +19,8 @@ pub(crate) fn b_buf_len(kc: usize, nc: usize) -> usize {
 // A side 
 
 /// pack one `MR x k` micro-panel from A 
-/// a_base points to &A[base_row + base_col * lda]; complex idxs 
+/// a_base points to &A[base_row + base_col * lda]; 
+/// complex idxs 
 #[inline(always)] 
 fn pack_a_mrxk( 
     k      : usize, 
@@ -306,8 +307,8 @@ pub(crate) fn pack_a_block_ct(
 
         for _ in 0..mp {
             pack_act_mrxk(kc, abp, lda_c, dp);
-            dp = dp.add(2 * MR * kc);
-            abp = abp.add(MR * 2 * lda_c); // move by MR columns (AoS)
+            dp  = dp.add(2 * MR * kc);
+            abp = abp.add(MR * 2 * lda_c); 
         }
 
         if mr_tail != 0 {
@@ -362,7 +363,8 @@ fn pack_bt_kxnr(
 
             for j in 0..NR {
 
-                // transpose; element is at (j, i) 
+                // transpose; 
+                // element is at (j, i) 
                 let pr = b_base.add(2 * (j + i * ldb_c));
                 *dp_re.add(j) = *pr;
                 *dp_im.add(j) = *pr.add(1);
