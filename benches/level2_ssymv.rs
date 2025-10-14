@@ -2,10 +2,9 @@ use blas_src as _;
 use criterion::{
     black_box, criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion,
 };
-use coral::level2::{
-    enums::CoralTriangular,
-    ssymv::ssymv,
-};
+use coral::enums::CoralTriangular;
+use coral::level2::ssymv::ssymv;
+
 use cblas_sys::{
     cblas_ssymv, CBLAS_LAYOUT, CBLAS_UPLO,
 };

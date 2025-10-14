@@ -1,10 +1,8 @@
 use blas_src as _;
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion, black_box, BenchmarkId};
 
-use coral::level2::{
-    enums::{CoralTriangular, CoralTranspose, CoralDiagonal},
-    strsv::strsv,
-};
+use coral::enums::{CoralTriangular, CoralTranspose, CoralDiagonal};
+use coral::level2::strsv::strsv;
 
 use cblas_sys::{
     CBLAS_LAYOUT,

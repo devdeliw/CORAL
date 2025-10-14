@@ -2,7 +2,7 @@ use blas_src as _;
 use criterion::{black_box, criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion};
 use cblas_sys::{cblas_sgemm, CBLAS_LAYOUT, CBLAS_TRANSPOSE};
 use coral::level3::sgemm::sgemm;
-use coral::level2::enums::CoralTranspose;
+use coral::enums::CoralTranspose;
 
 #[inline(always)]
 fn make_matrix_colmajor(m: usize, n: usize, ld: usize, fill: f32) -> Vec<f32> {

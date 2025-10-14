@@ -1,10 +1,8 @@
 use blas_src as _; 
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion, black_box};
 
-use coral::level2::{
-    enums::CoralTranspose, 
-    zgemv::zgemv, 
-}; 
+use coral::enums::CoralTranspose; 
+use coral::level2::zgemv::zgemv; 
 
 use cblas_sys::{
     CBLAS_LAYOUT, 
