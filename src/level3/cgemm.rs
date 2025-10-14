@@ -32,7 +32,7 @@ pub fn cgemm(
     m     : usize,
     n     : usize,
     k     : usize,
-    alpha : Complex32,
+    alpha : [f32; 2],
     a     : *const f32,
     lda   : usize,
     b     : *const f32,
@@ -42,8 +42,8 @@ pub fn cgemm(
     ldc   : usize,
 ) {
     
-    alpha = c32(alpha); 
-    beta  = c32(beta); 
+    let alpha = c32(alpha); 
+    let beta  = c32(beta); 
 
     match (op_a, op_b) {
         (CoralTranspose::NoTranspose,        CoralTranspose::NoTranspose)        => cgemm_nn(m, n, k, alpha, a, lda, b, ldb, beta, c, ldc),

@@ -14,15 +14,15 @@ pub(crate) fn c32_edge(
     beta  : Complex32,
 ) {
     unsafe {
-        let mut acc_re = [[0.0f32; NR]; MR];
-        let mut acc_im = [[0.0f32; NR]; MR];
+        let mut acc_re = [[0.0; NR]; MR];
+        let mut acc_im = [[0.0; NR]; MR];
 
         let mut ap = a;
         let mut bp = b;
 
         for _ in 0..kc {
-            let mut br = [0.0f32; NR];
-            let mut bi = [0.0f32; NR];
+            let mut br = [0.0; NR];
+            let mut bi = [0.0; NR];
 
             core::ptr::copy_nonoverlapping(bp, br.as_mut_ptr(), nr);
             core::ptr::copy_nonoverlapping(bp.add(NR), bi.as_mut_ptr(), nr);

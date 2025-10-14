@@ -39,7 +39,7 @@
 //! Deval Deliwala
 
 use core::slice; 
-use crate::level2::enums::{CoralTranspose, CoralDiagonal}; 
+use crate::enums::{CoralTranspose, CoralDiagonal}; 
 
 use crate::level1_special::{zaxpyf::zaxpyf, zdotcf::zdotcf, zdotuf::zdotuf}; 
 use crate::level1::assert_length_helpers::required_len_ok_cplx; 

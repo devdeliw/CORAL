@@ -18,10 +18,6 @@ const ONE_C : Complex32 = Complex32 {
     re: 1.0, 
     im: 0.0
 };
-const ZERO_C: Complex32 = Complex32 {
-    re: 0.0, 
-    im: 0.0 
-};
 
 pub(crate) fn cgemm_ct(
     m     : usize,

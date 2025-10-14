@@ -38,7 +38,7 @@
 //! Deval Deliwala
 
 use core::slice; 
-use crate::level2::enums::{CoralTranspose, CoralDiagonal}; 
+use crate::enums::{CoralTranspose, CoralDiagonal}; 
 
 // fused level1 
 use crate::level1_special::{saxpyf::saxpyf, sdotf::sdotf}; 

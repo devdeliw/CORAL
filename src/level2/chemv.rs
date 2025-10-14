@@ -44,6 +44,7 @@
 
 use core::slice;
 
+use crate::enums::CoralTriangular;
 use crate::level1::cscal::cscal;
 use crate::level1_special::caxpyf::caxpyf;
 use crate::level1_special::cdotcf::cdotcf;
@@ -60,7 +61,6 @@ use crate::level2::{
         write_back_c32,
     },
     panel_packing::pack_panel_c32,
-    enums::CoralTriangular,
 };
 
 const MC: usize = 128;

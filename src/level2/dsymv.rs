@@ -44,7 +44,7 @@
 //! Deval Deliwala
 
 use core::slice;
-
+use crate::enums::CoralTriangular; 
 use crate::level1::dscal::dscal;
 use crate::level1_special::daxpyf::daxpyf;
 use crate::level1_special::ddotf::ddotf;
@@ -61,7 +61,6 @@ use crate::level2::{
         write_back_f64,
     },
     panel_packing::pack_panel_f64,
-    enums::CoralTriangular,
 };
 
 const MC: usize = 128;

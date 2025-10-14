@@ -42,7 +42,7 @@ use crate::level1::caxpy::caxpy;
 // assert length helpers
 use crate::level1::assert_length_helpers::required_len_ok_cplx;
 use crate::level2::assert_length_helpers::required_len_ok_matrix_cplx;
-use crate::level2::enums::CoralTriangular;
+use crate::enums::CoralTriangular;
 
 #[inline]
 #[cfg(target_arch = "aarch64")]

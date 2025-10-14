@@ -23,8 +23,8 @@
 //! # Returns
 //! - Nothing. The contents of `y` are updated in place.
 
+use crate::enums::CoralTranspose; 
 use crate::level2::{ 
-    enums::CoralTranspose, 
     zgemv_notranspose::zgemv_notranspose, 
     zgemv_transpose::zgemv_transpose, 
     zgemv_conjtranspose::zgemv_conjtranspose

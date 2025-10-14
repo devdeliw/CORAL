@@ -98,4 +98,3 @@ pub(crate) fn sgemm_tt(
         }
     }
 }
-

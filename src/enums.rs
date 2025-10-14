@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone)]
 pub enum CoralTranspose{
     NoTranspose,
     Transpose,  

@@ -31,8 +31,8 @@
 //! # Author
 //! Deval Deliwala
 
+use crate::enums::{CoralDiagonal, CoralTranspose, CoralTriangular};
 use crate::level2::{
-    enums::{CoralTriangular, CoralDiagonal, CoralTranspose}, 
     ctrlsv::ctrlsv, 
     ctrusv::ctrusv,
 }; 

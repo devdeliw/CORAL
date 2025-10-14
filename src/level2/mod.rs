@@ -3,7 +3,6 @@ pub(crate) mod vector_packing;
 pub(crate) mod matrix_ij;
 pub(crate) mod assert_length_helpers;
 pub(crate) mod trmv_kernels;
-pub mod enums; 
 
 pub(crate) mod sgemv_notranspose;
 pub(crate) mod sgemv_transpose;

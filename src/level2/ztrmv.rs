@@ -30,10 +30,10 @@
 //! # Author
 //! Deval Deliwala
 
+use crate::enums::{CoralDiagonal, CoralTranspose, CoralTriangular};
 use crate::level2::{ 
     ztrlmv::ztrlmv, 
     ztrumv::ztrumv, 
-    enums::{CoralDiagonal, CoralTranspose, CoralTriangular},
 }; 
 
 #[inline] 

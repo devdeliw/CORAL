@@ -10,15 +10,15 @@ use crate::level3::microkernel::{
 
 #[inline(always)]
 pub(crate) fn macro_kernel(
-    mc: usize,
-    nc: usize,
-    kc: usize,
-    alpha: f32,
+    mc     : usize,
+    nc     : usize,
+    kc     : usize,
+    alpha  : f32,
     beta_panel: f32,
-    a_pack: *const f32,
-    b_pack: *const f32,
-    c_base: *mut f32,
-    ldc: usize,
+    a_pack : *const f32,
+    b_pack : *const f32,
+    c_base : *mut f32,
+    ldc    : usize,
 ) {
     unsafe {
         let np = (nc + NR - 1) / NR;

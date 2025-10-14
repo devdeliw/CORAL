@@ -22,8 +22,8 @@
 //! # Returns
 //! - Nothing. The contents of `y` are updated in place. 
 
+use crate::enums::CoralTranspose; 
 use crate::level2::{ 
-    enums::CoralTranspose, 
     dgemv_transpose::dgemv_transpose, 
     dgemv_notranspose::dgemv_notranspose, 
 }; 

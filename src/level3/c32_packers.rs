@@ -137,12 +137,12 @@ fn pack_a_mrxk_tail(
             core::ptr::write_bytes(
                 dp_re.add(mr_tail),
                 0, 
-                (MR - mr_tail) * core::mem::size_of::<f32>()
+                MR - mr_tail
             );
             core::ptr::write_bytes
                 (dp_im.add(mr_tail),
                 0, 
-                (MR - mr_tail) * core::mem::size_of::<f32>()
+                MR - mr_tail
             );
 
             ap = ap.add(lda_f);
@@ -177,12 +177,12 @@ fn pack_at_mrxk_tail(
             core::ptr::write_bytes(
                 dp_re.add(mr_tail),
                 0, 
-                (MR - mr_tail) * core::mem::size_of::<f32>()
+                MR - mr_tail 
             );
             core::ptr::write_bytes(
                 dp_im.add(mr_tail),
                 0, 
-                (MR - mr_tail) * core::mem::size_of::<f32>()
+                MR - mr_tail 
             );
 
             ap = ap.add(2);
@@ -217,12 +217,12 @@ fn pack_act_mrxk_tail(
             core::ptr::write_bytes(
                 dp_re.add(mr_tail),
                 0,
-                (MR - mr_tail) * core::mem::size_of::<f32>()
+                MR - mr_tail 
             );
             core::ptr::write_bytes(
                 dp_im.add(mr_tail),
                 0, 
-                (MR - mr_tail) * core::mem::size_of::<f32>()
+                MR - mr_tail 
             );
 
             ap = ap.add(2);
@@ -328,7 +328,6 @@ fn pack_b_kxnr(
     dst    : *mut f32,      
 ) {
     unsafe {
-        let ldb_f = 2 * ldb_c;
         let mut dp = dst;
 
         for i in 0..k {
@@ -428,12 +427,12 @@ fn pack_b_kxnr_tail(
             core::ptr::write_bytes(
                 dp_re.add(nr_tail), 
                 0, 
-                (NR - nr_tail) * core::mem::size_of::<f32>()
+                NR - nr_tail
             );
             core::ptr::write_bytes(
                 dp_im.add(nr_tail), 
                 0, 
-                (NR - nr_tail) * core::mem::size_of::<f32>()
+                NR - nr_tail 
                 );
 
             dp = dp.add(2 * NR);
@@ -465,12 +464,12 @@ fn pack_bt_kxnr_tail(
             core::ptr::write_bytes(
                 dp_re.add(nr_tail), 
                 0, 
-                (NR - nr_tail) * core::mem::size_of::<f32>()
+                NR - nr_tail
             );
             core::ptr::write_bytes(
                 dp_im.add(nr_tail), 
                 0, 
-                (NR - nr_tail) * core::mem::size_of::<f32>()
+                NR - nr_tail 
             );
 
             dp = dp.add(2 * NR);
@@ -502,12 +501,12 @@ fn pack_bct_kxnr_tail(
             core::ptr::write_bytes(
                 dp_re.add(nr_tail),
                 0,
-                (NR - nr_tail) * core::mem::size_of::<f32>()
+                NR - nr_tail
             );
             core::ptr::write_bytes(
                 dp_im.add(nr_tail),
                 0, 
-                (NR - nr_tail) * core::mem::size_of::<f32>()
+                NR - nr_tail
             );
 
             dp = dp.add(2 * NR);

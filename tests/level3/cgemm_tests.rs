@@ -67,25 +67,47 @@ fn make_matrix_colmajor_c32(
     a
 }
 
+#[inline(always)]
+fn opch(op: CoralTranspose) -> char {
+    match op {
+        CoralTranspose::NoTranspose        => 'N',
+        CoralTranspose::Transpose          => 'T',
+        CoralTranspose::ConjugateTranspose => 'C',
+    }
+}
+
 fn assert_allclose(
     a    : &[f32],
     b    : &[f32],
     rtol : f32,
     atol : f32,
+    ctx  : &str,
+    ldc  : usize,
 ) {
     assert_eq!(a.len(), b.len());
+
     for (idx, (&x, &y)) in a.iter().zip(b.iter()).enumerate() {
         let diff = (x - y).abs();
-        let tol = atol + rtol * x.abs().max(y.abs());
-        assert!(
-            diff <= tol,
-            "mismatch at {idx}: coral={x:.8e} vs cblas={y:.8e} delta={diff:.3e} tol={tol:.3e}"
-        );
+        let tol  = atol + rtol * x.abs().max(y.abs());
+        if diff > tol {
+            let elem = idx / 2;
+            let part = if (idx & 1) == 0 { "re" } else { "im" };
+            let j    = elem / ldc;
+            let i    = elem % ldc;
+
+            panic!(
+                "[{}] mismatch at (i={}, j={}, part={}): coral={:.8e} vs cblas={:.8e} \
+                 delta={:.3e} tol={:.3e} (ldc={})",
+                ctx, i, j, part, x, y, diff, tol, ldc
+            );
+        }
     }
 }
 
-const RTOL: f32 = 1e-3;
-const ATOL: f32 = 1e-3;
+// just to accomodate both openblas and accelerate 
+// rtol = atol = 1e-3 works for openblas
+const RTOL: f32 = 3e-3;
+const ATOL: f32 = 2e-3;
 
 fn run_case(
     op_a  : CoralTranspose,
@@ -135,13 +157,10 @@ fn run_case(
         op_a, op_b,
         m, n, k,
         alpha,
-        a.as_ptr(), 
-        lda,
-        b.as_ptr(), 
-        ldb,
+        a.as_ptr(), lda,
+        b.as_ptr(), ldb,
         beta,
-        c_coral.as_mut_ptr(), 
-        ldc,
+        c_coral.as_mut_ptr(), ldc,
     );
 
     let mut c_ref = c_init.clone();
@@ -149,17 +168,22 @@ fn run_case(
         op_a, op_b,
         m as i32, n as i32, k as i32,
         alpha,
-        a.as_ptr(), 
-        lda as i32,
-        b.as_ptr(), 
-        ldb as i32,
+        a.as_ptr(), lda as i32,
+        b.as_ptr(), ldb as i32,
         beta,
-        c_ref.as_mut_ptr(), 
-        ldc as i32,
+        c_ref.as_mut_ptr(), ldc as i32,
     );
 
-    assert_allclose(&c_coral, &c_ref, RTOL, ATOL);
+    let ctx = format!(
+        "op_a={} op_b={} m={} n={} k={} lda={} ldb={} ldc={} \
+         alpha=({:+.3e},{:+.3e}) beta=({:+.3e},{:+.3e})",
+        opch(op_a), opch(op_b), m, n, k, lda, ldb, ldc,
+        alpha[0], alpha[1], beta[0], beta[1]
+    );
+
+    assert_allclose(&c_coral, &c_ref, RTOL, ATOL, &ctx, ldc);
 }
+
 
 fn run_all_ops(
     m     : usize,
