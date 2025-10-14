@@ -51,7 +51,7 @@ fn make_matrix_colmajor(
     f    : impl Fn(usize, usize) -> f32,
 ) -> Vec<f32> {
     assert!(ld >= rows);
-    let mut a = vec![0.0f32; ld * cols];
+    let mut a = vec![0.0; ld * cols];
 
     for j in 0..cols {
         for i in 0..rows {

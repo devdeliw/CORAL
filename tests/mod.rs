@@ -98,3 +98,8 @@ mod sgemm_tests;
 //
 #[path = "level3/dgemm_tests.rs"] 
 mod dgemm_tests;
+// 
+// complex single precision 
+//
+#[path = "level3/cgemm_tests.rs"] 
+mod cgemm_tests;
