@@ -6,9 +6,9 @@ use core::arch::aarch64::{
 
 #[repr(C)] // HFA 
 #[derive(Copy, Clone)]
-pub struct Complex32 {
-    pub re: f32,
-    pub im: f32,
+pub(crate) struct Complex32 {
+    pub(crate) re: f32,
+    pub(crate) im: f32,
 }
 
 #[inline(always)]
@@ -391,4 +391,5 @@ pub(crate) fn c32_mrxnr_betax(
         }
     }
 }
+
 
